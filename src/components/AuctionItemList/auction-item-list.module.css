@@ -54,6 +54,7 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	gap: 5px;
 	padding: 10px 0;
+	position: relative;
 }
 
 .title {
@@ -122,7 +123,7 @@
 	top: 10px;
 	right: 10px;
 	background-color: var(--color-primary);
-	color: var(--color-primary-foreground);
+	color: var(--color-green-600);
 	border-radius: 50%;
 	width: 30px;
 	height: 30px;
@@ -130,4 +131,11 @@
 	justify-content: center;
 	align-items: center;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
+}
+
+.userIcon:hover {
+	background-color: var(--color-primary-foreground);
+	color: var(--color-foreground);
+	cursor: pointer;
 }

@@ -21,6 +21,7 @@ import { Badge } from "../ui/badge";
 import { iAuctionItem } from "@/lib/types";
 import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { FaUserCheck } from "react-icons/fa";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
@@ -214,12 +215,26 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 						const currentBid =
 							proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
 
+						const isOwner = highestBid?.userId === currentUserId;
+						if (isOwner) {
+							console.log(`Is current user the owner of item ${item.id}? ${isOwner}`);
+						}
+
 						return (
 							<Card key={item.id} className={styles.card}>
 								{/* Icon to indicate current user's bid */}
-								{highestBid?.userId === currentUserId && (
+								{isOwner && (
 									<div className={styles.userIcon}>
-										<FaUserCheck title="Your Bid" />
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger>
+													<FaUserCheck title="Your Bid" />
+												</TooltipTrigger>
+												<TooltipContent>
+													<p>Your are the current owner of this item</p>
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
 									</div>
 								)}
 								<CardHeader className="px-4">
