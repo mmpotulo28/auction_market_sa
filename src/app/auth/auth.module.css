@@ -1,53 +1,54 @@
 .AuthPage {
-  display: grid;
-  justify-items: center;
-  grid-template-columns: repeat(2, minmax(auto, 1fr));
-  margin-top: 30px;
-  padding: 40px 0;
-  gap: 40px;
+	display: grid;
+	justify-items: center;
+	grid-template-columns: repeat(2, minmax(auto, 1fr));
+	margin-top: 30px;
+	padding: 40px 0;
+	gap: 40px;
+	background-color: red;
 }
 
 .authForm,
 .authForm form {
-  display: grid;
-  grid-template-columns: 1fr;
-  max-width: 500px;
-  padding: 0;
-  width: 100%;
+	display: grid;
+	grid-template-columns: 1fr;
+	max-width: 500px;
+	padding: 0;
+	width: 100%;
 }
 
 .reviews {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+	display: flex;
+	justify-content: center;
+	width: 100%;
 }
 
 .authFooter {
-  display: flex;
-  align-items: center;
-  max-width: 100%;
+	display: flex;
+	align-items: center;
+	max-width: 100%;
 }
 .authFooter p {
-  font-size: var(--fs-xsmall);
+	font-size: var(--fs-xsmall);
 }
 
 .extraInfo .link {
-  color: var(--theme-color);
+	color: var(--theme-color);
 }
 
 /* on mobile */
 @media (max-width: 768px) {
-  .AuthPage {
-    grid-template-columns: 1fr;
-    place-items: initial;
-    max-width: 100%;
-    margin: 0;
-  }
+	.AuthPage {
+		grid-template-columns: 1fr;
+		place-items: initial;
+		max-width: 100%;
+		margin: 0;
+	}
 
-  .authForm,
-  .authForm form {
-    max-width: 100%;
-    padding: 0 !important;
-    margin: 0;
-  }
+	.authForm,
+	.authForm form {
+		max-width: 100%;
+		padding: 0 !important;
+		margin: 0;
+	}
 }

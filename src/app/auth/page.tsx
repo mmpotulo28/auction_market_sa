@@ -1,22 +1,26 @@
 "use client";
 import React from "react";
 import styles from "./auth.module.css";
-import Container from "@/components/common/container";
 import { iSize } from "@/lib/types";
 import Banner from "../../components/Banner";
 import LoginForm from "@/components/auth/LoginForm";
+import { useSearchParams } from "next/navigation";
+import Container from "@/components/common/container";
 
-export interface iAuthPageProps {
-	formType: "login" | "signup";
-}
+type iformType = "login" | "signup";
 
-const AuthPage: React.FC<iAuthPageProps> = ({ formType }) => {
+const AuthPage: React.FC = () => {
+	// get the type search parameter from the URL
+	const searchParams = useSearchParams();
+
+	const type: iformType = (searchParams?.get("type") as iformType) || "login";
 	return (
 		<>
 			<Container>
 				<div className={styles.AuthPage}>
 					<div className={styles.authForm}>
-						<LoginForm formType={formType} />
+						<LoginForm formType={type} />{" "}
+						{/* Updated to use the type from searchParams */}
 					</div>
 					<div className={styles.reviews}>
 						{/* <CustomerTestimonials

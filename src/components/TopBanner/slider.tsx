@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-
+import Autoplay from "embla-carousel-autoplay";
 import { Card, CardContent } from "@/components/ui/card";
 import {
 	Carousel,
@@ -10,6 +10,7 @@ import {
 	CarouselPrevious,
 	type CarouselApi,
 } from "@/components/ui/carousel";
+import Image from "next/image";
 
 export function CarouselDApiSlider() {
 	const [api, setApi] = React.useState<CarouselApi>();
@@ -31,13 +32,26 @@ export function CarouselDApiSlider() {
 
 	return (
 		<div className="mx-auto max-w-xs">
-			<Carousel setApi={setApi} className="w-full max-w-xs">
+			<Carousel
+				setApi={setApi}
+				className="w-full max-w-xs"
+				plugins={[
+					Autoplay({
+						delay: 2000,
+					}),
+				]}>
 				<CarouselContent>
 					{Array.from({ length: 5 }).map((_, index) => (
 						<CarouselItem key={index}>
 							<Card>
 								<CardContent className="flex aspect-square items-center justify-center p-6">
-									<span className="text-4xl font-semibold">{index + 1}</span>
+									<Image
+										src={`/images/amsa-logo.png`}
+										alt="Random Image"
+										width={200}
+										height={200}
+										className="rounded-md"
+									/>
 								</CardContent>
 							</Card>
 						</CarouselItem>
@@ -47,7 +61,7 @@ export function CarouselDApiSlider() {
 				<CarouselNext />
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
-				Slide {current} of {count}
+				{current} of {count}
 			</div>
 		</div>
 	);
