@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { StackProvider, StackTheme } from "@stackframe/stack";
+import { stackServerApp } from "../stack";
 import "./globals.css";
-import Header from "../components/Header";
+import Header from "@/components/header";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -14,10 +16,10 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={`antialiased`}>
+			<body className={`antialiased`}><StackProvider app={stackServerApp}><StackTheme>
 				<Header />
 				<main>{children}</main>
-			</body>
+			</StackTheme></StackProvider></body>
 		</html>
 	);
 }

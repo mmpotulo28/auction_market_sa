@@ -1,0 +1,92 @@
+.lockup {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-self: flex-start;
+	gap: 3px;
+	padding: 10px 0;
+}
+
+.lockup h1 {
+	padding: 0;
+	margin: 0;
+	font-weight: normal;
+	padding: 0 !important;
+}
+
+.lockup.light h1 {
+	color: var(--background);
+}
+
+.lockup.dark h1 {
+	color: var(--foreground) !important;
+}
+
+.lockup.dark p {
+	color: grey;
+}
+
+.lockup p {
+	padding: 0;
+	margin: 0;
+	color: lightgrey;
+	max-width: 900px;
+}
+
+.lockup span {
+	padding: 0;
+	margin: 0;
+	color: var(--primary);
+	font-weight: bold;
+}
+
+/* lockup small size */
+.lockup.sm {
+	& h1 {
+		font-size: 22px;
+		line-height: 22px;
+	}
+
+	& p,
+	& span {
+		font-size: 14px;
+		line-height: 14px;
+	}
+}
+
+/* lockup medium size */
+.lockup.md {
+	& h1 {
+		font-size: 26px;
+		line-height: 26px;
+	}
+
+	& p,
+	& span {
+		font-size: 16px;
+		line-height: 16px;
+	}
+}
+
+/* lockup large size */
+.lockup.lg {
+	& h1 {
+		font-size: 35px;
+		line-height: 35px;
+	}
+
+	& p,
+	& span {
+		font-size: 18px;
+		line-height: 18px;
+	}
+}
+
+.lockup.centered {
+	text-align: center;
+	margin: 0 auto;
+}
+
+.lockup.bold h1 {
+	font-weight: bold;
+}

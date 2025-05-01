@@ -1,0 +1,24 @@
+.header {
+	display: flex;
+	padding: 5px 20px;
+	justify-content: space-between;
+	align-items: center;
+	/* border-bottom: 1px solid var(--color-primary-foreground); */
+}
+
+.logoContainer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	max-height: 50px;
+	min-height: 50px;
+}
+
+.logoContainer img {
+	position: absolute;
+	min-width: 100px;
+	aspect-ratio: 1/1;
+	top: -10px;
+	left: 0;
+}

@@ -1,0 +1,22 @@
+.actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.actions.fullWidth {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  width: 100%;
+}
+
+.actions.fullWidth button,
+.actions.fullWidth a {
+  min-width: 100% !important;
+  max-width: none !important;
+  justify-content: center;
+}

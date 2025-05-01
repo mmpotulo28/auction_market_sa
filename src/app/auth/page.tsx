@@ -1,0 +1,57 @@
+"use client";
+import React from "react";
+import styles from "./auth.module.css";
+import Container from "@/components/common/container";
+import { iSize } from "@/lib/types";
+import Banner from "../../components/Banner";
+import LoginForm from "@/components/auth/LoginForm";
+
+export interface iAuthPageProps {
+	formType: "login" | "signup";
+}
+
+const AuthPage: React.FC<iAuthPageProps> = ({ formType }) => {
+	return (
+		<>
+			<Container>
+				<div className={styles.AuthPage}>
+					<div className={styles.authForm}>
+						<LoginForm formType={formType} />
+					</div>
+					<div className={styles.reviews}>
+						{/* <CustomerTestimonials
+              theme={iTheme.Dark}
+              title="Customer Testimonials"
+              subtitle="Hear from our satisfied customers about their experiences."
+              reviews={[
+                {
+                  content:
+                    'I had a great experience with Only Friends. The platform is easy to use and the customer service is excellent.',
+                  author: {
+                    name: 'John Doe',
+                    position: 'CEO, Event Co.',
+                    verified: true,
+                    source: <FcGoogle />,
+                  },
+                },
+              ]}
+            /> */}
+					</div>
+				</div>
+			</Container>
+
+			<Banner
+				title={"Report Ticket System Issues"}
+				content={"Encountered a problem? Let us know!"}
+				size={iSize.Medium}
+				image={{
+					src: "/2b4e75d0-a0ad-406f-bf0b-912565d7a155 (1).jpg",
+					alt: "Report Issue Banner Background",
+				}}
+				actions={[]}
+			/>
+		</>
+	);
+};
+
+export default AuthPage;

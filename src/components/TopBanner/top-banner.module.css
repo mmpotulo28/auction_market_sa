@@ -1,0 +1,27 @@
+.topBanner {
+	display: grid;
+	place-items: center;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: auto;
+	min-height: calc(100vh - 60px);
+	overflow: hidden;
+}
+
+.bannerLeftContent {
+	background-color: var(--color-ring);
+	color: var(--color-sidebar-foreground);
+	min-width: 100%;
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	border-radius: 0 0 999px 0;
+}
+
+.carousel {
+	background-color: var(--color-chart-1);
+	min-width: 100%;
+	min-height: 400px;
+}
