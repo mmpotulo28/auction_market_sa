@@ -4,6 +4,7 @@ import { CarouselDApiSlider } from "./slider";
 import styles from "./top-banner.module.css";
 import Actions from "../common/Actions";
 import { iSize } from "@/lib/types";
+import Image from "next/image";
 
 const TopBanner = () => {
 	return (
@@ -12,6 +13,14 @@ const TopBanner = () => {
 				<CarouselDApiSlider />
 			</div>
 
+			<Image
+				className={styles.centerImage}
+				src="/images/amsa-logo.png"
+				alt="Logo"
+				width={100}
+				height={100}
+			/>
+
 			{/* banner right content with welcome text  */}
 			<div className={styles.bannerRightContent}>
 				<LockUp
@@ -19,6 +28,7 @@ const TopBanner = () => {
 					title="Auction Market SA"
 					subtitle="South Africa's Marketplace Auction"
 					size={iSize.Large}
+					centered
 				/>
 
 				<Actions

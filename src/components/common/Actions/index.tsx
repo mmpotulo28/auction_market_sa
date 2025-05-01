@@ -29,6 +29,7 @@ const Actions: React.FC<iActionProps> = ({
 			{actions?.map((action) =>
 				action.hide ? null : (
 					<Button
+						variant={"default"}
 						key={`${action.key}-${action.label}`}
 						onClick={action.click ? action.click : undefined}>
 						{action.label}

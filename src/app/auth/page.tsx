@@ -6,6 +6,7 @@ import Banner from "../../components/Banner";
 import LoginForm from "@/components/auth/LoginForm";
 import { useSearchParams } from "next/navigation";
 import Container from "@/components/common/container";
+import { CarouselDApiSlider } from "@/components/TopBanner/slider";
 
 type iformType = "login" | "signup";
 
@@ -23,23 +24,7 @@ const AuthPage: React.FC = () => {
 						{/* Updated to use the type from searchParams */}
 					</div>
 					<div className={styles.reviews}>
-						{/* <CustomerTestimonials
-              theme={iTheme.Dark}
-              title="Customer Testimonials"
-              subtitle="Hear from our satisfied customers about their experiences."
-              reviews={[
-                {
-                  content:
-                    'I had a great experience with Only Friends. The platform is easy to use and the customer service is excellent.',
-                  author: {
-                    name: 'John Doe',
-                    position: 'CEO, Event Co.',
-                    verified: true,
-                    source: <FcGoogle />,
-                  },
-                },
-              ]}
-            /> */}
+						<CarouselDApiSlider />
 					</div>
 				</div>
 			</Container>

@@ -5,10 +5,12 @@
 	grid-template-rows: auto;
 	min-height: calc(100vh - 60px);
 	overflow: hidden;
+	position: relative;
+	padding: 10px 0;
 }
 
 .bannerLeftContent {
-	background-color: var(--color-ring);
+	background: linear-gradient(to bottom, var(--color-background) 50%, var(--color-ring) 100%);
 	color: var(--color-sidebar-foreground);
 	min-width: 100%;
 	min-height: 100%;
@@ -17,11 +19,55 @@
 	align-items: center;
 	justify-content: center;
 	padding: 20px;
-	border-radius: 0 0 999px 0;
+	border-radius: 0 0 60% 0;
+}
+
+.bannerRightContent {
+	background: linear-gradient(to top, var(--color-background) 50%, var(--color-ring) 100%);
+	color: var(--color-sidebar-foreground);
+	min-width: 100%;
+	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	border-radius: 60% 0 0 0;
 }
 
 .carousel {
 	background-color: var(--color-chart-1);
 	min-width: 100%;
 	min-height: 400px;
+}
+
+.centerImage {
+	position: absolute;
+	animation: spin 3s infinite linear forwards;
+}
+
+@keyframes spin {
+	0% {
+		transform: rotateZ(-360deg);
+	}
+
+	100% {
+		transform: rotateZ(360deg);
+	}
+}
+
+/* on mobile */
+@media (max-width: 768px) {
+	.topBanner {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto auto;
+		min-height: calc(100vh - 60px);
+	}
+
+	.bannerLeftContent,
+	.bannerRightContent {
+		min-width: 100%;
+		min-height: 100%;
+		border-radius: 0;
+	}
 }
