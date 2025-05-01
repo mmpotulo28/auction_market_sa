@@ -11,17 +11,15 @@ import {
 	PaginationNext,
 	PaginationLink,
 } from "@/components/ui/pagination";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import styles from "./auction-item-list.module.css";
 import { BiMinus, BiPlus } from "react-icons/bi";
 import { Badge } from "../ui/badge";
 import { iAuctionItem } from "@/lib/types";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 import { FaUserCheck } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import AuctionSidebar from "./sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
@@ -156,167 +154,147 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 	}, [bids]); // Log bids whenever they change
 
 	return (
-		<div className={styles.container}>
-			<aside className={styles.sidebar}>
-				<h3>Filter by Category</h3>
-				<Separator className="my-4" />
-				{categories.map((category) => (
-					<div key={category} className={styles.checkbox}>
-						<Checkbox
-							id={category}
-							checked={selectedCategories.includes(category)}
-							onCheckedChange={() => toggleCategory(category)}
-						/>
-						<label htmlFor={category}>{category}</label>
-					</div>
-				))}
+		<SidebarProvider>
+			<div className={styles.container}>
+				<AuctionSidebar
+					categories={categories}
+					selectedCategories={selectedCategories}
+					toggleCategory={toggleCategory}
+					priceRange={priceRange}
+					setPriceRange={setPriceRange}
+					toggleCondition={toggleCondition}
+					selectedConditions={selectedConditions}
+				/>
+				<SidebarInset>
+					<main className={styles.mainContent}>
+						<SidebarTrigger />
+						<div className={styles.grid}>
+							{paginatedItems.map((item) => {
+								const highestBid = getHighestBid(item.id);
+								const currentBid =
+									proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
 
-				<Separator className="my-6" />
-				<h3>Filter by Price</h3>
-				<Separator className="my-4" />
-				<div className={styles.slider}>
-					<Slider
-						min={0}
-						max={2000}
-						value={priceRange}
-						onValueChange={(value) => setPriceRange(value as [number, number])}
-					/>
-					<div className={styles.priceRange}>
-						<span>R{priceRange[0]}</span>
-						<span>R{priceRange[1]}</span>
-					</div>
-				</div>
+								const isOwner = highestBid?.userId === currentUserId;
+								if (isOwner) {
+									console.log(
+										`Is current user the owner of item ${item.id}? ${isOwner}`,
+									);
+								}
 
-				<Separator className="my-6" />
-				<h3>Filter by Condition</h3>
-				<ToggleGroup tabIndex={0} variant={"outline"} type="multiple">
-					<ToggleGroupItem
-						value="new"
-						aria-label="New Items"
-						defaultChecked
-						tabIndex={0}
-						onClick={() => toggleCondition("new")}>
-						New
-					</ToggleGroupItem>
-					<ToggleGroupItem
-						value="used"
-						aria-label="Used Items"
-						defaultChecked
-						onClick={() => toggleCondition("used")}>
-						Used
-					</ToggleGroupItem>
-				</ToggleGroup>
-			</aside>
+								return (
+									<Card key={item.id} className={styles.card}>
+										{/* Icon to indicate current user's bid */}
+										{isOwner && (
+											<div className={styles.userIcon}>
+												<TooltipProvider>
+													<Tooltip>
+														<TooltipTrigger>
+															<FaUserCheck title="Your Bid" />
+														</TooltipTrigger>
+														<TooltipContent>
+															<p>
+																Your are the current owner of this
+																item
+															</p>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)}
+										<CardHeader className="px-4">
+											<CardTitle>
+												<h3 className={styles.title}>{item.title}</h3>
 
-			<main className={styles.mainContent}>
-				<div className={styles.grid}>
-					{paginatedItems.map((item) => {
-						const highestBid = getHighestBid(item.id);
-						const currentBid =
-							proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
-
-						const isOwner = highestBid?.userId === currentUserId;
-						if (isOwner) {
-							console.log(`Is current user the owner of item ${item.id}? ${isOwner}`);
-						}
-
-						return (
-							<Card key={item.id} className={styles.card}>
-								{/* Icon to indicate current user's bid */}
-								{isOwner && (
-									<div className={styles.userIcon}>
-										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger>
-													<FaUserCheck title="Your Bid" />
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>Your are the current owner of this item</p>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
-									</div>
-								)}
-								<CardHeader className="px-4">
-									<CardTitle>
-										<h3 className={styles.title}>{item.title}</h3>
-
-										<div className={styles.tags}>
-											<Badge variant={"destructive"}>
-												Highest Bid: R{" "}
-												{Number(highestBid?.amount || item.price)?.toFixed(
-													2,
-												)}
-											</Badge>
-											<Badge variant="secondary">
-												{item.condition.toUpperCase()}
-											</Badge>
-										</div>
-									</CardTitle>
-								</CardHeader>
-								<CardContent className="px-4">
-									<div className={styles.imageContainer}>
-										<Image
-											src={item.image}
-											alt={item.title}
-											width={200}
-											height={200}
+												<div className={styles.tags}>
+													<Badge variant={"destructive"}>
+														Highest Bid: R{" "}
+														{Number(
+															highestBid?.amount || item.price,
+														)?.toFixed(2)}
+													</Badge>
+													<Badge variant="secondary">
+														{item.condition.toUpperCase()}
+													</Badge>
+												</div>
+											</CardTitle>
+										</CardHeader>
+										<CardContent className="px-4">
+											<div className={styles.imageContainer}>
+												<Image
+													src={item.image}
+													alt={item.title}
+													width={200}
+													height={200}
+												/>
+											</div>
+											<p className={styles.description}>{item.description}</p>
+										</CardContent>
+										<CardFooter className={`${styles.footer} px-4`}>
+											<Button
+												variant="outline"
+												onClick={() => decreaseBid(item.id)}
+												disabled={
+													currentBid <= (highestBid?.amount || item.price)
+												}>
+												<BiMinus />
+											</Button>
+											<Button
+												variant="default"
+												onClick={() => submitBid(item.id)}
+												disabled={
+													currentBid <= (highestBid?.amount || item.price)
+												}>
+												{currentBid > (highestBid?.amount || item.price) &&
+													"Submit"}{" "}
+												R {Number(currentBid)?.toFixed(2)}
+											</Button>
+											<Button
+												variant="outline"
+												onClick={() => increaseBid(item.id)}>
+												<BiPlus />
+											</Button>
+										</CardFooter>
+									</Card>
+								);
+							})}
+						</div>
+						<div className={styles.pagination}>
+							<Pagination>
+								<PaginationContent>
+									<PaginationItem>
+										<PaginationPrevious
+											onClick={() =>
+												setCurrentPage((prev) => Math.max(prev - 1, 1))
+											}
 										/>
-									</div>
-									<p className={styles.description}>{item.description}</p>
-								</CardContent>
-								<CardFooter className={`${styles.footer} px-4`}>
-									<Button
-										variant="outline"
-										onClick={() => decreaseBid(item.id)}
-										disabled={currentBid <= (highestBid?.amount || item.price)}>
-										<BiMinus />
-									</Button>
-									<Button
-										variant="default"
-										onClick={() => submitBid(item.id)}
-										disabled={currentBid <= (highestBid?.amount || item.price)}>
-										{currentBid > (highestBid?.amount || item.price) &&
-											"Submit"}{" "}
-										R {Number(currentBid)?.toFixed(2)}
-									</Button>
-									<Button variant="outline" onClick={() => increaseBid(item.id)}>
-										<BiPlus />
-									</Button>
-								</CardFooter>
-							</Card>
-						);
-					})}
-				</div>
-				<div className={styles.pagination}>
-					<Pagination>
-						<PaginationContent>
-							<PaginationItem>
-								<PaginationPrevious
-									onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-								/>
-							</PaginationItem>
-							{Array.from({ length: totalPages }, (_, index) => (
-								<PaginationItem key={index}>
-									<PaginationLink
-										onClick={() => setCurrentPage(index + 1)}
-										className={currentPage === index + 1 ? "active" : ""}>
-										{index + 1}
-									</PaginationLink>
-								</PaginationItem>
-							))}
-							<PaginationItem>
-								<PaginationNext
-									onClick={() =>
-										setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-									}
-								/>
-							</PaginationItem>
-						</PaginationContent>
-					</Pagination>
-				</div>
-			</main>
-		</div>
+									</PaginationItem>
+									{Array.from({ length: totalPages }, (_, index) => (
+										<PaginationItem key={index}>
+											<PaginationLink
+												onClick={() => setCurrentPage(index + 1)}
+												className={
+													currentPage === index + 1 ? "active" : ""
+												}>
+												{index + 1}
+											</PaginationLink>
+										</PaginationItem>
+									))}
+									<PaginationItem>
+										<PaginationNext
+											onClick={() =>
+												setCurrentPage((prev) =>
+													Math.min(prev + 1, totalPages),
+												)
+											}
+										/>
+									</PaginationItem>
+								</PaginationContent>
+							</Pagination>
+						</div>
+					</main>
+				</SidebarInset>
+			</div>
+		</SidebarProvider>
 	);
 };
 

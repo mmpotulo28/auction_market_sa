@@ -1,14 +1,13 @@
 .container {
 	display: flex;
 	gap: 0px;
+	position: relative;
+	width: 100%;
 }
 
 .sidebar {
-	width: 250px;
-	background-color: var(--color-muted);
-	padding: 20px;
-	border-radius: var(--radius-md);
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	position: absolute;
+	min-height: 100%;
 }
 
 .sidebar h3 {
