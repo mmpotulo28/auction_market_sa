@@ -1,7 +1,8 @@
 import TopBanner from "@/components/TopBanner";
 import AuctionItemList from "@/components/AuctionItemList";
+import { iAuctionItem } from "@/lib/types";
 
-const mockItems = [
+const mockItems: iAuctionItem[] = [
 	{
 		id: "1",
 		title: "Smartphone",
@@ -9,6 +10,7 @@ const mockItems = [
 		price: 699,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "2",
@@ -17,6 +19,7 @@ const mockItems = [
 		price: 1299,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "3",
@@ -25,6 +28,7 @@ const mockItems = [
 		price: 199,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "4",
@@ -33,6 +37,7 @@ const mockItems = [
 		price: 299,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "5",
@@ -41,6 +46,7 @@ const mockItems = [
 		price: 499,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "6",
@@ -49,6 +55,7 @@ const mockItems = [
 		price: 899,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "7",
@@ -57,6 +64,7 @@ const mockItems = [
 		price: 599,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "8",
@@ -65,6 +73,7 @@ const mockItems = [
 		price: 149,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "9",
@@ -73,6 +82,7 @@ const mockItems = [
 		price: 999,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "10",
@@ -81,6 +91,7 @@ const mockItems = [
 		price: 99,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Fitness",
+		condition: "new",
 	},
 	{
 		id: "11",
@@ -89,6 +100,7 @@ const mockItems = [
 		price: 129,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "12",
@@ -97,6 +109,7 @@ const mockItems = [
 		price: 799,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "13",
@@ -105,6 +118,7 @@ const mockItems = [
 		price: 499,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Vehicles",
+		condition: "new",
 	},
 	{
 		id: "14",
@@ -113,6 +127,7 @@ const mockItems = [
 		price: 199,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Furniture",
+		condition: "new",
 	},
 	{
 		id: "15",
@@ -121,6 +136,7 @@ const mockItems = [
 		price: 89,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "16",
@@ -129,6 +145,7 @@ const mockItems = [
 		price: 299,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "17",
@@ -137,6 +154,7 @@ const mockItems = [
 		price: 399,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "18",
@@ -145,6 +163,7 @@ const mockItems = [
 		price: 79,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "19",
@@ -153,6 +172,7 @@ const mockItems = [
 		price: 149,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
+		condition: "new",
 	},
 	{
 		id: "20",
@@ -161,6 +181,7 @@ const mockItems = [
 		price: 49,
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Home Appliances",
+		condition: "new",
 	},
 ];
 

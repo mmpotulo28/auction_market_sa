@@ -137,3 +137,14 @@ export interface iButtonProps {
 		target?: iTarget;
 	};
 }
+
+export type iCondition = "new" | "used";
+export interface iAuctionItem {
+	id: string;
+	title: string;
+	description: string;
+	price: number;
+	image: string;
+	category: string;
+	condition: iCondition;
+}
