@@ -65,6 +65,7 @@ const AuctionSidebar: React.FC<AuctionSidebarProps> = ({
 						))}
 					</SidebarGroupContent>
 				</SidebarGroup>
+				<Separator />
 				<SidebarGroup className="px-4">
 					<SidebarGroupLabel>Filter by Price</SidebarGroupLabel>
 					<SidebarGroupContent>

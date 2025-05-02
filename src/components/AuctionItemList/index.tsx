@@ -20,12 +20,16 @@ import { FaUserCheck } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import AuctionSidebar from "./sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { useUser } from "@stackframe/stack";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
 	categories: string[];
 	itemsPerPage?: number;
-	currentUserId?: string; // Added to identify the current user
 }
 
 interface iBid {
@@ -38,9 +42,10 @@ interface iBid {
 const AuctionItemList: React.FC<AuctionItemListProps> = ({
 	items,
 	categories,
-	itemsPerPage = 20,
-	currentUserId = "0",
+	itemsPerPage = 10,
 }) => {
+	const user = useUser();
+	const router = useRouter();
 	const [proposedBids, setProposedBids] = useState<iBid[]>(
 		items.map((item) => ({
 			amount: item.price,
@@ -122,6 +127,18 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 	};
 
 	const submitBid = (id: string) => {
+		// check is user is logged in first
+		if (!user) {
+			toast("Login first to submit your bid", {
+				description: "Please log in to place a bid. we need to note who owns a certain bid",
+				action: {
+					label: "Login",
+					onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
+				},
+			});
+			return;
+		}
+
 		const currentBid = proposedBids.find((bid) => bid.itemId === id)?.amount || 0;
 		console.log(`Submitting bid for item ${id} with current bid: ${currentBid}`);
 
@@ -130,11 +147,27 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 			...prevBids,
 			{
 				amount: currentBid,
-				userId: currentUserId,
+				userId: user?.id || "anonymous",
 				itemId: id,
 				timestamp: new Date().toISOString(),
 			},
 		]);
+
+		// check if is now item owner
+		const highestBid = getHighestBid(id);
+		const isOwner = highestBid?.userId === user?.id;
+
+		if (isOwner) {
+			toast(`Congratulations, you now own this item!`, {
+				description: "You are the current owner of this item, This can still change.",
+				richColors: true,
+			});
+		} else {
+			toast(`Bid not enough!`, {
+				description: "You might need to increase your bid to own the item.",
+				richColors: true,
+			});
+		}
 	};
 
 	const getHighestBid = (itemId: string): iBid | undefined => {
@@ -167,14 +200,24 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 				/>
 				<SidebarInset>
 					<main className={styles.mainContent}>
-						<SidebarTrigger />
+						<div className={styles.contentHeader}>
+							<SidebarTrigger />
+							<Alert variant="destructive">
+								<AlertCircle className="h-4 w-4" />
+								<AlertTitle>Action not yet Open!</AlertTitle>
+								<AlertDescription>
+									This is a demo version of the auction system. The auction is not
+									yet open for bidding. Please check back later.
+								</AlertDescription>
+							</Alert>
+						</div>
 						<div className={styles.grid}>
 							{paginatedItems.map((item) => {
 								const highestBid = getHighestBid(item.id);
 								const currentBid =
 									proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
 
-								const isOwner = highestBid?.userId === currentUserId;
+								const isOwner = highestBid?.userId === user?.id;
 								if (isOwner) {
 									console.log(
 										`Is current user the owner of item ${item.id}? ${isOwner}`,

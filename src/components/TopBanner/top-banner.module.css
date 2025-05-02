@@ -8,6 +8,7 @@
 	overflow: hidden;
 	position: relative;
 	padding: 10px 0;
+	gap: 0;
 }
 
 .bannerLeftContent {
@@ -21,7 +22,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 20px;
-	border-radius: 0 0 60% 0;
+	border-radius: 0 0 70% 0;
 }
 
 .bannerRightContent {
@@ -35,7 +36,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 20px;
-	border-radius: 60% 0 0 0;
+	border-radius: 70% 0 0 0;
 }
 
 .carousel {

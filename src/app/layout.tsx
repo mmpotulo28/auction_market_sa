@@ -4,6 +4,7 @@ import { stackServerApp } from "../stack";
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -67,6 +68,7 @@ export default function RootLayout({
 					<StackTheme theme={customTheme}>
 						<Header />
 						<main>{children}</main>
+						<Toaster />
 						<Footer />
 					</StackTheme>
 				</StackProvider>

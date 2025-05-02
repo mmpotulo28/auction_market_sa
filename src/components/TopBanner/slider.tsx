@@ -11,22 +11,25 @@ import {
 	type CarouselApi,
 } from "@/components/ui/carousel";
 import Image from "next/image";
+import { mockItems } from "@/lib/dummy-data";
 
 export function CarouselDApiSlider() {
 	const [api, setApi] = React.useState<CarouselApi>();
 	const [current, setCurrent] = React.useState(0);
-	const [count, setCount] = React.useState(0);
 
 	React.useEffect(() => {
 		if (!api) {
 			return;
 		}
 
-		setCount(api.scrollSnapList().length);
 		setCurrent(api.selectedScrollSnap() + 1);
 
 		api.on("select", () => {
 			setCurrent(api.selectedScrollSnap() + 1);
+		});
+
+		api.on("init", () => {
+			api.scrollTo(0);
 		});
 	}, [api]);
 
@@ -41,15 +44,15 @@ export function CarouselDApiSlider() {
 					}),
 				]}>
 				<CarouselContent>
-					{Array.from({ length: 5 }).map((_, index) => (
+					{mockItems?.slice(0, 10)?.map((item, index) => (
 						<CarouselItem key={index}>
 							<Card>
-								<CardContent className="flex aspect-square items-center justify-center p-6">
+								<CardContent className="flex aspect-square items-center justify-center p-0">
 									<Image
-										src={`/images/amsa-logo.png`}
-										alt="Random Image"
-										width={200}
-										height={200}
+										src={item.image}
+										alt={item.title}
+										width={250}
+										height={250}
 										className="rounded-md"
 									/>
 								</CardContent>
@@ -61,7 +64,7 @@ export function CarouselDApiSlider() {
 				<CarouselNext />
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
-				{current} of {count}
+				{current} of {mockItems?.slice(0, 10)?.length}
 			</div>
 		</div>
 	);
