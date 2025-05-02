@@ -13,46 +13,46 @@ export const metadata: Metadata = {
 
 const customTheme = {
 	light: {
-		background: "#f5faff", // Resolved value for var(--color-background)
-		foreground: "#00263f", // Resolved value for var(--color-foreground)
-		card: "#f2f5fa", // Resolved value for var(--color-card)
-		cardForeground: "#1a3a5f", // Resolved value for var(--color-card-foreground)
-		popover: "#f2f5fa", // Resolved value for var(--color-popover)
-		popoverForeground: "#1a3a5f", // Resolved value for var(--color-popover-foreground)
-		primary: "#41b3ff", // Resolved value for var(--color-primary)
-		primaryForeground: "#ffffff", // Resolved value for var(--color-primary-foreground)
-		secondary: "#82afce", // Resolved value for var(--color-secondary)
-		secondaryForeground: "#ffffff", // Resolved value for var(--color-secondary-foreground)
-		muted: "#e6eef5", // Resolved value for var(--color-muted)
-		mutedForeground: "#4a5f73", // Resolved value for var(--color-muted-foreground)
-		accent: "#007ea7", // Resolved value for var(--color-accent)
-		accentForeground: "#ffffff", // Resolved value for var(--color-accent-foreground)
-		destructive: "#ff4d4d", // Resolved value for var(--color-destructive)
-		destructiveForeground: "#ffffff", // Resolved value for var(--color-foreground)
-		border: "#d1e3f0", // Resolved value for var(--color-border)
-		input: "#f2f5fa", // Resolved value for var(--color-input)
-		ring: "#41b3ff", // Resolved value for var(--color-ring)
+		background: "#f5faff",
+		foreground: "#00263f",
+		card: "#f2f5fa",
+		cardForeground: "#1a3a5f",
+		popover: "#f2f5fa",
+		popoverForeground: "#1a3a5f",
+		primary: "#41b3ff",
+		primaryForeground: "#ffffff",
+		secondary: "#82afce",
+		secondaryForeground: "#ffffff",
+		muted: "#e6eef5",
+		mutedForeground: "#4a5f73",
+		accent: "#007ea7",
+		accentForeground: "#ffffff",
+		destructive: "#ff4d4d",
+		destructiveForeground: "#ffffff",
+		border: "#d1e3f0",
+		input: "#f2f5fa",
+		ring: "#41b3ff",
 	},
 	dark: {
-		background: "#1a1a2e", // Resolved value for var(--background)
-		foreground: "#e0e0e0", // Resolved value for var(--foreground)
-		card: "#2a2a3e", // Resolved value for var(--card)
-		cardForeground: "#d0d0d0", // Resolved value for var(--card-foreground)
-		popover: "#2a2a3e", // Resolved value for var(--popover)
-		popoverForeground: "#d0d0d0", // Resolved value for var(--popover-foreground)
-		primary: "#41b3ff", // Resolved value for var(--primary)
-		primaryForeground: "#ffffff", // Resolved value for var(--primary-foreground)
-		secondary: "#82afce", // Resolved value for var(--secondary)
-		secondaryForeground: "#ffffff", // Resolved value for var(--secondary-foreground)
-		muted: "#2e2e4e", // Resolved value for var(--muted)
-		mutedForeground: "#a0a0b0", // Resolved value for var(--muted-foreground)
-		accent: "#007ea7", // Resolved value for var(--accent)
-		accentForeground: "#ffffff", // Resolved value for var(--accent-foreground)
-		destructive: "#ff4d4d", // Resolved value for var(--destructive)
-		destructiveForeground: "#ffffff", // Resolved value for var(--foreground)
-		border: "#3a3a5e", // Resolved value for var(--border)
-		input: "#2a2a3e", // Resolved value for var(--input)
-		ring: "#41b3ff", // Resolved value for var(--ring)
+		background: "#1a1a2e",
+		foreground: "#e0e0e0",
+		card: "#2a2a3e",
+		cardForeground: "#d0d0d0",
+		popover: "#2a2a3e",
+		popoverForeground: "#d0d0d0",
+		primary: "#41b3ff",
+		primaryForeground: "#ffffff",
+		secondary: "#82afce",
+		secondaryForeground: "#ffffff",
+		muted: "#2e2e4e",
+		mutedForeground: "#a0a0b0",
+		accent: "#007ea7",
+		accentForeground: "#ffffff",
+		destructive: "#ff4d4d",
+		destructiveForeground: "#ffffff",
+		border: "#3a3a5e",
+		input: "#2a2a3e",
+		ring: "#41b3ff",
 	},
 };
 
