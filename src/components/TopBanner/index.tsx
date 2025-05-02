@@ -3,14 +3,22 @@ import LockUp from "@/components/common/lockup";
 import { CarouselDApiSlider } from "./slider";
 import styles from "./top-banner.module.css";
 import Actions from "../common/Actions";
-import { iSize } from "@/lib/types";
+import { iAuctionItem, iButtonProps, iLockUpProps, iSize } from "@/lib/types";
 import Image from "next/image";
+import { Suspense } from "react";
 
-const TopBanner = () => {
+export interface iTopBannerProps extends iLockUpProps {
+	action?: iButtonProps;
+	items: iAuctionItem[];
+}
+
+const TopBanner: React.FC<iTopBannerProps> = ({ action, title, overline, subtitle, items }) => {
 	return (
 		<div className={styles.topBanner}>
 			<div className={styles.bannerLeftContent}>
-				<CarouselDApiSlider />
+				<Suspense fallback={<div>Loading Items...</div>}>
+					<CarouselDApiSlider items={items} />
+				</Suspense>
 			</div>
 
 			<Image
@@ -24,9 +32,9 @@ const TopBanner = () => {
 			{/* banner right content with welcome text  */}
 			<div className={styles.bannerRightContent}>
 				<LockUp
-					overline="Welcome"
-					title="Auction Market SA"
-					subtitle="South Africa's Marketplace Auction"
+					overline={overline}
+					title={title}
+					subtitle={subtitle}
 					size={iSize.Large}
 					centered
 				/>
@@ -34,7 +42,7 @@ const TopBanner = () => {
 				<Actions
 					actions={[
 						{
-							label: "Get Started",
+							label: action?.label || "Get Started",
 							click: () => console.log("Get Started clicked"),
 						},
 					]}

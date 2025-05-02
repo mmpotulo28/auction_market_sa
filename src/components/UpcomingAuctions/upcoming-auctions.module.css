@@ -1,0 +1,72 @@
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 20px;
+	padding: 20px;
+}
+
+.card {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+	padding: 16px;
+	background: var(--primary);
+	color: var(--primary-foreground);
+	text-align: center;
+}
+
+.cardContent {
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 10px;
+}
+
+.itemsCount {
+	font-size: 1rem;
+	color: var(--text-muted-foreground);
+}
+
+.timer {
+	font-size: 1.25rem;
+	font-weight: bold;
+	color: var(--primary);
+	text-align: center;
+}
+
+.previewButton {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	border: none;
+	padding: 10px 16px;
+	border-radius: var(--radius-md);
+	font-size: 1rem;
+	font-weight: bold;
+	cursor: pointer;
+	transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.previewButton:hover {
+	background: var(--primary-foreground);
+	color: var(--primary);
+	transform: translateY(-2px);
+}
+
+.previewButton:active {
+	transform: translateY(0);
+}

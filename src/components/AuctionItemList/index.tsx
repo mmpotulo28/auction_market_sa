@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,6 @@ import { AlertCircle } from "lucide-react";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
-	categories: string[];
 	itemsPerPage?: number;
 }
 
@@ -39,11 +37,7 @@ interface iBid {
 	timestamp: string;
 }
 
-const AuctionItemList: React.FC<AuctionItemListProps> = ({
-	items,
-	categories,
-	itemsPerPage = 10,
-}) => {
+const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage = 10 }) => {
 	const user = useUser();
 	const router = useRouter();
 	const [proposedBids, setProposedBids] = useState<iBid[]>(
@@ -63,11 +57,18 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 		})),
 	);
 	const [currentPage, setCurrentPage] = useState(1);
+	const [categories, setCategories] = useState<string[]>([]);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
+
+	useEffect(() => {
+		const uniqueCategories = [...new Set(items.map((item) => item.category))];
+		setCategories(uniqueCategories);
+		setSelectedCategories(uniqueCategories);
+	}, [items]);
 
 	const totalPages = Math.ceil(items.length / itemsPerPage);
 	const filteredItems = items.filter(
@@ -120,10 +121,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 					: bid,
 			),
 		);
-
-		// set current bid
-		const currentBid = proposedBids.find((bid) => bid.itemId === id)?.amount || 0;
-		console.log(`Current bid for item ${id}: ${currentBid}`); // Log current bid for debugging
 	};
 
 	const submitBid = (id: string) => {
@@ -140,7 +137,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 		}
 
 		const currentBid = proposedBids.find((bid) => bid.itemId === id)?.amount || 0;
-		console.log(`Submitting bid for item ${id} with current bid: ${currentBid}`);
 
 		// add the current submitted bid to the bids array, just push it to the end
 		setBids((prevBids) => [
@@ -180,11 +176,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({
 				timestamp: "",
 			});
 	};
-
-	// log proposedBids every time a new bid is received
-	useEffect(() => {
-		console.log("Bids updated:", bids);
-	}, [bids]); // Log bids whenever they change
 
 	return (
 		<SidebarProvider>

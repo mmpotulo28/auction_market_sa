@@ -11,9 +11,14 @@ import {
 	type CarouselApi,
 } from "@/components/ui/carousel";
 import Image from "next/image";
-import { mockItems } from "@/lib/dummy-data";
 
-export function CarouselDApiSlider() {
+import { iAuctionItem } from "@/lib/types";
+
+interface iCarouselDApiSlider {
+	items: iAuctionItem[];
+}
+
+export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items }) => {
 	const [api, setApi] = React.useState<CarouselApi>();
 	const [current, setCurrent] = React.useState(0);
 
@@ -44,7 +49,7 @@ export function CarouselDApiSlider() {
 					}),
 				]}>
 				<CarouselContent>
-					{mockItems?.slice(0, 10)?.map((item, index) => (
+					{items?.slice(0, 10)?.map((item, index) => (
 						<CarouselItem key={index}>
 							<Card>
 								<CardContent className="flex aspect-square items-center justify-center p-0">
@@ -64,8 +69,8 @@ export function CarouselDApiSlider() {
 				<CarouselNext />
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
-				{current} of {mockItems?.slice(0, 10)?.length}
+				{current} of {items?.slice(0, 10)?.length}
 			</div>
 		</div>
 	);
-}
+};

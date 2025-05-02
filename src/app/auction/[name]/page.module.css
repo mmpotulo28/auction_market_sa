@@ -1,0 +1,43 @@
+/* Add styles for the dynamic auction page */
+.pageContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+}
+
+.auctionHeader {
+	font-size: 2rem;
+	font-weight: bold;
+	margin-bottom: 20px;
+}
+
+.auctionItems {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	width: 100%;
+}
+
+.auctionItemCard {
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 10px;
+	background-color: var(--card);
+	color: var(--card-foreground);
+}
+
+.auctionItemCard:hover {
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.auctionItemTitle {
+	font-size: 1.2rem;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+.auctionItemDetails {
+	font-size: 0.9rem;
+	color: var(--text-muted-foreground);
+}

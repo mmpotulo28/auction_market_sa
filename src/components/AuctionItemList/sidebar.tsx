@@ -50,21 +50,7 @@ const AuctionSidebar: React.FC<AuctionSidebarProps> = ({
 						))}
 					</SidebarGroupContent>
 				</SidebarGroup>
-				<SidebarGroup className="px-4">
-					<SidebarGroupLabel>Filter by Category</SidebarGroupLabel>
-					<SidebarGroupContent>
-						{categories.map((category) => (
-							<div key={category} className={styles.checkbox}>
-								<Checkbox
-									id={category}
-									checked={selectedCategories.includes(category)}
-									onCheckedChange={() => toggleCategory(category)}
-								/>
-								<label htmlFor={category}>{category}</label>
-							</div>
-						))}
-					</SidebarGroupContent>
-				</SidebarGroup>
+
 				<Separator />
 				<SidebarGroup className="px-4">
 					<SidebarGroupLabel>Filter by Price</SidebarGroupLabel>

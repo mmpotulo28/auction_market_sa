@@ -1,4 +1,37 @@
-import { iAuctionItem } from "./types";
+import { iAuction, iAuctionItem } from "./types";
+
+export const mockAuctions: iAuction[] = [
+	{
+		name: "Electronics Bonanza",
+		itemsCount: 10,
+		startTime: new Date("2025-11-01T10:00:00Z"),
+		duration: 120, // in minutes
+		reOpenCount: 2,
+		description: "An auction featuring the latest electronics.",
+		dateCreated: new Date("2025-10-15T08:00:00Z"),
+		createdBy: "admin",
+	},
+	{
+		name: "Fitness Gear Sale",
+		itemsCount: 5,
+		startTime: new Date("2025-11-05T14:00:00Z"),
+		duration: 90,
+		reOpenCount: 1,
+		description: "Get the best deals on fitness equipment.",
+		dateCreated: new Date("2025-10-18T09:30:00Z"),
+		createdBy: "admin",
+	},
+	{
+		name: "Home Essentials Auction",
+		itemsCount: 3,
+		startTime: new Date("2025-11-10T16:00:00Z"),
+		duration: 60,
+		reOpenCount: 0,
+		description: "Bid on essential home appliances.",
+		dateCreated: new Date("2025-10-20T11:00:00Z"),
+		createdBy: "admin",
+	},
+];
 
 export const mockItems: iAuctionItem[] = [
 	{
@@ -9,6 +42,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[0],
 	},
 	{
 		id: "2",
@@ -18,6 +52,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[0],
 	},
 	{
 		id: "3",
@@ -27,6 +62,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "4",
@@ -36,6 +72,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "5",
@@ -45,6 +82,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "6",
@@ -54,6 +92,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "7",
@@ -63,6 +102,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "8",
@@ -72,6 +112,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[0],
 	},
 	{
 		id: "9",
@@ -81,6 +122,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[0],
 	},
 	{
 		id: "10",
@@ -90,6 +132,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Fitness",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "11",
@@ -99,6 +142,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "12",
@@ -108,6 +152,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "13",
@@ -117,6 +162,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Vehicles",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "14",
@@ -126,6 +172,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Furniture",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "15",
@@ -135,6 +182,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[0],
 	},
 	{
 		id: "16",
@@ -144,6 +192,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "17",
@@ -153,6 +202,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[1],
 	},
 	{
 		id: "18",
@@ -162,6 +212,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "19",
@@ -171,6 +222,7 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Electronics",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 	{
 		id: "20",
@@ -180,5 +232,6 @@ export const mockItems: iAuctionItem[] = [
 		image: "/images/b145a819-b176-403f-bbc0-bd2e54a264de.jpeg",
 		category: "Home Appliances",
 		condition: "new",
+		auction: mockAuctions[2],
 	},
 ];

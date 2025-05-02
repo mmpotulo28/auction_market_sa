@@ -13,7 +13,7 @@
 
 .bannerLeftContent {
 	grid-area: left;
-	background: linear-gradient(to bottom, var(--color-background) 50%, var(--color-ring) 100%);
+	/* background: linear-gradient(to bottom, var(--color-background) 50%, var(--color-ring) 100%); */
 	color: var(--color-sidebar-foreground);
 	min-width: 100%;
 	min-height: 100%;
@@ -22,7 +22,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 20px;
-	border-radius: 0 0 70% 0;
+	border-radius: 0 0 40% 0;
 }
 
 .bannerRightContent {
@@ -36,7 +36,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 20px;
-	border-radius: 70% 0 0 0;
+	border-radius: 60% 0 0 0;
 }
 
 .carousel {

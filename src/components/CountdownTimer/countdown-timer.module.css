@@ -1,0 +1,17 @@
+.timer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+}
+
+.timeBlock {
+	background: var(--primary);
+	color: var(--primary-foreground);
+	padding: 8px 12px;
+	border-radius: var(--radius-md);
+	font-size: 1.25rem;
+	font-weight: bold;
+	text-align: center;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}

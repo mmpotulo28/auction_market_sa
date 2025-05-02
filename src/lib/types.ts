@@ -147,4 +147,16 @@ export interface iAuctionItem {
 	image: string;
 	category: string;
 	condition: iCondition;
+	auction: iAuction;
+}
+
+export interface iAuction {
+	name: string;
+	itemsCount: number;
+	startTime: Date;
+	duration: number;
+	reOpenCount: number;
+	description?: string;
+	dateCreated?: Date;
+	createdBy?: string;
 }
