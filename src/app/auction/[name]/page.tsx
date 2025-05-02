@@ -31,19 +31,25 @@ export async function generateStaticParams() {
 
 const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
 	const { name } = use(params);
-	const auction = mockAuctions.find((auction) => stringToUrl(auction.name) === name);
+	const auction = mockAuctions.find((auction) => stringToUrl(auction.name) === stringToUrl(name));
 	const auctionDate = new Date(auction?.startTime || "").toLocaleString("en-US", {
+		weekday: "long",
 		day: "numeric",
 		month: "long",
 		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		timeZone: "UTC",
 	});
 
-	const filteredItems = mockItems.filter((item) => item.auction.name === name);
+	const filteredItems = mockItems.filter(
+		(item) => stringToUrl(item.auction.name) === stringToUrl(name),
+	);
 
 	return (
 		<div>
 			<TopBanner
-				title={name}
+				title={auction?.name || "Auction Market SA"}
 				overline={auctionDate}
 				subtitle="An auction so good, even your wallet might bid!"
 				action={{ label: "View Auction" }}
@@ -62,7 +68,7 @@ const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
 						</BreadcrumbItem>
 						<BreadcrumbSeparator />
 						<BreadcrumbItem>
-							<BreadcrumbPage>{name}</BreadcrumbPage>
+							<BreadcrumbPage>{auction?.name || "Auction"}</BreadcrumbPage>
 						</BreadcrumbItem>
 					</BreadcrumbList>
 				</Breadcrumb>

@@ -2,10 +2,11 @@
 import React from "react";
 import styles from "./banner.module.css";
 import { ImageProps } from "next/image";
-import { iButtonProps, iSize } from "@/lib/types";
-import { Container } from "lucide-react";
+import { iButtonProps, iSize, iTheme } from "@/lib/types";
+
 import Actions from "../common/Actions";
 import LockUp from "../common/lockup";
+import Container from "../common/container";
 
 export interface iBannerProps {
 	title: string;
@@ -38,11 +39,16 @@ const Banner: React.FC<iBannerProps> = ({
 	return (
 		<div
 			className={`${styles.bannerContainer} ${classSize()}`}
-			style={{ backgroundImage: `url("/image/${image.src}")` }}>
+			style={{ backgroundImage: `url("/images/${image.src}")` }}>
 			<Container>
 				<div className={styles.banner}>
 					<div className={styles.content}>
-						<LockUp title={title} subtitle={content} size={iSize.Medium} />
+						<LockUp
+							title={title}
+							subtitle={content}
+							size={iSize.Large}
+							theme={iTheme.Light}
+						/>
 					</div>
 					<Actions actions={actions} />
 				</div>

@@ -8,6 +8,7 @@ import UpcomingAuctions from "@/components/UpcomingAuctions";
 import Container from "@/components/common/container";
 import { mockAuctions, mockItems } from "@/lib/dummy-data";
 import styles from "./page.module.css";
+import Banner from "@/components/Banner";
 
 export default function Home() {
 	const router = useRouter();
@@ -100,6 +101,21 @@ export default function Home() {
 					</div>
 				</div>
 			</Container>
+
+			<Banner
+				title={"Welcome to the Auction!"}
+				content={"Join us for exciting auctions and great deals!"}
+				image={{
+					src: "939eb999-8f08-4661-a8fa-df7872e95077.jpeg",
+					alt: "Auction Image",
+				}}
+				actions={[
+					{
+						label: "Get Started",
+						click: () => router.push("/auth?type=signup"),
+					},
+				]}
+			/>
 		</div>
 	);
 }

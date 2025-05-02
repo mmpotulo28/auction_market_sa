@@ -32,6 +32,7 @@ const Actions: React.FC<iActionProps> = ({
 						variant={"default"}
 						key={`${action.key}-${action.label}`}
 						onClick={action.click ? action.click : undefined}>
+						{action.iconStart && action.iconStart}
 						{action.label}
 					</Button>
 				),

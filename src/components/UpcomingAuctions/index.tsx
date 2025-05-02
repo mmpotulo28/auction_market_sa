@@ -7,6 +7,7 @@ import styles from "./upcoming-auctions.module.css";
 import LockUp from "../common/lockup";
 import { iAuction, iTheme } from "@/lib/types";
 import { Button } from "../ui/button";
+import { stringToUrl } from "@/lib/helpers";
 
 interface UpcomingAuctionsProps {
 	auctions: iAuction[];
@@ -37,9 +38,7 @@ const UpcomingAuctions: React.FC<UpcomingAuctionsProps> = ({ auctions }) => {
 						<Button
 							// className={styles.previewButton}
 							variant={"outline"}
-							onClick={() =>
-								router.push(`/auction/${encodeURIComponent(auction.name)}`)
-							}>
+							onClick={() => router.push(`/auction/${stringToUrl(auction.name)}`)}>
 							Preview Auction
 						</Button>
 					</div>
