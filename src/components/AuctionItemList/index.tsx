@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
@@ -48,18 +49,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 			timestamp: "",
 		})),
 	);
-	const [bids, setBids] = useState<iBid[]>(
-		items.map((item) => ({
-			amount: item.price,
-			userId: "",
-			itemId: item.id,
-			timestamp: "",
-		})),
-	);
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [categories, setCategories] = useState<string[]>([]);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+	const { placeBid, getHighestBid } = useWebSocket();
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
@@ -139,15 +134,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 		const currentBid = proposedBids.find((bid) => bid.itemId === id)?.amount || 0;
 
 		// add the current submitted bid to the bids array, just push it to the end
-		setBids((prevBids) => [
-			...prevBids,
-			{
-				amount: currentBid,
-				userId: user?.id || "anonymous",
-				itemId: id,
-				timestamp: new Date().toISOString(),
-			},
-		]);
+		placeBid(id, currentBid, user.id);
 
 		// check if is now item owner
 		const highestBid = getHighestBid(id);
@@ -164,17 +151,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 				richColors: true,
 			});
 		}
-	};
-
-	const getHighestBid = (itemId: string): iBid | undefined => {
-		return bids
-			.filter((bid) => bid.itemId === itemId)
-			.reduce((highest, current) => (current.amount > highest.amount ? current : highest), {
-				amount: 0,
-				userId: "",
-				itemId: "",
-				timestamp: "",
-			});
 	};
 
 	return (
@@ -209,11 +185,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 									proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
 
 								const isOwner = highestBid?.userId === user?.id;
-								if (isOwner) {
-									console.log(
-										`Is current user the owner of item ${item.id}? ${isOwner}`,
-									);
-								}
 
 								return (
 									<Card key={item.id} className={styles.card}>

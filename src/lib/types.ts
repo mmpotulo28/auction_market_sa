@@ -160,3 +160,12 @@ export interface iAuction {
 	dateCreated?: Date;
 	createdBy?: string;
 }
+
+export interface iBid {
+	amount: number;
+	userId: string;
+	itemId: string;
+	timestamp: string;
+}
+
+export type iBidHistory = Record<string, iBid[]>;

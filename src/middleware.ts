@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function middleware(request: NextRequest) {
 	const user = await stackServerApp.getUser();
 	if (!user) {
-		const redirectUrl = new URL("/auth/sign-in", request.url);
+		const redirectUrl = new URL("/auth?type=login", request.url);
 		redirectUrl.searchParams.set(
 			"after_auth_return_to",
 			`${request.nextUrl.pathname}${request.nextUrl.search}`,

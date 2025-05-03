@@ -5,6 +5,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import { WebSocketProvider } from "@/context/WebSocketProvider";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -66,10 +67,12 @@ export default function RootLayout({
 			<body className={`antialiased`}>
 				<StackProvider app={stackServerApp}>
 					<StackTheme theme={customTheme}>
-						<Header />
-						<main>{children}</main>
-						<Toaster />
-						<Footer />
+						<WebSocketProvider>
+							<Header />
+							<main>{children}</main>
+							<Toaster />
+							<Footer />
+						</WebSocketProvider>
 					</StackTheme>
 				</StackProvider>
 			</body>
