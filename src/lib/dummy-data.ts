@@ -4,11 +4,11 @@ export const mockAuctions: iAuction[] = [
 	{
 		name: "Electronics Bonanza",
 		itemsCount: 10,
-		startTime: new Date("2025-11-01T10:00:00Z"),
+		startTime: new Date("2025-06-01T10:00:00Z"),
 		duration: 120, // in minutes
 		reOpenCount: 2,
 		description: "An auction featuring the latest electronics.",
-		dateCreated: new Date("2025-10-15T08:00:00Z"),
+		dateCreated: new Date("2025-06-15T08:00:00Z"),
 		createdBy: "admin",
 	},
 	{
@@ -18,13 +18,13 @@ export const mockAuctions: iAuction[] = [
 		duration: 90,
 		reOpenCount: 1,
 		description: "Get the best deals on fitness equipment.",
-		dateCreated: new Date("2025-10-18T09:30:00Z"),
+		dateCreated: new Date("2025-08-18T09:30:00Z"),
 		createdBy: "admin",
 	},
 	{
 		name: "Home Essentials Auction",
 		itemsCount: 3,
-		startTime: new Date("2025-11-10T16:00:00Z"),
+		startTime: new Date("2025-08-10T16:00:00Z"),
 		duration: 60,
 		reOpenCount: 0,
 		description: "Bid on essential home appliances.",

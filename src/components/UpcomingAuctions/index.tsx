@@ -2,12 +2,13 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import CountdownTimer from "@/components/CountdownTimer";
+
 import styles from "./upcoming-auctions.module.css";
 import LockUp from "../common/lockup";
 import { iAuction, iTheme } from "@/lib/types";
 import { Button } from "../ui/button";
 import { stringToUrl } from "@/lib/helpers";
+import { TimerContainer } from "../CountdownTimer";
 
 interface UpcomingAuctionsProps {
 	auctions: iAuction[];
@@ -21,19 +22,12 @@ const UpcomingAuctions: React.FC<UpcomingAuctionsProps> = ({ auctions }) => {
 			{auctions.map((auction, index: number) => (
 				<div key={index} className={styles.card}>
 					<div className={styles.cardHeader}>
-						<LockUp
-							title={auction.name}
-							subtitle="Upcoming Auction"
-							theme={iTheme.Light}
-						/>
+						<LockUp title={auction.name} theme={iTheme.Dark} />
 					</div>
 					<div className={styles.cardContent}>
 						<p className={styles.itemsCount}>Items Available: {auction.itemsCount}</p>
 						<div className={styles.timer}>
-							<CountdownTimer
-								dateTime={auction.startTime}
-								duration={auction.duration}
-							/>
+							<TimerContainer targetDate={auction.startTime.toLocaleString()} />
 						</div>
 						<Button
 							// className={styles.previewButton}

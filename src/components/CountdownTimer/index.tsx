@@ -1,15 +1,12 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
-import styles from "./countdown-timer.module.css";
+import { NumberBox } from "./NumberBox";
 
-interface CountdownTimerProps {
-	dateTime: Date;
-	duration?: number;
+interface timeProps {
+	targetDate: string; // Target date in string format
 }
 
-const CountdownTimer: React.FC<CountdownTimerProps> = ({ dateTime }) => {
-	const [timeLeft, setTimeLeft] = useState({
+export const TimerContainer = ({ targetDate }: timeProps) => {
+	const [time, setTime] = useState({
 		months: 0,
 		days: 0,
 		hours: 0,
@@ -20,34 +17,75 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ dateTime }) => {
 	useEffect(() => {
 		const calculateTimeLeft = () => {
 			const now = new Date();
-			const difference = new Date(dateTime).getTime() - now.getTime();
+			const target = new Date(targetDate);
 
-			if (difference > 0) {
-				const months = Math.floor(difference / (1000 * 60 * 60 * 24 * 30));
-				const days = Math.floor((difference / (1000 * 60 * 60 * 24)) % 30);
-				const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
-				const minutes = Math.floor((difference / (1000 * 60)) % 60);
-				const seconds = Math.floor((difference / 1000) % 60);
+			let months =
+				target.getMonth() -
+				now.getMonth() +
+				12 * (target.getFullYear() - now.getFullYear());
+			let days = target.getDate() - now.getDate();
+			let hours = target.getHours() - now.getHours();
+			let minutes = target.getMinutes() - now.getMinutes();
+			let seconds = target.getSeconds() - now.getSeconds();
 
-				setTimeLeft({ months, days, hours, minutes, seconds });
+			if (seconds < 0) {
+				seconds += 60;
+				minutes -= 1;
+			}
+			if (minutes < 0) {
+				minutes += 60;
+				hours -= 1;
+			}
+			if (hours < 0) {
+				hours += 24;
+				days -= 1;
+			}
+			if (days < 0) {
+				const prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+				days += prevMonth.getDate();
+				months -= 1;
+			}
+			if (months < 0) {
+				months += 12;
+			}
+
+			if (target.getTime() <= now.getTime()) {
+				setTime({ months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
 			} else {
-				setTimeLeft({ months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
+				setTime({ months, days, hours, minutes, seconds });
 			}
 		};
 
-		const timer = setInterval(calculateTimeLeft, 1000);
-		return () => clearInterval(timer);
-	}, [dateTime]);
+		const interval = setInterval(calculateTimeLeft, 1000);
+
+		return () => clearInterval(interval);
+	}, [targetDate]);
+
+	const { months, days, hours, minutes, seconds } = time;
 
 	return (
-		<div className={styles.timer}>
-			<span className={styles.timeBlock}>{timeLeft.months}m</span>
-			<span className={styles.timeBlock}>{timeLeft.days}d</span>
-			<span className={styles.timeBlock}>{timeLeft.hours}h</span>
-			<span className={styles.timeBlock}>{timeLeft.minutes}m</span>
-			<span className={styles.timeBlock}>{timeLeft.seconds}s</span>
+		<div
+			// style={{ backgroundColor: "var(--color-foreground)" }}
+			className=" mt-0 md:mt-0 rounded-xl">
+			<div className="grid grid-cols-2 gap-1 py-0 px-10 md:flex items-center md:items-center md:justify-between md:mt-0 rounded-xl md:px-2 md:py-0 ">
+				<NumberBox num={months} unit="Mon" />
+				<span className=" hidden text-2xl -mt-8 md:inline-block md:text-4xl font-normal text-gray-50 ">
+					:
+				</span>
+				<NumberBox num={days} unit="Dys" />
+				<span className=" hidden text-2xl -mt-8 md:inline-block md:text-4xl font-normal text-gray-50 ">
+					:
+				</span>
+				<NumberBox num={hours} unit="Hrs" />
+				<span className="hidden text-2xl -mt-8 md:inline-block md:text-4xl font-normal text-gray-50 ">
+					:
+				</span>
+				<NumberBox num={minutes} unit="Min" />
+				<span className="hidden text-2xl -mt-8 md:inline-block md:text-4xl font-normal text-gray-50 ">
+					:
+				</span>
+				<NumberBox num={seconds} unit="Sec" />
+			</div>
 		</div>
 	);
 };
-
-export default CountdownTimer;
