@@ -21,7 +21,21 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 	useEffect(() => {
 		// Connect to the /auction namespace
-		const socketInstance = io("http://localhost:4200/auction");
+		const socketInstance = io(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}/auction`, {
+			path: "/socket.io",
+		});
+		socketInstance.connect();
+
+		socketInstance.on("connect", () => {
+			console.log("Connected to WebSocket server", socketInstance);
+		});
+
+		// on error
+		socketInstance.on("connect_error", (error) => {
+			console.error("WebSocket connection error:", error);
+		});
+
+		console.log("socketInstance", socketInstance);
 		setSocket(socketInstance);
 
 		socketInstance.on("BID_UPDATE", (bid: iBid) => {
