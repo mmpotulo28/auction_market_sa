@@ -111,8 +111,8 @@ export default function Home() {
 				}}
 				actions={[
 					{
-						label: "Get Started",
-						click: () => router.push("/auth?type=signup"),
+						label: "View All Listings",
+						click: () => router.push("/auction?cat=all"),
 					},
 				]}
 			/>
