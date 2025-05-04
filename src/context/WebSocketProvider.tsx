@@ -23,7 +23,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		// Connect to the /auction namespace
 		const socketInstance = io(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}/auction`, {
 			path: "/socket.io",
+			autoConnect: true,
 		});
+
 		socketInstance.connect();
 
 		socketInstance.on("connect", () => {
@@ -61,6 +63,18 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					timestamp: bid.timestamp,
 				},
 			}));
+		});
+
+		socketInstance.on("CACHED_BIDS", ({ id, bids: cachedBids }) => {
+			if (id === socketInstance.id) {
+				console.log("Updating bids from cached data:", cachedBids);
+				setBids((prevBids) => ({
+					...prevBids,
+					...cachedBids,
+				}));
+			} else {
+				console.log("Received cached bids from another user:", id, cachedBids);
+			}
 		});
 
 		socketInstance.on("BID_HISTORY", (history: iBidHistory) => {
