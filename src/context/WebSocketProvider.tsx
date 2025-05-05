@@ -1,23 +1,17 @@
 "use client";
+import { iBid } from "@/lib/types";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { iBid, iBidHistory } from "@/lib/types";
-
 interface WebSocketContextProps {
 	placeBid: (itemId: string, amount: number, userId: string) => void;
-	getHighestBid: (itemId: string) => iBid | undefined;
-	data: iBid | null;
-	history: iBidHistory | null;
-	fetchBidHistory: (itemId: string) => void; // New method
+	highestBids: Record<string, iBid>;
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [socket, setSocket] = useState<Socket | null>(null);
-	const [data, setData] = useState<iBid | null>(null);
-	const [bids, setBids] = useState<Record<string, iBid>>({});
-	const [history, setHistory] = useState<iBidHistory | null>(null);
+	const [highestBids, setHighestBids] = useState<Record<string, iBid>>({});
 
 	useEffect(() => {
 		// Connect to the /auction namespace
@@ -29,7 +23,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		socketInstance.connect();
 
 		socketInstance.on("connect", () => {
-			console.log("Connected to WebSocket server", socketInstance);
+			console.log("Connected to WebSocket server", socketInstance.id);
+			setSocket(socketInstance);
 		});
 
 		// on error
@@ -37,53 +32,31 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			console.error("WebSocket connection error:", error);
 		});
 
-		console.log("socketInstance", socketInstance);
-		setSocket(socketInstance);
-
-		socketInstance.on("BID_UPDATE", (bid: iBid) => {
-			const { itemId, amount, userId } = bid;
-
-			// Update the local bids state
-			setBids((prevBids) => ({
-				...prevBids,
-				[itemId]: { itemId, amount, userId, timestamp: new Date().toISOString() },
-			}));
-
-			setData(bid);
+		socketInstance.on("disconnect", (reason) => {
+			console.log("Disconnected from WebSocket server:", reason);
+			setSocket(null);
 		});
 
-		socketInstance.on("NEW_BID", (bid: iBid) => {
-			// Update the local bids state
-			setBids((prevBids) => ({
-				...prevBids,
-				[bid.itemId]: {
-					itemId: bid.itemId,
-					amount: bid.amount,
-					userId: bid.userId,
-					timestamp: bid.timestamp,
-				},
+		socketInstance.on("NEW_HIGHEST_BID", (bid: iBid) => {
+			console.log("New highest bid received:", bid.itemId, bid.amount);
+			setHighestBids((prevHighestBids) => ({
+				...prevHighestBids,
+				[bid.itemId]: bid,
 			}));
 		});
 
-		socketInstance.on("CACHED_BIDS", ({ id, bids: cachedBids }) => {
+		socketInstance.on("HIGHEST_BIDS", ({ id, highestBids: emittedHighestBids }) => {
 			if (id === socketInstance.id) {
-				console.log("Updating bids from cached data:", cachedBids);
-				setBids((prevBids) => ({
-					...prevBids,
-					...cachedBids,
-				}));
+				console.log("Overriding highest bids with emitted data:", emittedHighestBids);
+				setHighestBids(emittedHighestBids);
 			} else {
-				console.log("Received cached bids from another user:", id, cachedBids);
+				console.log("Received highest bids for a different user:", id);
 			}
-		});
-
-		socketInstance.on("BID_HISTORY", (history: iBidHistory) => {
-			console.log("Bid history:", history);
-			setHistory(history);
 		});
 
 		return () => {
 			socketInstance.disconnect();
+			setSocket(null);
 		};
 	}, []);
 
@@ -96,23 +69,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				timestamp: new Date().toISOString(),
 			});
 		} else {
-			console.log("Socket not connected");
-		}
-	};
-
-	const getHighestBid = (itemId: string): iBid | undefined => {
-		return bids[itemId];
-	};
-
-	const fetchBidHistory = (itemId: string) => {
-		if (socket) {
-			socket.emit("FETCH_BID_HISTORY", { itemId });
+			console.error("Error: cannot place bids, socket not connected");
 		}
 	};
 
 	return (
-		<WebSocketContext.Provider
-			value={{ placeBid, getHighestBid, data, fetchBidHistory, history }}>
+		<WebSocketContext.Provider value={{ placeBid, highestBids }}>
 			{children}
 		</WebSocketContext.Provider>
 	);

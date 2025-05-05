@@ -54,7 +54,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 	const [categories, setCategories] = useState<string[]>([]);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-	const { placeBid, getHighestBid } = useWebSocket();
+	const { placeBid, highestBids } = useWebSocket();
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
@@ -137,7 +137,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 		placeBid(id, currentBid, user.id);
 
 		// check if is now item owner
-		const highestBid = getHighestBid(id);
+		const highestBid = highestBids[id];
 		const isOwner = highestBid?.userId === user?.id;
 
 		if (isOwner) {
@@ -180,10 +180,9 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 						</div>
 						<div className={styles.grid}>
 							{paginatedItems.map((item) => {
-								const highestBid = getHighestBid(item.id);
+								const highestBid = highestBids[item.id];
 								const currentBid =
 									proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
-
 								const isOwner = highestBid?.userId === user?.id;
 
 								return (
