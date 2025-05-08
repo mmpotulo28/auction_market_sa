@@ -40,8 +40,9 @@ interface iBid {
 
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage = 10 }) => {
 	const { user } = useUser();
-
 	const router = useRouter();
+	const { placeBid, highestBids } = useWebSocket();
+
 	const [proposedBids, setProposedBids] = useState<iBid[]>(
 		items.map((item) => ({
 			amount: item.price,
@@ -50,11 +51,9 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 			timestamp: "",
 		})),
 	);
-
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
-	const { placeBid, highestBids } = useWebSocket();
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
@@ -76,7 +75,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 		() => Math.ceil(filteredItems.length / itemsPerPage),
 		[filteredItems, itemsPerPage],
 	);
-
 	const paginatedItems = useMemo(
 		() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
 		[filteredItems, currentPage, itemsPerPage],
@@ -100,21 +98,15 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 		});
 	}, []);
 
-	const increaseBid = useCallback((id: string) => {
-		setProposedBids((prevBids) =>
-			prevBids.map((bid) => (bid.itemId === id ? { ...bid, amount: bid.amount + 10 } : bid)),
-		);
-	}, []);
-
-	const decreaseBid = useCallback(
-		(id: string) => {
+	const adjustBid = useCallback(
+		(id: string, delta: number) => {
 			setProposedBids((prevBids) =>
 				prevBids.map((bid) =>
 					bid.itemId === id
 						? {
 								...bid,
 								amount: Math.max(
-									bid.amount - 10,
+									bid.amount + delta,
 									items.find((item) => item.id === id)?.price || 0,
 								),
 						  }
@@ -127,11 +119,9 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 
 	const submitBid = useCallback(
 		async (itemId: string) => {
-			// check is user is logged in first
 			if (!user) {
 				toast("Login first to submit your bid", {
-					description:
-						"Please log in to place a bid. we need to note who owns a certain bid",
+					description: "Please log in to place a bid.",
 					action: {
 						label: "Login",
 						onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
@@ -142,22 +132,17 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 
 			const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
 
-			// add the current submitted bid to the bids array, just push it to the end
 			setPendingBids((prev) => [...prev, itemId]);
 			await placeBid(itemId, currentBid, user.id);
 
-			// check if is now item owner
 			const highestBid = highestBids[itemId];
-			const isOwner = highestBid?.userId === user?.id;
-
-			if (isOwner) {
-				toast(`Congratulations, you now own this item!`, {
-					description: "You are the current owner of this item, This can still change.",
+			if (highestBid?.userId === user.id) {
+				toast("Congratulations, you now own this item!", {
+					description: "You are the current owner of this item.",
 					richColors: true,
 				});
 			}
 
-			// remove bid from pending bids
 			setPendingBids((prev) => prev.filter((bid) => bid !== itemId));
 		},
 		[proposedBids, user, placeBid, highestBids, router],
@@ -201,7 +186,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 
 								return (
 									<Card key={item.id} className={styles.card}>
-										{/* Icon to indicate current user's bid */}
 										{isOwner && (
 											<div className={styles.userIcon}>
 												<TooltipProvider>
@@ -250,7 +234,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 										<CardFooter className={`${styles.footer} px-4`}>
 											<Button
 												variant="outline"
-												onClick={() => decreaseBid(item.id)}
+												onClick={() => adjustBid(item.id, -10)}
 												disabled={
 													currentBid <= (highestBid?.amount || item.price)
 												}>
@@ -274,7 +258,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 											</Button>
 											<Button
 												variant="outline"
-												onClick={() => increaseBid(item.id)}>
+												onClick={() => adjustBid(item.id, 10)}>
 												<BiPlus />
 											</Button>
 										</CardFooter>

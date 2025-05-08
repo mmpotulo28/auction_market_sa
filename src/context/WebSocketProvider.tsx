@@ -16,25 +16,20 @@ const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefi
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [highestBids, setHighestBids] = useState<Record<string, iBid>>({});
 
-	// Fetch bids from the database on initial load
+	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
-		const fetchBids = async () => {
+		const initializeBids = async () => {
 			try {
-				// first populate highest bids with prices from mockItems
-				const MockBidsMap = mockItems.reduce<Record<string, iBid>>((acc, bid) => {
-					if (!acc[bid.id] || bid.price > acc[bid.id].amount) {
-						acc[bid.id] = {
-							itemId: bid.id,
-							amount: bid.price,
-							userId: "system",
-							timestamp: new Date().toISOString(),
-						};
-					}
+				const mockBidsMap = mockItems.reduce<Record<string, iBid>>((acc, item) => {
+					acc[item.id] = {
+						itemId: item.id,
+						amount: item.price,
+						userId: "system",
+						timestamp: new Date().toISOString(),
+					};
 					return acc;
 				}, {});
-
-				console.log("mockBids", MockBidsMap);
-				setHighestBids(MockBidsMap);
+				setHighestBids(mockBidsMap);
 
 				const { data, error } = await supabase
 					.from("bids")
@@ -46,21 +41,20 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					return;
 				}
 
-				const highestBidsMap = (data as iBid[]).reduce<Record<string, iBid>>((acc, bid) => {
+				const dbBidsMap = (data as iBid[]).reduce<Record<string, iBid>>((acc, bid) => {
 					if (!acc[bid.itemId] || bid.amount > acc[bid.itemId].amount) {
 						acc[bid.itemId] = bid;
 					}
 					return acc;
 				}, {});
 
-				console.log("db bids", highestBidsMap);
-				setHighestBids(highestBidsMap);
+				setHighestBids((prev) => ({ ...prev, ...dbBidsMap }));
 			} catch (err) {
 				console.error("Unexpected error fetching bids:", err);
 			}
 		};
 
-		fetchBids();
+		initializeBids();
 	}, []);
 
 	// Subscribe to real-time updates for the "bids" table
@@ -74,22 +68,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
 						const bid = payload.new as iBid;
 
-						// monitor change in highest bids
-						// check if the user of the current highest bid for the bided item is still the highest after the new bid
-						console.log("highest bid user", highestBids[bid.itemId]?.userId);
-						console.log("highest bid amount", highestBids[bid.itemId]?.amount);
-						console.log("bid user", bid?.userId);
-						if (
-							highestBids[bid.itemId]?.userId !== bid.userId &&
-							bid.amount > highestBids[bid.itemId]?.amount
-						) {
-							toast(`You just lost item to a new bid: ${bid.itemId}`);
-						}
-
-						setHighestBids((prev) => ({
-							...prev,
-							[bid.itemId]: bid,
-						}));
+						setHighestBids((prev) => {
+							const previousBid = prev[bid.itemId];
+							if (
+								previousBid?.userId &&
+								previousBid.userId !== bid.userId &&
+								bid.amount > previousBid.amount
+							) {
+								toast(`You lost the bid for item "${bid.itemId}"`);
+							}
+							return { ...prev, [bid.itemId]: bid };
+						});
 					}
 				},
 			)
