@@ -1,7 +1,9 @@
 "use client";
-import { iBid } from "@/lib/types";
+import { iBid, iSupabasePayload } from "@/lib/types";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import supabase from "@/lib/db";
+import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
+
 interface WebSocketContextProps {
 	placeBid: (itemId: string, amount: number, userId: string) => void;
 	highestBids: Record<string, iBid>;
@@ -10,66 +12,54 @@ interface WebSocketContextProps {
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [socket, setSocket] = useState<Socket | null>(null);
 	const [highestBids, setHighestBids] = useState<Record<string, iBid>>({});
 
 	useEffect(() => {
-		// Connect to the /auction namespace
-		const socketInstance = io(`${process.env.NEXT_PUBLIC_WEB_SOCKET_URL}/auction`, {
-			path: "/socket.io",
-			autoConnect: true,
-		});
-
-		socketInstance.connect();
-
-		socketInstance.on("connect", () => {
-			console.log("Connected to WebSocket server", socketInstance.id);
-			setSocket(socketInstance);
-		});
-
-		// on error
-		socketInstance.on("connect_error", (error) => {
-			console.error("WebSocket connection error:", error);
-		});
-
-		socketInstance.on("disconnect", (reason) => {
-			console.log("Disconnected from WebSocket server:", reason);
-			setSocket(null);
-		});
-
-		socketInstance.on("NEW_HIGHEST_BID", (bid: iBid) => {
-			console.log("New highest bid received:", bid.itemId, bid.amount);
-			setHighestBids((prevHighestBids) => ({
-				...prevHighestBids,
-				[bid.itemId]: bid,
-			}));
-		});
-
-		socketInstance.on("HIGHEST_BIDS", ({ id, highestBids: emittedHighestBids }) => {
-			if (id === socketInstance.id) {
-				console.log("Overriding highest bids with emitted data:", emittedHighestBids);
-				setHighestBids(emittedHighestBids);
-			} else {
-				console.log("Received highest bids for a different user:", id);
-			}
-		});
+		// Subscribe to the "bids" table for real-time updates
+		const subscription = supabase
+			.channel("realtime.public.bids")
+			.on<iSupabasePayload>(
+				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
+				{ event: "*", schema: "public", table: "bids" },
+				(payload: iSupabasePayload) => {
+					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+						const bid = payload.new as iBid;
+						console.log("New or updated bid received:", bid);
+						setHighestBids((prevHighestBids) => ({
+							...prevHighestBids,
+							[bid.itemId]: bid,
+						}));
+					}
+				},
+			)
+			.subscribe();
 
 		return () => {
-			socketInstance.disconnect();
-			setSocket(null);
+			supabase.removeChannel(subscription);
 		};
 	}, []);
 
-	const placeBid = (itemId: string, amount: number, userId: string) => {
-		if (socket) {
-			socket.emit("PLACE_BID", {
-				itemId,
-				amount,
-				userId,
-				timestamp: new Date().toISOString(),
-			});
-		} else {
-			console.error("Error: cannot place bids, socket not connected");
+	useEffect(() => {
+		console.log("Updated highest bids:", highestBids);
+	}, [highestBids]);
+
+	const placeBid = async (itemId: string, amount: number, userId: string) => {
+		try {
+			const { error } = await supabase.from("bids").insert([
+				{
+					itemId,
+					amount,
+					userId,
+					timestamp: new Date().toISOString(),
+				},
+			]);
+			if (error) {
+				console.error("Error placing bid:", error);
+			}
+
+			console.log("Bid placed successfully:", { itemId, amount, userId });
+		} catch (err) {
+			console.error("Unexpected error placing bid:", err);
 		}
 	};
 

@@ -168,4 +168,10 @@ export interface iBid {
 	timestamp: string;
 }
 
-export type iBidHistory = Record<string, iBid[]>;
+export type iBids = Record<string, iBid[]>;
+
+export interface iSupabasePayload {
+	eventType: "INSERT" | "UPDATE" | "DELETE";
+	new: iBid;
+	old: iBid | null;
+}
