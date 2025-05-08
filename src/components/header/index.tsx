@@ -13,11 +13,11 @@ import {
 	NavigationMenuTrigger,
 	navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { UserButton } from "@stackframe/stack";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { CrossIcon } from "lucide-react";
 import { FaBars } from "react-icons/fa";
+import { UserButton } from "@clerk/nextjs";
 
 const Header = () => {
 	const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);

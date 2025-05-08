@@ -1,25 +1,18 @@
 "use client";
 import React from "react";
-import styles from "./auth.module.css";
+import styles from "@/app/auth/auth.module.css";
 import LoginForm from "@/components/auth/LoginForm";
-import { useSearchParams } from "next/navigation";
 import Container from "@/components/common/container";
 import { CarouselDApiSlider } from "@/components/TopBanner/slider";
 import { mockItems } from "@/lib/dummy-data";
 
-type iformType = "sign-in" | "sign-up";
-
-const AuthPage: React.FC = () => {
-	const searchParams = useSearchParams();
-
-	const type: iformType = (searchParams?.get("type") as iformType) || "sign-in";
+const LoginPage: React.FC = () => {
 	return (
 		<>
 			<Container>
 				<div className={styles.AuthPage}>
 					<div className={styles.authForm}>
-						<LoginForm formType={type} />{" "}
-						{/* Updated to use the type from searchParams */}
+						<LoginForm formType={"sign-in"} />
 					</div>
 					<div className={styles.reviews}>
 						<CarouselDApiSlider items={mockItems} />
@@ -30,4 +23,4 @@ const AuthPage: React.FC = () => {
 	);
 };
 
-export default AuthPage;
+export default LoginPage;

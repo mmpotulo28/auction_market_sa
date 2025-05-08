@@ -19,7 +19,6 @@ import { FaUserCheck } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import AuctionSidebar from "./sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
-import { useUser } from "@stackframe/stack";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -39,7 +38,8 @@ interface iBid {
 }
 
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage = 10 }) => {
-	const user = useUser();
+	const user = { id: "snk-0505" };
+
 	const router = useRouter();
 	const [proposedBids, setProposedBids] = useState<iBid[]>(
 		items.map((item) => ({
