@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import styles from "./auction-item-list.module.css";
 import { BiMinus, BiPlus } from "react-icons/bi";
 import { Badge } from "../ui/badge";
 import { iAuctionItem } from "@/lib/types";
-import { FaUserCheck } from "react-icons/fa";
+import { FaSpinner, FaUserCheck } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import AuctionSidebar from "./sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
@@ -24,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useWebSocket } from "@/context/WebSocketProvider";
+import { useUser } from "@clerk/nextjs";
 
 interface AuctionItemListProps {
 	items: iAuctionItem[];
@@ -38,7 +39,7 @@ interface iBid {
 }
 
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage = 10 }) => {
-	const user = { id: "snk-0505" };
+	const { user } = useUser();
 
 	const router = useRouter();
 	const [proposedBids, setProposedBids] = useState<iBid[]>(
@@ -51,40 +52,43 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 	);
 
 	const [currentPage, setCurrentPage] = useState(1);
-	const [categories, setCategories] = useState<string[]>([]);
-	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
+	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
 	const { placeBid, highestBids } = useWebSocket();
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
+	const [pendingBids, setPendingBids] = useState<string[]>([]);
 
-	useEffect(() => {
-		const uniqueCategories = [...new Set(items.map((item) => item.category))];
-		setCategories(uniqueCategories);
-		setSelectedCategories(uniqueCategories);
-	}, [items]);
-
-	const totalPages = Math.ceil(items.length / itemsPerPage);
-	const filteredItems = items.filter(
-		(item) =>
-			selectedCategories.includes(item.category) &&
-			item.price >= priceRange[0] &&
-			item.price <= priceRange[1] &&
-			selectedConditions.has(item.condition),
+	const categories = useMemo(() => [...new Set(items.map((item) => item.category))], [items]);
+	const filteredItems = useMemo(
+		() =>
+			items.filter(
+				(item) =>
+					selectedCategories.includes(item.category) &&
+					item.price >= priceRange[0] &&
+					item.price <= priceRange[1] &&
+					selectedConditions.has(item.condition),
+			),
+		[items, selectedCategories, priceRange, selectedConditions],
 	);
-	const paginatedItems = filteredItems.slice(
-		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage,
+	const totalPages = useMemo(
+		() => Math.ceil(filteredItems.length / itemsPerPage),
+		[filteredItems, itemsPerPage],
 	);
 
-	const toggleCategory = (category: string) => {
+	const paginatedItems = useMemo(
+		() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+		[filteredItems, currentPage, itemsPerPage],
+	);
+
+	const toggleCategory = useCallback((category: string) => {
 		setSelectedCategories((prev) =>
 			prev.includes(category) ? prev.filter((cat) => cat !== category) : [...prev, category],
 		);
-	};
+	}, []);
 
-	const toggleCondition = (condition: string) => {
+	const toggleCondition = useCallback((condition: string) => {
 		setSelectedConditions((prev) => {
 			const newConditions = new Set(prev);
 			if (newConditions.has(condition)) {
@@ -94,64 +98,74 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 			}
 			return newConditions;
 		});
-	};
+	}, []);
 
-	const increaseBid = (id: string) => {
+	const increaseBid = useCallback((id: string) => {
 		setProposedBids((prevBids) =>
 			prevBids.map((bid) => (bid.itemId === id ? { ...bid, amount: bid.amount + 10 } : bid)),
 		);
-	};
+	}, []);
 
-	const decreaseBid = (id: string) => {
-		setProposedBids((prevBids) =>
-			prevBids.map((bid) =>
-				bid.itemId === id
-					? {
-							...bid,
-							amount: Math.max(
-								bid.amount - 10,
-								items.find((item) => item.id === id)?.price || 0,
-							),
-					  }
-					: bid,
-			),
-		);
-	};
+	const decreaseBid = useCallback(
+		(id: string) => {
+			setProposedBids((prevBids) =>
+				prevBids.map((bid) =>
+					bid.itemId === id
+						? {
+								...bid,
+								amount: Math.max(
+									bid.amount - 10,
+									items.find((item) => item.id === id)?.price || 0,
+								),
+						  }
+						: bid,
+				),
+			);
+		},
+		[items],
+	);
 
-	const submitBid = (id: string) => {
-		// check is user is logged in first
-		if (!user) {
-			toast("Login first to submit your bid", {
-				description: "Please log in to place a bid. we need to note who owns a certain bid",
-				action: {
-					label: "Login",
-					onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
-				},
-			});
-			return;
-		}
+	const submitBid = useCallback(
+		async (itemId: string) => {
+			// check is user is logged in first
+			if (!user) {
+				toast("Login first to submit your bid", {
+					description:
+						"Please log in to place a bid. we need to note who owns a certain bid",
+					action: {
+						label: "Login",
+						onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
+					},
+				});
+				return;
+			}
 
-		const currentBid = proposedBids.find((bid) => bid.itemId === id)?.amount || 0;
+			const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
 
-		// add the current submitted bid to the bids array, just push it to the end
-		placeBid(id, currentBid, user.id);
+			// add the current submitted bid to the bids array, just push it to the end
+			setPendingBids((prev) => [...prev, itemId]);
+			await placeBid(itemId, currentBid, user.id);
 
-		// check if is now item owner
-		const highestBid = highestBids[id];
-		const isOwner = highestBid?.userId === user?.id;
+			// check if is now item owner
+			const highestBid = highestBids[itemId];
+			const isOwner = highestBid?.userId === user?.id;
 
-		if (isOwner) {
-			toast(`Congratulations, you now own this item!`, {
-				description: "You are the current owner of this item, This can still change.",
-				richColors: true,
-			});
-		} else {
-			toast(`Bid not enough!`, {
-				description: "You might need to increase your bid to own the item.",
-				richColors: true,
-			});
-		}
-	};
+			if (isOwner) {
+				toast(`Congratulations, you now own this item!`, {
+					description: "You are the current owner of this item, This can still change.",
+					richColors: true,
+				});
+			}
+
+			// remove bid from pending bids
+			setPendingBids((prev) => prev.filter((bid) => bid !== itemId));
+		},
+		[proposedBids, user, placeBid, highestBids, router],
+	);
+
+	useEffect(() => {
+		setSelectedCategories(categories);
+	}, [categories]);
 
 	return (
 		<SidebarProvider>
@@ -246,11 +260,17 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 												variant="default"
 												onClick={() => submitBid(item.id)}
 												disabled={
-													currentBid <= (highestBid?.amount || item.price)
+													currentBid <=
+														(highestBid?.amount || item.price) ||
+													pendingBids.includes(item.id)
 												}>
 												{currentBid > (highestBid?.amount || item.price) &&
+													!pendingBids.includes(item.id) &&
 													"Submit"}{" "}
 												R {Number(currentBid)?.toFixed(2)}
+												{pendingBids.includes(item.id) && (
+													<FaSpinner className="spin" />
+												)}
 											</Button>
 											<Button
 												variant="outline"
