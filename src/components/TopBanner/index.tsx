@@ -3,16 +3,18 @@ import LockUp from "@/components/common/lockup";
 import { CarouselDApiSlider } from "./slider";
 import styles from "./top-banner.module.css";
 import Actions from "../common/Actions";
-import { iAuctionItem, iButtonProps, iLockUpProps, iSize } from "@/lib/types";
+import { iButtonProps, iLockUpProps, iSize } from "@/lib/types";
 import Image from "next/image";
 import { Suspense } from "react";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 export interface iTopBannerProps extends iLockUpProps {
 	action?: iButtonProps;
-	items: iAuctionItem[];
 }
 
-const TopBanner: React.FC<iTopBannerProps> = ({ action, title, overline, subtitle, items }) => {
+const TopBanner: React.FC<iTopBannerProps> = ({ action, title, overline, subtitle }) => {
+	const { items } = useWebSocket();
+
 	return (
 		<div className={styles.topBanner}>
 			<div className={styles.bannerLeftContent}>

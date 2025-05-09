@@ -9,7 +9,6 @@ import {
 	BreadcrumbList,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { mockItems } from "@/lib/dummy-data";
 import { Star } from "lucide-react";
 import { Suspense } from "react";
 
@@ -17,7 +16,6 @@ const Auction = () => {
 	return (
 		<div>
 			<TopBanner
-				items={mockItems}
 				overline="Welcome"
 				title={"Auction Market SA"}
 				subtitle="South Africa's Digital Marketplace Auction"
@@ -38,7 +36,7 @@ const Auction = () => {
 			</Container>
 
 			<Suspense fallback={<div>Loading...</div>}>
-				<AuctionItemList items={mockItems} itemsPerPage={10} />
+				<AuctionItemList itemsPerPage={10} />
 			</Suspense>
 
 			<Banner

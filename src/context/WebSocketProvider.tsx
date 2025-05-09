@@ -1,34 +1,51 @@
 "use client";
-import { iBid, iSupabasePayload } from "@/lib/types";
+import { iAuctionItem, iBid, iSupabasePayload } from "@/lib/types";
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import supabase from "@/lib/db";
 import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { mockItems } from "@/lib/dummy-data";
 
 interface WebSocketContextProps {
 	placeBid: (itemId: string, amount: number, userId: string) => Promise<void>;
 	highestBids: Record<string, iBid>;
+	items: iAuctionItem[];
+	isLoading: boolean;
+	error: string[];
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [highestBids, setHighestBids] = useState<Record<string, iBid>>({});
+	const [items, setItems] = useState<iAuctionItem[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string[]>([]);
 
 	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
 		const initializeBids = async () => {
 			try {
-				const mockBidsMap = mockItems.reduce<Record<string, iBid>>((acc, item) => {
-					acc[item.id] = {
-						itemId: item.id,
-						amount: item.price,
-						userId: "system",
-						timestamp: new Date().toISOString(),
-					};
-					return acc;
-				}, {});
+				setIsLoading(true);
+				setError([]);
+				const { data: items, error: itemsError } = await supabase.from("items").select("*");
+
+				if (itemsError) {
+					throw new Error(`Error fetching items: ${itemsError.message}`);
+				}
+
+				setItems(items as iAuctionItem[]);
+
+				const mockBidsMap =
+					items?.reduce<Record<string, iBid>>((acc, item) => {
+						acc[item.id] = {
+							itemId: item.id,
+							amount: item.price,
+							userId: "system",
+							timestamp: new Date().toISOString(),
+						};
+						return acc;
+					}, {}) || {};
+
 				setHighestBids(mockBidsMap);
 
 				const { data, error } = await supabase
@@ -37,8 +54,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					.order("timestamp", { ascending: false });
 
 				if (error) {
-					console.error("Error fetching bids:", error);
-					return;
+					throw new Error(`Error fetching bids: ${error.message}`);
 				}
 
 				const dbBidsMap = (data as iBid[]).reduce<Record<string, iBid>>((acc, bid) => {
@@ -51,6 +67,9 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				setHighestBids((prev) => ({ ...prev, ...dbBidsMap }));
 			} catch (err) {
 				console.error("Unexpected error fetching bids:", err);
+				setError((prev) => [...prev, "Unexpected error fetching bids"]);
+			} finally {
+				setIsLoading(false);
 			}
 		};
 
@@ -60,10 +79,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	// Subscribe to real-time updates for the "bids" table
 	useEffect(() => {
 		const subscription = supabase
-			.channel("realtime.public.bids")
+			.channel("realtime.public.bids") // Use the "public" schema explicitly
 			.on<iSupabasePayload>(
 				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
-				{ event: "*", schema: "public", table: "bids" },
+				{ event: "*", schema: "public", table: "bids" }, // Use the "public" schema explicitly
 				(payload) => {
 					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
 						const bid = payload.new as iBid;
@@ -109,7 +128,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	}, []);
 
 	return (
-		<WebSocketContext.Provider value={{ placeBid, highestBids }}>
+		<WebSocketContext.Provider value={{ placeBid, highestBids, items, isLoading, error }}>
 			{children}
 		</WebSocketContext.Provider>
 	);

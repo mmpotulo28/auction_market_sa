@@ -14,7 +14,6 @@ import Image from "next/image";
 import styles from "./auction-item-list.module.css";
 import { BiMinus, BiPlus } from "react-icons/bi";
 import { Badge } from "../ui/badge";
-import { iAuctionItem } from "@/lib/types";
 import { FaSpinner, FaUserCheck } from "react-icons/fa";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import AuctionSidebar from "./sidebar";
@@ -27,7 +26,6 @@ import { useWebSocket } from "@/context/WebSocketProvider";
 import { useUser } from "@clerk/nextjs";
 
 interface AuctionItemListProps {
-	items: iAuctionItem[];
 	itemsPerPage?: number;
 }
 
@@ -38,19 +36,14 @@ interface iBid {
 	timestamp: string;
 }
 
-const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage = 10 }) => {
+const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) => {
 	const { user } = useUser();
 	const router = useRouter();
-	const { placeBid, highestBids } = useWebSocket();
 
-	const [proposedBids, setProposedBids] = useState<iBid[]>(
-		items.map((item) => ({
-			amount: item.price,
-			userId: "",
-			itemId: item.id,
-			timestamp: "",
-		})),
-	);
+	const { placeBid, highestBids, items, isLoading, error } = useWebSocket();
+
+	const [proposedBids, setProposedBids] = useState<iBid[]>([]);
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
@@ -100,21 +93,36 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 
 	const adjustBid = useCallback(
 		(id: string, delta: number) => {
-			setProposedBids((prevBids) =>
-				prevBids.map((bid) =>
-					bid.itemId === id
-						? {
-								...bid,
-								amount: Math.max(
-									bid.amount + delta,
-									items.find((item) => item.id === id)?.price || 0,
-								),
-						  }
-						: bid,
-				),
-			);
+			setProposedBids((prevBids) => {
+				const existingBid = prevBids.find((bid) => bid.itemId === id);
+				if (existingBid) {
+					return prevBids.map((bid) =>
+						bid.itemId === id
+							? {
+									...bid,
+									amount: Math.max(
+										bid.amount + delta,
+										items.find((item) => item.id === id)?.price || 0,
+									),
+							  }
+							: bid,
+					);
+				} else {
+					const highestBidAmount = highestBids[id]?.amount || 0;
+					const itemPrice = items.find((item) => item.id === id)?.price || 0;
+					return [
+						...prevBids,
+						{
+							itemId: id,
+							amount: Math.max(highestBidAmount, itemPrice) + delta,
+							userId: user?.id || "",
+							timestamp: new Date().toISOString(),
+						},
+					];
+				}
+			});
 		},
-		[items],
+		[items, highestBids, user],
 	);
 
 	const submitBid = useCallback(
@@ -176,12 +184,22 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 									yet open for bidding. Please check back later.
 								</AlertDescription>
 							</Alert>
+
+							{error?.map((err, index) => (
+								<Alert key={index} variant="destructive">
+									<AlertCircle className="h-4 w-4" />
+									<AlertTitle>Error!</AlertTitle>
+									<AlertDescription>{err}</AlertDescription>
+								</Alert>
+							))}
 						</div>
 						<div className={styles.grid}>
 							{paginatedItems.map((item) => {
 								const highestBid = highestBids[item.id];
 								const currentBid =
-									proposedBids.find((bid) => bid.itemId === item.id)?.amount || 0;
+									proposedBids.find((bid) => bid.itemId === item.id)?.amount ||
+									highestBid?.amount ||
+									0;
 								const isOwner = highestBid?.userId === user?.id;
 
 								return (
@@ -238,7 +256,11 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 												disabled={
 													currentBid <= (highestBid?.amount || item.price)
 												}>
-												<BiMinus />
+												{isLoading ? (
+													<FaSpinner className="spin" />
+												) : (
+													<BiMinus />
+												)}
 											</Button>
 											<Button
 												variant="default"
@@ -252,14 +274,18 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ items, itemsPerPage =
 													!pendingBids.includes(item.id) &&
 													"Submit"}{" "}
 												R {Number(currentBid)?.toFixed(2)}
-												{pendingBids.includes(item.id) && (
+												{(pendingBids.includes(item.id) || isLoading) && (
 													<FaSpinner className="spin" />
 												)}
 											</Button>
 											<Button
 												variant="outline"
 												onClick={() => adjustBid(item.id, 10)}>
-												<BiPlus />
+												{isLoading ? (
+													<FaSpinner className="spin" />
+												) : (
+													<BiPlus />
+												)}
 											</Button>
 										</CardFooter>
 									</Card>
