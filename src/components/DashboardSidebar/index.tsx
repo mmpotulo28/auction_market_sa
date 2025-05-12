@@ -12,7 +12,7 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import styles from "./dashboard-sidebar.module.css";
-import { Calendar, Home, Inbox, Search, Settings, Box } from "lucide-react";
+import { Home, Settings, Box } from "lucide-react";
 import Link from "next/link";
 
 const DashboardSidebar: React.FC = () => {

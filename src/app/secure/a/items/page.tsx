@@ -23,24 +23,33 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import supabase from "@/lib/db";
 import { toast } from "sonner";
 import styles from "./items.module.css";
-import { iAuctionItem } from "@/lib/types";
+import { DeleteIcon, Edit, PlusCircle } from "lucide-react";
+import AddNewItemForm from "@/components/dashboard/AddNewItemForm/page";
+import { AddItemData } from "@/lib/dbFunctions";
 
 const ItemsPage: React.FC = () => {
-	const [items, setItems] = useState<iAuctionItem[]>([]);
+	const [items, setItems] = useState<AddItemData[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = useState({});
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [isEditMode, setIsEditMode] = useState(false);
+	const [formData, setFormData] = useState<AddItemData>({
+		id: "",
+		title: "",
+		description: "",
+		price: "",
+		category: "",
+		condition: "new",
+		imageFile: null,
+		auctionId: "",
+	});
 
 	// Fetch items
 	useEffect(() => {
@@ -56,7 +65,7 @@ const ItemsPage: React.FC = () => {
 	}, []);
 
 	// Define columns for DataTable
-	const columns: ColumnDef<iAuctionItem>[] = [
+	const columns: ColumnDef<AddItemData>[] = [
 		{
 			accessorKey: "title",
 			header: "Title",
@@ -82,9 +91,16 @@ const ItemsPage: React.FC = () => {
 			id: "actions",
 			header: "Actions",
 			cell: ({ row }) => (
-				<Button variant="destructive" onClick={() => handleDelete(row.original.id)}>
-					Delete
-				</Button>
+				<div className="flex gap-2">
+					<Button variant="outline" onClick={() => handleEdit(row.original)}>
+						<Edit className="mr-2" />
+					</Button>
+					<Button
+						variant="destructive"
+						onClick={() => handleDelete(row.original.id || "")}>
+						<DeleteIcon className="mr-2" />
+					</Button>
+				</div>
 			),
 		},
 	];
@@ -98,6 +114,54 @@ const ItemsPage: React.FC = () => {
 		}
 		toast.success("Item deleted successfully!");
 		setItems((prev) => prev.filter((item) => item.id !== id));
+	};
+
+	// Handle edit item
+	const handleEdit = async (item: AddItemData) => {
+		setFormData({
+			id: item.id,
+			title: item.title,
+			description: item.description,
+			price: item.price,
+			category: item.category,
+			condition: item.condition,
+			imageFile: item.imageFile || null,
+			auctionId: item.auctionId || "",
+		});
+		setIsEditMode(true);
+		setIsDialogOpen(true);
+	};
+
+	// Handle add new item
+	const handleAddNew = () => {
+		setFormData({
+			id: "",
+			title: "",
+			description: "",
+			price: "",
+			category: "",
+			condition: "new",
+			imageFile: null,
+			auctionId: "",
+		});
+		setIsEditMode(false);
+		setIsDialogOpen(true);
+	};
+
+	// Handle form submission
+	const handleSubmit = (response: { success: boolean; error: string | undefined }) => {
+		if (response.error || response.success) {
+			toast.error(response.error);
+			return;
+		}
+
+		if (isEditMode) {
+			setItems((prev) => prev.map((item) => (item.id === formData.id ? formData : item)));
+			toast.success("Item updated successfully!");
+		} else {
+			setItems((prev) => [...prev, formData]);
+			toast.success("Item added successfully!");
+		}
 	};
 
 	// Initialize table
@@ -130,29 +194,12 @@ const ItemsPage: React.FC = () => {
 					onChange={(e) => table.getColumn("title")?.setFilterValue(e.target.value)}
 					className="max-w-sm"
 				/>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="ml-auto">
-							Columns <ChevronDown />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{table
-							.getAllColumns()
-							.filter((column) => column.getCanHide())
-							.map((column) => (
-								<DropdownMenuCheckboxItem
-									key={column.id}
-									checked={column.getIsVisible()}
-									onCheckedChange={(value) => column.toggleVisibility(!!value)}>
-									{column.id}
-								</DropdownMenuCheckboxItem>
-							))}
-					</DropdownMenuContent>
-				</DropdownMenu>
+				<Button variant="secondary" className="ml-auto" onClick={handleAddNew}>
+					Add New Item <PlusCircle className="ml-2" />
+				</Button>
 			</div>
-			<div className="rounded-md border">
-				<Table>
+			<div className="rounded-md border w-full">
+				<Table className="w-full">
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
@@ -209,6 +256,30 @@ const ItemsPage: React.FC = () => {
 					Next
 				</Button>
 			</div>
+
+			{/* Dialog for Add/Edit Item */}
+			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>{isEditMode ? "Edit Item" : "Add New Item"}</DialogTitle>
+					</DialogHeader>
+
+					<AddNewItemForm
+						item={{
+							id: formData.id,
+							title: formData.title,
+							description: formData.description,
+							price: formData.price,
+							category: formData.category,
+							condition: formData.condition,
+							imageFile: formData.imageFile,
+							auctionId: formData.auctionId,
+						}}
+						onSubmit={handleSubmit}
+						buttonText={isEditMode ? "Edit Item" : "Add New Item"}
+					/>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 };

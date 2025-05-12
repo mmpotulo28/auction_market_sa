@@ -1,6 +1,7 @@
 .dashboardContainer {
 	display: flex;
 	height: 100vh;
+	min-width: 100%;
 	overflow: hidden;
 	position: relative;
 	margin-top: 50px;

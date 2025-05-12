@@ -1,27 +1,29 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import styles from "./add-items.module.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { addItemToDatabase } from "@/lib/dbFunctions";
 import { FaSpinner } from "react-icons/fa";
 import Container from "@/components/common/container";
+import { AddItemData, addItemToDatabase } from "@/lib/dbFunctions";
 
-const AddItemsPage: React.FC = () => {
-	const router = useRouter();
-	const [formData, setFormData] = useState({
-		title: "",
-		description: "",
-		price: "",
-		imageFile: null as File | null,
-		category: "",
-		condition: "new",
-		auctionId: "",
-	});
+interface AddNewItemFormProps {
+	item: AddItemData;
+	onSubmit: (response: { success: boolean; error: string | undefined }) => void;
+	buttonText: string;
+}
+
+const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonText }) => {
+	const [formData, setFormData] = useState<AddItemData>(item);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+
+	useEffect(() => {
+		if (item) {
+			setFormData(item);
+		}
+	}, [item]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const { name, value } = e.target;
@@ -41,18 +43,20 @@ const AddItemsPage: React.FC = () => {
 
 		if (result.success) {
 			toast.success("Item added successfully!");
-			router.push("/secure/a/dashboard");
 		} else {
 			toast.error(result.error || "Unexpected error occurred.");
 		}
 
 		setIsSubmitting(false);
+		onSubmit({
+			success: result.success,
+			error: result.error,
+		});
 	};
 
 	return (
-		<Container>
+		<Container padded={false}>
 			<div className={styles.container}>
-				<h1 className="text-2xl font-bold mb-4">Add New Item</h1>
 				<form onSubmit={handleSubmit} className={styles.form}>
 					<Input
 						name="title"
@@ -81,7 +85,7 @@ const AddItemsPage: React.FC = () => {
 						type="file"
 						accept="image/*"
 						onChange={handleFileChange}
-						required
+						required={!item?.imageFile}
 					/>
 					<Input
 						name="category"
@@ -101,7 +105,7 @@ const AddItemsPage: React.FC = () => {
 					<div className={styles.radioGroup}>
 						<label>
 							<Input
-								type="checkbox"
+								type="radio"
 								name="condition"
 								value="new"
 								checked={formData.condition === "new"}
@@ -111,7 +115,7 @@ const AddItemsPage: React.FC = () => {
 						</label>
 						<label>
 							<Input
-								type="checkbox"
+								type="radio"
 								name="condition"
 								value="used"
 								checked={formData.condition === "used"}
@@ -126,7 +130,7 @@ const AddItemsPage: React.FC = () => {
 								<FaSpinner className="spin" /> Submitting...
 							</>
 						) : (
-							"Add Item"
+							buttonText
 						)}
 					</Button>
 				</form>
@@ -135,4 +139,4 @@ const AddItemsPage: React.FC = () => {
 	);
 };
 
-export default AddItemsPage;
+export default AddNewItemForm;

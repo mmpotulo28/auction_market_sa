@@ -26,7 +26,7 @@ export default function RootLayout({
 					}}>
 					<WebSocketProvider>
 						<Header />
-						<main>{children}</main>
+						<main className="w-full h-full min-h-full">{children}</main>
 						<Toaster />
 						<Footer />
 					</WebSocketProvider>

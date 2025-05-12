@@ -1,6 +1,7 @@
 import supabase, { supabaseAdmin } from "@/lib/db";
 
 export interface AddItemData {
+	id?: string;
 	title: string;
 	description: string;
 	price: string;
