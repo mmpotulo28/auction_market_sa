@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,19 +40,18 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) 
 	const { user } = useUser();
 	const router = useRouter();
 
-	const { placeBid, highestBids, items, isLoading, error } = useWebSocket();
+	const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 
 	const [proposedBids, setProposedBids] = useState<iBid[]>([]);
 
 	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
 	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);
 	const [pendingBids, setPendingBids] = useState<string[]>([]);
 
-	const categories = useMemo(() => [...new Set(items.map((item) => item.category))], [items]);
 	const filteredItems = useMemo(
 		() =>
 			items.filter(
@@ -64,6 +63,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) 
 			),
 		[items, selectedCategories, priceRange, selectedConditions],
 	);
+
 	const totalPages = useMemo(
 		() => Math.ceil(filteredItems.length / itemsPerPage),
 		[filteredItems, itemsPerPage],
@@ -155,10 +155,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) 
 		},
 		[proposedBids, user, placeBid, highestBids, router],
 	);
-
-	useEffect(() => {
-		setSelectedCategories(categories);
-	}, [categories]);
 
 	return (
 		<SidebarProvider>

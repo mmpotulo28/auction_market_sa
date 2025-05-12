@@ -1,0 +1,41 @@
+.container {
+	padding: 20px;
+}
+
+.insights {
+	margin-bottom: 20px;
+	font-size: 1rem;
+	color: var(--color-muted-foreground);
+}
+
+.itemsList {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 20px;
+}
+
+.itemCard {
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	padding: 15px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	background-color: var(--background);
+}
+
+.itemCard h2 {
+	font-size: 1.25rem;
+	color: var(--color-foreground);
+	margin-bottom: 10px;
+}
+
+.itemCard p {
+	font-size: 0.875rem;
+	color: var(--color-muted-foreground);
+	margin-bottom: 5px;
+}
+
+.radioGroup {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+}

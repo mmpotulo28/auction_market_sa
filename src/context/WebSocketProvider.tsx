@@ -11,6 +11,7 @@ interface WebSocketContextProps {
 	items: iAuctionItem[];
 	isLoading: boolean;
 	error: string[];
+	categories: string[];
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -20,6 +21,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [items, setItems] = useState<iAuctionItem[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string[]>([]);
+	const [categories, setCategories] = useState<string[]>([]);
 
 	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
@@ -34,6 +36,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				}
 
 				setItems(items as iAuctionItem[]);
+				setCategories([...new Set(items?.map((item) => item.category))]);
 
 				const mockBidsMap =
 					items?.reduce<Record<string, iBid>>((acc, item) => {
@@ -74,6 +77,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		};
 
 		initializeBids();
+		console.log("WebSocketProvider initialized");
 	}, []);
 
 	// Subscribe to real-time updates for the "bids" table
@@ -103,6 +107,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			)
 			.subscribe();
 
+		console.log("WebSocket subscription created");
+
 		return () => {
 			supabase.removeChannel(subscription);
 		};
@@ -128,7 +134,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	}, []);
 
 	return (
-		<WebSocketContext.Provider value={{ placeBid, highestBids, items, isLoading, error }}>
+		<WebSocketContext.Provider
+			value={{ placeBid, highestBids, items, isLoading, error, categories }}>
 			{children}
 		</WebSocketContext.Provider>
 	);

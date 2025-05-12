@@ -1,0 +1,23 @@
+.sidebar {
+	position: absolute;
+	min-height: 100%;
+	top: 0;
+	width: 250px;
+	background-color: var(--sidebar);
+	color: var(--sidebar-foreground);
+	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.menuItem {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	cursor: pointer;
+	border-radius: var(--radius-sm);
+	transition: background-color 0.3s ease;
+}
+
+.menuItem:hover {
+	background-color: var(--color-muted);
+	color: var(--color-primary);
+}

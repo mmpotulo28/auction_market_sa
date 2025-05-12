@@ -1,0 +1,63 @@
+"use client";
+
+import React from "react";
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import styles from "./dashboard-sidebar.module.css";
+import { Calendar, Home, Inbox, Search, Settings, Box } from "lucide-react";
+import Link from "next/link";
+
+const DashboardSidebar: React.FC = () => {
+	// Menu items.
+	const items = [
+		{
+			title: "Dashboard",
+			url: "secure/a",
+			icon: Home,
+		},
+		{
+			title: "Items",
+			url: "/secure/a/items",
+			icon: Box,
+		},
+		{
+			title: "Settings",
+			url: "#",
+			icon: Settings,
+		},
+	];
+
+	return (
+		<Sidebar variant="sidebar" className={styles.sidebar}>
+			<SidebarContent>
+				<SidebarGroup>
+					<SidebarGroupLabel>Application</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<SidebarMenu>
+							{items.map((item) => (
+								<SidebarMenuItem key={item.title}>
+									<SidebarMenuButton asChild>
+										<Link href={item.url}>
+											<item.icon />
+											<span>{item.title}</span>
+										</Link>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							))}
+						</SidebarMenu>
+					</SidebarGroupContent>
+				</SidebarGroup>
+			</SidebarContent>
+		</Sidebar>
+	);
+};
+
+export default DashboardSidebar;
