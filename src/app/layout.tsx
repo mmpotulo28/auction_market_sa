@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
+import { dark } from "@clerk/themes";
 
 export const metadata: Metadata = {
 	title: "Auction Market SA",
@@ -19,7 +20,10 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`antialiased`}>
-				<ClerkProvider>
+				<ClerkProvider
+					appearance={{
+						baseTheme: dark,
+					}}>
 					<WebSocketProvider>
 						<Header />
 						<main>{children}</main>
