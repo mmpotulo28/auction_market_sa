@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import UpcomingAuctions from "@/components/UpcomingAuctions";
 import Container from "@/components/common/container";
-import { mockAuctions, mockItems } from "@/lib/dummy-data";
+import { mockAuctions } from "@/lib/dummy-data";
 import styles from "./page.module.css";
 import Banner from "@/components/Banner";
 
@@ -16,7 +16,6 @@ export default function Home() {
 	return (
 		<div>
 			<TopBanner
-				items={mockItems}
 				overline="Welcome"
 				title={"Auction Market SA"}
 				subtitle="South Africa's Digital Marketplace Auction"

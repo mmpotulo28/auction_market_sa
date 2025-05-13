@@ -5,12 +5,13 @@ import LoginForm from "@/components/auth/LoginForm";
 import { useSearchParams } from "next/navigation";
 import Container from "@/components/common/container";
 import { CarouselDApiSlider } from "@/components/TopBanner/slider";
-import { mockItems } from "@/lib/dummy-data";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 type iformType = "sign-in" | "sign-up";
 
 const AuthPage: React.FC = () => {
 	const searchParams = useSearchParams();
+	const { items } = useWebSocket();
 
 	const type: iformType = (searchParams?.get("type") as iformType) || "sign-in";
 	return (
@@ -22,7 +23,7 @@ const AuthPage: React.FC = () => {
 						{/* Updated to use the type from searchParams */}
 					</div>
 					<div className={styles.reviews}>
-						<CarouselDApiSlider items={mockItems} />
+						<CarouselDApiSlider items={items} />
 					</div>
 				</div>
 			</Container>

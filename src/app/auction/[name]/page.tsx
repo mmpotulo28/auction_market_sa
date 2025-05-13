@@ -9,7 +9,7 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { mockAuctions, mockItems } from "@/lib/dummy-data";
+import { mockAuctions } from "@/lib/dummy-data";
 import { stringToUrl } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
 import { Suspense, use } from "react";
@@ -42,10 +42,6 @@ const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
 		timeZone: "UTC",
 	});
 
-	const filteredItems = mockItems.filter(
-		(item) => stringToUrl(item.auction.name) === stringToUrl(name),
-	);
-
 	return (
 		<div>
 			<TopBanner
@@ -53,7 +49,6 @@ const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
 				overline={auctionDate}
 				subtitle="An auction so good, even your wallet might bid!"
 				action={{ label: "View Auction" }}
-				items={filteredItems}
 			/>
 
 			<Container>
@@ -75,7 +70,7 @@ const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
 			</Container>
 
 			<Suspense fallback={<div>Loading...</div>}>
-				<AuctionItemList items={filteredItems} itemsPerPage={10} />
+				<AuctionItemList itemsPerPage={10} />
 			</Suspense>
 		</div>
 	);
