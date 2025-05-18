@@ -29,6 +29,11 @@ const DashboardSidebar: React.FC = () => {
 			icon: Box,
 		},
 		{
+			title: "Auctions",
+			url: "/secure/a/auctions",
+			icon: Box,
+		},
+		{
 			title: "Settings",
 			url: "#",
 			icon: Settings,
