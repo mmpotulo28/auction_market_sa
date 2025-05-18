@@ -151,14 +151,15 @@ export interface iAuctionItem {
 }
 
 export interface iAuction {
+	id: string;
 	name: string;
-	itemsCount: number;
-	startTime: Date;
+	description: string;
+	start_time: string;
 	duration: number;
-	reOpenCount: number;
-	description?: string;
-	dateCreated?: Date;
-	createdBy?: string;
+	created_by: string;
+	date_created: string;
+	items_count: number;
+	re_open_count: number;
 }
 
 export interface iBid {
