@@ -136,7 +136,7 @@ const Header = () => {
 						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuLink
-								href="/about"
+								href="/secure/a/items"
 								className={navigationMenuTriggerStyle()}>
 								About Us
 							</NavigationMenuLink>

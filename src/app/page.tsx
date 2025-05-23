@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import UpcomingAuctions from "@/components/UpcomingAuctions";
 import Container from "@/components/common/container";
-import { mockAuctions } from "@/lib/dummy-data";
 import styles from "./page.module.css";
 import Banner from "@/components/Banner";
 
@@ -23,7 +22,7 @@ export default function Home() {
 
 			<Container>
 				<h1 className="text-4xl font-bold text-center my-8">Upcoming Auctions</h1>
-				<UpcomingAuctions auctions={mockAuctions} />
+				<UpcomingAuctions />
 			</Container>
 
 			<Container>
