@@ -36,6 +36,22 @@ interface iBid {
 	timestamp: string;
 }
 
+const AuctionClosed: React.FC<{ ownedCount: number }> = ({ ownedCount }) => {
+	const router = useRouter();
+	return (
+		<div className="flex flex-col items-center justify-center py-16">
+			<h2 className="text-2xl font-bold mb-4">Auction Closed</h2>
+			<p className="mb-4">
+				You have <span className="font-semibold">{ownedCount}</span> item
+				{ownedCount !== 1 && "s"} in your cart.
+			</p>
+			<Button variant="default" onClick={() => router.push("/cart")}>
+				Go to Cart
+			</Button>
+		</div>
+	);
+};
+
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) => {
 	const { user } = useUser();
 	const router = useRouter();
@@ -155,6 +171,17 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) 
 		},
 		[proposedBids, user, placeBid, highestBids, router],
 	);
+
+	const auctionClosed = false; // Set to true to test
+
+	const ownedCount = useMemo(() => {
+		if (!user) return 0;
+		return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
+	}, [highestBids, user]);
+
+	if (auctionClosed) {
+		return <AuctionClosed ownedCount={ownedCount} />;
+	}
 
 	return (
 		<SidebarProvider>

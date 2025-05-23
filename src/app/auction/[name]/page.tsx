@@ -12,7 +12,7 @@ import {
 import { mockAuctions } from "@/lib/dummy-data";
 import { stringToUrl } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
-import { Suspense, use } from "react";
+import { Suspense } from "react";
 
 // Next.js will invalidate the cache when a
 // request comes in, at most once every 300 seconds (5 minutes).
@@ -29,10 +29,10 @@ export async function generateStaticParams() {
 	}));
 }
 
-const AuctionPage = ({ params }: { params: Promise<{ name: string }> }) => {
-	const { name } = use(params);
+const AuctionPage = async ({ params }: { params: { name: string } }) => {
+	const { name } = params;
 	const auction = mockAuctions.find((auction) => stringToUrl(auction.name) === stringToUrl(name));
-	const auctionDate = new Date(auction?.startTime || "").toLocaleString("en-US", {
+	const auctionDate = new Date(auction?.start_time || "").toLocaleString("en-US", {
 		weekday: "long",
 		day: "numeric",
 		month: "long",
