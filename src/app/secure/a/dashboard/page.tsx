@@ -15,9 +15,6 @@ import {
 	Line,
 	CartesianGrid,
 	Legend,
-	PieChart,
-	Pie,
-	Cell,
 } from "recharts";
 import {
 	Table,
@@ -27,17 +24,6 @@ import {
 	TableRow,
 	TableCell,
 } from "@/components/ui/table";
-
-const COLORS = [
-	"#8884d8",
-	"#82ca9d",
-	"#ffc658",
-	"#ff8042",
-	"#0088FE",
-	"#00C49F",
-	"#FFBB28",
-	"#FF8042",
-];
 
 export default function AdminDashboard() {
 	const { items, highestBids, bids, getAllBids } = useWebSocket();
@@ -105,8 +91,8 @@ export default function AdminDashboard() {
 
 	return (
 		<Container>
-			<h1 className="text-3xl font-bold mb-8 text-center">Admin Auction Dashboard</h1>
 			<div className={styles.dashboardGrid}>
+				{/* Highest Bid vs Starting Price per Item - Chart */}
 				<Card className={styles.chartCard}>
 					<h2 className="text-xl font-semibold mb-4">
 						Highest Bid vs Starting Price per Item
@@ -121,32 +107,36 @@ export default function AdminDashboard() {
 							<Bar dataKey="highestBid" fill="#8884d8" name="Highest Bid" />
 						</BarChart>
 					</ResponsiveContainer>
-					<div className="mt-4">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Item</TableHead>
-									<TableHead>Highest Bidder</TableHead>
-									<TableHead>Highest Bid</TableHead>
-									<TableHead>Starting Price</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{bidsPerItem.map((item, idx) => (
-									<TableRow key={item.name + idx}>
-										<TableCell>{item.name}</TableCell>
-										<TableCell>
-											{item.highestBidder}
-											{item.highestBidder.length === 50 ? "..." : ""}
-										</TableCell>
-										<TableCell>R {item.highestBid}</TableCell>
-										<TableCell>R {item.price}</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
 				</Card>
+				{/* Highest Bids Table */}
+				<Card className={styles.chartCard}>
+					<h2 className="text-xl font-semibold mb-4">Highest Bids Table</h2>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Item</TableHead>
+								<TableHead>Highest Bidder</TableHead>
+								<TableHead>Highest Bid</TableHead>
+								<TableHead>Starting Price</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{bidsPerItem.map((item, idx) => (
+								<TableRow key={item.name + idx}>
+									<TableCell>{item.name}</TableCell>
+									<TableCell>
+										{item.highestBidder}
+										{item.highestBidder.length === 50 ? "..." : ""}
+									</TableCell>
+									<TableCell>R {item.highestBid}</TableCell>
+									<TableCell>R {item.price}</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</Card>
+			</div>
+			<div className={styles.dashboardGrid}>
 				<Card className={styles.chartCard}>
 					<h2 className="text-xl font-semibold mb-4">Bid Activity (Last 30 min)</h2>
 					<ResponsiveContainer width="100%" height={300}>
@@ -159,63 +149,18 @@ export default function AdminDashboard() {
 							<Line type="monotone" dataKey="count" stroke="#82ca9d" name="Bids" />
 						</LineChart>
 					</ResponsiveContainer>
-					<div className="mt-4 flex gap-8">
-						<div>
-							<div className="font-bold text-lg">
-								{bidActivity.reduce((acc, cur) => acc + cur.count, 0)}
-							</div>
-							<div className="text-muted-foreground">Total Bids (last 30 min)</div>
-						</div>
-						<div>
-							<div className="font-bold text-lg">
-								{bidActivity.reduce((max, cur) => Math.max(max, cur.count), 0)}
-							</div>
-							<div className="text-muted-foreground">Peak Bids in a Minute</div>
-						</div>
-					</div>
 				</Card>
-			</div>
-			<div className={styles.dashboardGrid}>
 				<Card className={styles.chartCard}>
 					<h2 className="text-xl font-semibold mb-4">Trending Items</h2>
 					<ResponsiveContainer width="100%" height={300}>
-						<PieChart>
-							<Pie
-								data={trendingItems}
-								dataKey="count"
-								nameKey="name"
-								cx="50%"
-								cy="50%"
-								outerRadius={100}
-								label>
-								{trendingItems.map((entry, index) => (
-									<Cell
-										key={`cell-${index}`}
-										fill={COLORS[index % COLORS.length]}
-									/>
-								))}
-							</Pie>
+						<BarChart data={trendingItems}>
+							<XAxis dataKey="name" tick={{ fontSize: 12 }} />
+							<YAxis allowDecimals={false} />
 							<Tooltip />
-						</PieChart>
+							<Legend />
+							<Bar dataKey="count" fill="#8884d8" name="Bid Activity" />
+						</BarChart>
 					</ResponsiveContainer>
-					<div className="mt-4">
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Item</TableHead>
-									<TableHead>Bid Activity</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{trendingItems.map((item, idx) => (
-									<TableRow key={item.name + idx}>
-										<TableCell>{item.name}</TableCell>
-										<TableCell>{item.count}</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					</div>
 				</Card>
 			</div>
 		</Container>
