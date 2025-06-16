@@ -7,9 +7,8 @@ import styles from "./upcoming-auctions.module.css";
 import LockUp from "../common/lockup";
 import { iAuction, iTheme } from "@/lib/types";
 import { Button } from "../ui/button";
-import { stringToUrl } from "@/lib/helpers";
+import { stringToUrl, fetchAuctions } from "@/lib/helpers";
 import { TimerContainer } from "../CountdownTimer";
-import axios from "axios";
 import { toast } from "sonner";
 
 const UpcomingAuctions: React.FC = () => {
@@ -19,21 +18,14 @@ const UpcomingAuctions: React.FC = () => {
 	const [error, setError] = React.useState<string | null>(null);
 
 	useEffect(() => {
-		const fetchAuctions = async () => {
-			try {
-				setIsLoading(true);
-				const response = await axios.get("/api/auctions");
-				console.log(response);
-				setAuctions(response.data);
-			} catch (err) {
-				setError(err instanceof Error ? err.message : "Failed to fetch auctions");
-				toast.error("Failed to fetch auctions. Please try again.");
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchAuctions();
+		fetchAuctions({
+			setIsLoading,
+			onLoad: (data: iAuction[]) => {
+				toast.success("Fetched auctions successfully");
+				setAuctions(data);
+			},
+			onError: (error: string) => setError(error),
+		});
 	}, []);
 
 	if (error) return <div className={styles.error}>{error}</div>;

@@ -9,9 +9,9 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { mockAuctions } from "@/lib/dummy-data";
 import { dateToString, stringToUrl } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
+import { fetchAuctions } from "@/lib/helpers";
 import { Suspense } from "react";
 
 // Next.js will invalidate the cache when a
@@ -24,14 +24,20 @@ export const revalidate = 300;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-	return mockAuctions.map((auction: iAuction) => ({
+	const auctions: iAuction[] = await fetchAuctions({});
+
+	return auctions?.map((auction: iAuction) => ({
 		name: stringToUrl(auction.name),
+		auction: auction,
 	}));
 }
 
-const AuctionPage = async ({ params }: { params: Promise<{ name: string }> }) => {
-	const { name } = await params;
-	const auction = mockAuctions.find((auction) => stringToUrl(auction.name) === stringToUrl(name));
+const AuctionPage = async ({
+	params,
+}: {
+	params: Promise<{ name: string; auction: iAuction }>;
+}) => {
+	const { auction } = await params;
 	const auctionDate = dateToString(new Date(auction?.start_time || ""));
 
 	return (

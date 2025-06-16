@@ -1,3 +1,7 @@
+"use client";
+import axios from "axios";
+import { iAuction } from "./types";
+
 /**
  * Converts a given string into a URL-friendly format.
  *
@@ -36,4 +40,36 @@ export const dateToString = (date: Date) => {
 		minute: "2-digit",
 		timeZone: "UTC",
 	});
+};
+
+export interface iFetchAuctions {
+	setIsLoading?: (isLoading: boolean) => void;
+	onLoad?: (data: iAuction[]) => void;
+	onError?: (error: string) => void;
+}
+
+/**
+ * Fetches auction data from the `/api/auctions` endpoint.
+ *
+ * @param params - An object containing optional callbacks and state setters.
+ * @param params.setIsLoading - Optional function to set the loading state before and after the fetch.
+ * @param params.onLoad - Optional callback invoked with the fetched auction data on success.
+ * @param params.onError - Optional callback invoked with an error message if the fetch fails.
+ * @returns The fetched auction data on success, or `null` if an error occurs.
+ */
+export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuctions) => {
+	try {
+		setIsLoading?.(true);
+		const response = await axios.get("/api/auctions");
+		console.log("response", response);
+		onLoad?.(response.data);
+		return response.data;
+	} catch (err) {
+		onError?.(err instanceof Error ? err.message : "Failed to fetch auctions");
+		console.error(err);
+	} finally {
+		setIsLoading?.(false);
+	}
+
+	return null;
 };

@@ -3,6 +3,7 @@ import supabase from "@/lib/db";
 import { iAuction } from "@/lib/types";
 
 export async function GET() {
+	console.log("fetching apis");
 	try {
 		const { data, error } = await supabase
 			.from("auctions")
