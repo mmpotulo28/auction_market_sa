@@ -62,7 +62,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) 
 
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
-	const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+	const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
 	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
 		new Set(["new", "used"]),
 	);

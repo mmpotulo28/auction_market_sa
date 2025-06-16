@@ -8,6 +8,8 @@ import { toast } from "sonner";
 interface WebSocketContextProps {
 	placeBid: (itemId: string, amount: number, userId: string) => Promise<void>;
 	highestBids: Record<string, iBid>;
+	bids: iBid[];
+	getAllBids: () => Promise<void>;
 	items: iAuctionItem[];
 	isLoading: boolean;
 	error: string[];
@@ -22,6 +24,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string[]>([]);
 	const [categories, setCategories] = useState<string[]>([]);
+	const [bids, setBids] = useState<iBid[]>([]);
 
 	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
@@ -102,6 +105,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 							}
 							return { ...prev, [bid.itemId]: bid };
 						});
+
+						setBids((prev) => [...prev, bid]);
 					}
 				},
 			)
@@ -112,6 +117,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		return () => {
 			supabase.removeChannel(subscription);
 		};
+	}, []);
+
+	const getAllBids = useCallback(async () => {
+		try {
+			const { data, error } = await supabase.from("bids").select("*");
+			if (error) throw new Error(`Error fetching bids: ${error.message}`);
+			setBids((data ?? []) as iBid[]);
+		} catch (err) {
+			console.error("Unexpected error fetching bids:", err);
+		}
 	}, []);
 
 	const placeBid = useCallback(async (itemId: string, amount: number, userId: string) => {
@@ -135,7 +150,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
 	return (
 		<WebSocketContext.Provider
-			value={{ placeBid, highestBids, items, isLoading, error, categories }}>
+			value={{
+				placeBid,
+				highestBids,
+				items,
+				isLoading,
+				error,
+				categories,
+				getAllBids,
+				bids,
+			}}>
 			{children}
 		</WebSocketContext.Provider>
 	);
