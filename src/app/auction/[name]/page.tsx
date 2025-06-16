@@ -10,7 +10,7 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { mockAuctions } from "@/lib/dummy-data";
-import { stringToUrl } from "@/lib/helpers";
+import { dateToString, stringToUrl } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
 import { Suspense } from "react";
 
@@ -29,18 +29,10 @@ export async function generateStaticParams() {
 	}));
 }
 
-const AuctionPage = async ({ params }: { params: { name: string } }) => {
-	const { name } = params;
+const AuctionPage = async ({ params }: { params: Promise<{ name: string }> }) => {
+	const { name } = await params;
 	const auction = mockAuctions.find((auction) => stringToUrl(auction.name) === stringToUrl(name));
-	const auctionDate = new Date(auction?.start_time || "").toLocaleString("en-US", {
-		weekday: "long",
-		day: "numeric",
-		month: "long",
-		year: "numeric",
-		hour: "2-digit",
-		minute: "2-digit",
-		timeZone: "UTC",
-	});
+	const auctionDate = dateToString(new Date(auction?.start_time || ""));
 
 	return (
 		<div>
