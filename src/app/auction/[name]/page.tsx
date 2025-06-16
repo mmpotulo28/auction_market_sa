@@ -9,28 +9,9 @@ import {
 	BreadcrumbPage,
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { dateToString, stringToUrl } from "@/lib/helpers";
+import { dateToString } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
-import { fetchAuctions } from "@/lib/helpers";
 import { Suspense } from "react";
-
-// Next.js will invalidate the cache when a
-// request comes in, at most once every 300 seconds (5 minutes).
-export const revalidate = 300;
-
-// We'll prerender only the params from `generateStaticParams` at build time.
-// If a request comes in for a path that hasn't been generated,
-// Next.js will server-render the page on-demand.
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-	const auctions: iAuction[] = await fetchAuctions({});
-
-	return auctions?.map((auction: iAuction) => ({
-		name: stringToUrl(auction.name),
-		auction: auction,
-	}));
-}
 
 const AuctionPage = async ({
 	params,

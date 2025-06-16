@@ -1,3 +1,4 @@
+"use server";
 import { NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { iAuction } from "@/lib/types";

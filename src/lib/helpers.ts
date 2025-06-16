@@ -1,4 +1,3 @@
-"use client";
 import axios from "axios";
 import { iAuction } from "./types";
 
@@ -50,20 +49,55 @@ export interface iFetchAuctions {
 
 /**
  * Fetches auction data from the `/api/auctions` endpoint.
- *
- * @param params - An object containing optional callbacks and state setters.
- * @param params.setIsLoading - Optional function to set the loading state before and after the fetch.
- * @param params.onLoad - Optional callback invoked with the fetched auction data on success.
- * @param params.onError - Optional callback invoked with an error message if the fetch fails.
- * @returns The fetched auction data on success, or `null` if an error occurs.
+ * Caches the result in a cookie for 5 minutes (client-side only).
  */
 export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuctions) => {
 	try {
 		setIsLoading?.(true);
-		const response = await axios.get("/api/auctions");
-		console.log("response", response);
-		onLoad?.(response.data);
-		return response.data;
+
+		const cookieName = "auction_cache";
+		const cacheDuration = 5 * 60 * 1000; // 5 minutes in ms
+
+		// Only cache on client side
+		if (typeof window !== "undefined") {
+			const cached = (() => {
+				try {
+					const match = document.cookie.match(
+						new RegExp("(^| )" + cookieName + "=([^;]+)"),
+					);
+					if (!match) return null;
+					const value = decodeURIComponent(match[2]);
+					const parsed = JSON.parse(value);
+					if (parsed && parsed.data && parsed.timestamp) {
+						if (Date.now() - parsed.timestamp < cacheDuration) {
+							return parsed.data;
+						}
+					}
+				} catch {
+					// ignore parse errors
+				}
+				return null;
+			})();
+
+			if (cached) {
+				onLoad?.(cached);
+				setIsLoading?.(false);
+				return cached;
+			}
+		}
+
+		const url = "/api/auctions";
+		const response = (await axios.get(url)) || { data: [] };
+		const data = response.data || [];
+
+		// Set cookie (client-side only)
+		if (typeof window !== "undefined") {
+			const cookieValue = encodeURIComponent(JSON.stringify({ data, timestamp: Date.now() }));
+			document.cookie = `${cookieName}=${cookieValue}; max-age=300; path=/`;
+		}
+
+		onLoad?.(data);
+		return data;
 	} catch (err) {
 		onError?.(err instanceof Error ? err.message : "Failed to fetch auctions");
 		console.error(err);
