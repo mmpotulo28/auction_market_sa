@@ -12,7 +12,8 @@ const Footer = () => {
 					<div>
 						<h4 className={styles.heading}>About Us</h4>
 						<p className={styles.text}>
-							Action Market SA is a real-time auction marketplace for buying and selling items.
+							Action Market SA is a real-time auction marketplace for buying and
+							selling items.
 						</p>
 					</div>
 					<div>

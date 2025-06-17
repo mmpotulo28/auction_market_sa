@@ -18,6 +18,7 @@ import { Button } from "../ui/button";
 import { CrossIcon } from "lucide-react";
 import { FaBars } from "react-icons/fa";
 import { UserButton } from "@clerk/nextjs";
+import { ModeToggle } from "../ToggleTheme";
 
 const Header = () => {
 	const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);
@@ -130,6 +131,7 @@ const Header = () => {
 
 			{/* right side content */}
 			<div className="flex items-center justify-end space-x-4 gap-2.5">
+				<ModeToggle />
 				<UserButton />
 				<div className={styles.toggleButton}>
 					<Button

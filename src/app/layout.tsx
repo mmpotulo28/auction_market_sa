@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
 import { dark } from "@clerk/themes";
+import { ThemeProvider } from "@/context/ThemeProvider";
 
 export const metadata: Metadata = {
 	title: "Auction Market SA",
@@ -20,17 +21,19 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={`antialiased`}>
-				<ClerkProvider
-					appearance={{
-						baseTheme: dark,
-					}}>
-					<WebSocketProvider>
-						<Header />
-						<main className="w-full h-full min-h-full">{children}</main>
-						<Toaster />
-						<Footer />
-					</WebSocketProvider>
-				</ClerkProvider>
+				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+					<ClerkProvider
+						appearance={{
+							baseTheme: dark,
+						}}>
+						<WebSocketProvider>
+							<Header />
+							<main className="w-full h-full min-h-full">{children}</main>
+							<Toaster />
+							<Footer />
+						</WebSocketProvider>
+					</ClerkProvider>
+				</ThemeProvider>
 			</body>
 		</html>
 	);
