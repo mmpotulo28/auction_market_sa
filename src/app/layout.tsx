@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
-import { neobrutalism } from "@clerk/themes";
+import { dark } from "@clerk/themes";
 
 export const metadata: Metadata = {
 	title: "Auction Market SA",
@@ -22,7 +22,7 @@ export default function RootLayout({
 			<body className={`antialiased`}>
 				<ClerkProvider
 					appearance={{
-						baseTheme: neobrutalism,
+						baseTheme: dark,
 					}}>
 					<WebSocketProvider>
 						<Header />

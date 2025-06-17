@@ -8,6 +8,7 @@ export interface iContainerProps {
 	padded?: boolean;
 	fullWidth?: boolean;
 	theme?: iTheme;
+	className?: string;
 }
 
 const Container: FC<iContainerProps> = ({
@@ -15,12 +16,14 @@ const Container: FC<iContainerProps> = ({
 	padded = true,
 	fullWidth = false,
 	theme = iTheme.Light,
+	className = "",
 }) => {
 	const classNames = [
 		styles.container,
 		padded && styles.padded,
 		fullWidth && styles.fullWidth,
 		theme === iTheme.Dark && styles.dark,
+		className,
 	]
 		.filter(Boolean)
 		.join(" ");

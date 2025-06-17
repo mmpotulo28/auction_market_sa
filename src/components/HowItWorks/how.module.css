@@ -1,9 +1,20 @@
 .howItWorks {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 20px;
+	width: 100%;
+	padding: 20px 0;
+	background-color: var(--color-primary);
+}
+
+.howItWorksContainer {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 	width: 100%;
 	padding: 20px 0;
+	background-color: var(--color-primary);
 }
 
 .tutorialVideo {
