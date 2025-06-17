@@ -1,40 +1,11 @@
 import AuctionItemList from "@/components/AuctionItemList";
 import Banner from "@/components/Banner";
-import Container from "@/components/common/container";
-import TopBanner from "@/components/TopBanner";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Star } from "lucide-react";
 import { Suspense } from "react";
 
 const Auction = () => {
 	return (
 		<div>
-			<TopBanner
-				overline="Welcome"
-				title={"Auction Market SA"}
-				subtitle="South Africa's Digital Marketplace Auction"
-			/>
-
-			<Container fullWidth>
-				<Breadcrumb>
-					<BreadcrumbList>
-						<BreadcrumbItem>
-							<BreadcrumbLink href="/">Home</BreadcrumbLink>
-						</BreadcrumbItem>
-						<BreadcrumbSeparator />
-						<BreadcrumbItem>
-							<BreadcrumbLink href="/auction">Auction</BreadcrumbLink>
-						</BreadcrumbItem>
-					</BreadcrumbList>
-				</Breadcrumb>
-			</Container>
-
 			<Suspense fallback={<div>Loading...</div>}>
 				<AuctionItemList itemsPerPage={10} />
 			</Suspense>

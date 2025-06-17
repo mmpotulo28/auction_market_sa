@@ -24,9 +24,11 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { useUser } from "@clerk/nextjs";
+import { iAuction } from "@/lib/types";
 
 interface AuctionItemListProps {
 	itemsPerPage?: number;
+	auction?: iAuction;
 }
 
 interface iBid {
@@ -52,9 +54,12 @@ const AuctionClosed: React.FC<{ ownedCount: number }> = ({ ownedCount }) => {
 	);
 };
 
-const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10 }) => {
+const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, auction }) => {
 	const { user } = useUser();
 	const router = useRouter();
+	if (!auction) {
+		console.log("No auction data provided");
+	}
 
 	const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 

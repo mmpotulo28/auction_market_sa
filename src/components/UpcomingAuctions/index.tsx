@@ -24,7 +24,10 @@ const UpcomingAuctions: React.FC = () => {
 				toast.success("Fetched auctions successfully");
 				setAuctions(data);
 			},
-			onError: (error: string) => setError(error),
+			onError: (error: string) => {
+				toast.error(`Failed to fetch auction: ${error}`);
+				setError(error);
+			},
 		});
 	}, []);
 

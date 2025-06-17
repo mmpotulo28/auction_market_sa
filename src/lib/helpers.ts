@@ -107,3 +107,25 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 
 	return null;
 };
+
+// Fetch auction by name with improved efficiency and error handling
+export const fetchAuctionByName = async (name: string): Promise<iAuction | undefined> => {
+	try {
+		const auctions = await fetchAuctions({});
+
+		if (!Array.isArray(auctions) || !name) return undefined;
+
+		const normalizedTarget = stringToUrl(name);
+
+		// Use a for loop for early exit on match (more efficient than .find for large arrays)
+		for (const auction of auctions) {
+			if (stringToUrl(auction.name) === normalizedTarget) {
+				return auction;
+			}
+		}
+		return undefined;
+	} catch (error) {
+		console.error(`Failed to fetch auction by name: ${name}`, error);
+		return undefined;
+	}
+};
