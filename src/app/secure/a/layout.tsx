@@ -1,11 +1,10 @@
 "use client";
-
 import React from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import PermissionDenied from "@/components/PermissionDenied";
 import styles from "./layout.module.css";
 import { Protect, useUser } from "@clerk/nextjs";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 
 const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const { user } = useUser();
@@ -21,7 +20,10 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 			<SidebarProvider>
 				<div className={styles.dashboardContainer}>
 					<DashboardSidebar />
-					<main className={styles.mainContent}>{children}</main>
+					<main className={styles.mainContent}>
+						<SidebarTrigger variant={"outline"} />
+						{children}
+					</main>
 				</div>
 			</SidebarProvider>
 		</Protect>

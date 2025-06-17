@@ -130,11 +130,11 @@
 		--secondary-foreground: oklch(0.85 0.03 240);
 		--muted: oklch(0.2 0.05 240);
 		--muted-foreground: oklch(0.7 0.03 240);
-		--accent: oklch(0.3 0.15 200);
+		--accent: oklch(37.716% 0.11114 252.235);
 		--accent-foreground: oklch(0.95 0.02 240);
 		--destructive: oklch(0.4 0.2 30);
 		--border: oklch(0.2 0.05 240);
-		--input: oklch(0.2 0.05 240);
+		--input: oklch(26.895% 0.07014 246.634);
 		--ring: oklch(0.3 0.1 220);
 		--chart-1: oklch(0.4 0.2 220);
 		--chart-2: oklch(0.35 0.15 180);

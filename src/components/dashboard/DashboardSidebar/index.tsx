@@ -20,7 +20,7 @@ const DashboardSidebar: React.FC = () => {
 	const items = [
 		{
 			title: "Dashboard",
-			url: "secure/a",
+			url: "/secure/a/dashboard",
 			icon: Home,
 		},
 		{
@@ -41,7 +41,7 @@ const DashboardSidebar: React.FC = () => {
 	];
 
 	return (
-		<Sidebar variant="sidebar" className={styles.sidebar}>
+		<Sidebar variant="floating" className={styles.sidebar}>
 			<SidebarContent>
 				<SidebarGroup>
 					<SidebarGroupLabel>Application</SidebarGroupLabel>

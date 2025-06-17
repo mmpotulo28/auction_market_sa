@@ -110,6 +110,7 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonT
 								value="new"
 								checked={formData.condition === "new"}
 								onChange={handleChange}
+								className={styles.radioInput}
 							/>
 							New
 						</label>
@@ -120,6 +121,7 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonT
 								value="used"
 								checked={formData.condition === "used"}
 								onChange={handleChange}
+								className={styles.radioInput}
 							/>
 							Used
 						</label>

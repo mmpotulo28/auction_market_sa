@@ -75,29 +75,12 @@ const Header = () => {
 							</NavigationMenuContent>
 						</NavigationMenuItem>
 						<NavigationMenuItem>
-							<NavigationMenuTrigger>Features</NavigationMenuTrigger>
-							<NavigationMenuContent>
-								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-									<ListItem
-										title="Real-Time Updates"
-										href="/features/real-time-updates">
-										Stay updated with live item availability and auction status.
-									</ListItem>
-									<ListItem title="User Profiles" href="/features/user-profiles">
-										Manage your listings and purchases in one place.
-									</ListItem>
-									<ListItem
-										title="Admin Dashboard"
-										href="/features/admin-dashboard">
-										Admins can manage users, items, and transactions securely.
-									</ListItem>
-									<ListItem
-										title="Secure Transactions"
-										href="/features/secure-transactions">
-										Ensure safe and reliable payments for all users.
-									</ListItem>
-								</ul>
-							</NavigationMenuContent>
+							{/* Change Features link to anchor to #features */}
+							<NavigationMenuLink
+								href="/#features"
+								className={navigationMenuTriggerStyle()}>
+								Features
+							</NavigationMenuLink>
 						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuTrigger>Categories</NavigationMenuTrigger>

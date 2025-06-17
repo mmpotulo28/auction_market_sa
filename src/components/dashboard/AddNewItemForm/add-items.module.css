@@ -1,8 +1,7 @@
 .container {
 	max-width: 600px;
 	margin: 0 auto;
-	padding: 20px;
-	background-color: var(--card);
+	padding: 0px;
 	border-radius: var(--radius);
 	box-shadow: var(--shadow);
 }
@@ -17,4 +16,18 @@
 	display: flex;
 	gap: 10px;
 	align-items: center;
+}
+
+.radioInput {
+	border: 2px solid var(--border);
+	background-color: var(--primary) !important;
+	border-radius: 50%;
+	aspect-ratio: 1/1;
+	height: 20px;
+	cursor: pointer;
+	transition: border-color 0.2s;
+
+	&:checked {
+		border-color: var(--primary);
+	}
 }

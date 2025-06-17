@@ -7,7 +7,7 @@ const HowItWorks: React.FC = () => {
 	return (
 		<div className={styles.howItWorks}>
 			<div className={styles.howItWorksGrid}>
-				<h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
+				<h2 className="text-3xl font-bold text-center">How It Works</h2>
 				<div className={styles.step}>
 					<div className={styles.stepNumber}>1</div>
 					<Card className={styles.card}>

@@ -45,7 +45,7 @@ const TopBanner: React.FC<iTopBannerProps> = ({ action, title, overline, subtitl
 					actions={[
 						{
 							label: action?.label || "Get Started",
-							click: () => console.log("Get Started clicked"),
+							click: action?.click,
 						},
 					]}
 				/>
