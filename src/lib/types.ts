@@ -176,3 +176,5 @@ export interface iSupabasePayload {
 	new: iBid;
 	old: iBid | null;
 }
+
+// iTransaction already defined, nothing to add

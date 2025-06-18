@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import Container from "@/components/common/container";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,12 +19,12 @@ import {
 } from "@/components/ui/table";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import axios from "axios";
+import { toast } from "sonner";
 
 const TWENTY_MINUTES = 20 * 60; // seconds
 
 export default function CartPage() {
 	const { user } = useUser();
-	const router = useRouter();
 	const { items, highestBids } = useWebSocket();
 
 	// Compute won items from websocket context
@@ -48,6 +47,7 @@ export default function CartPage() {
 	const [secondsLeft, setSecondsLeft] = useState(TWENTY_MINUTES);
 	const [expired, setExpired] = useState(false);
 	const [clearError, setClearError] = useState<string | null>(null);
+	const [payfastLoading, setPayfastLoading] = useState(false);
 
 	useEffect(() => {
 		if (expired && wonItems.length > 0) {
@@ -100,10 +100,41 @@ export default function CartPage() {
 		return () => clearInterval(timer);
 	}, [secondsLeft, expired]);
 
-	const handleCheckout = () => {
-		// ...checkout logic...
-		alert("Checked out successfully!");
-		router.push("/");
+	const handleCheckout = async () => {
+		if (wonItems.length === 0) return;
+		setPayfastLoading(true);
+		try {
+			const res = await axios.post("/api/payfast/initiate", {
+				items: wonItems.map((item) => ({
+					id: item.id,
+					name: item.title,
+					description: item.description,
+					amount: item.price,
+				})),
+			});
+			if (res.data && res.data.formHtml) {
+				// Insert the form HTML and submit it
+				const div = document.createElement("div");
+				div.style.display = "none";
+				div.innerHTML = res.data.formHtml;
+				document.body.appendChild(div);
+				const form = div.querySelector("form") as HTMLFormElement | null;
+				if (form) {
+					form.submit();
+				} else {
+					toast.error("Failed to initiate payment. Please try again.");
+				}
+			} else {
+				toast.error("Failed to initiate payment. Please try again.");
+			}
+		} catch (e: any) {
+			const msg =
+				e?.response?.data?.error ||
+				e?.message ||
+				"Failed to initiate payment. Please try again.";
+			toast.error(msg);
+		}
+		setPayfastLoading(false);
 	};
 
 	const formatTime = (secs: number) => {
@@ -144,8 +175,8 @@ export default function CartPage() {
 						<Button
 							variant="default"
 							onClick={handleCheckout}
-							disabled={wonItems.length === 0}>
-							Checkout
+							disabled={wonItems.length === 0 || payfastLoading}>
+							{payfastLoading ? "Redirecting to PayFast..." : "Checkout"}
 						</Button>
 					</div>
 					{wonItems.length === 0 ? (
