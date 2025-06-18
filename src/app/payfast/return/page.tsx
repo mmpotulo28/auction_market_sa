@@ -2,6 +2,8 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import axios from "axios";
+import Illustration from "@/components/Illustration";
+import Receipt from "@/components/Reciept";
 
 function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
@@ -11,63 +13,6 @@ function getCookie(name: string): string | null {
 	return null;
 }
 
-const Illustration = ({ type }: { type: "success" | "error" | "loading" }) => {
-	if (type === "success") {
-		return (
-			<svg width="120" height="120" viewBox="0 0 120 120" className="mb-6">
-				<circle cx="60" cy="60" r="56" fill="#e0ffe6" stroke="#22c55e" strokeWidth="4" />
-				<polyline
-					points="40,65 55,80 80,45"
-					fill="none"
-					stroke="#22c55e"
-					strokeWidth="6"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				/>
-			</svg>
-		);
-	}
-	if (type === "loading") {
-		return (
-			<svg width="60" height="60" viewBox="0 0 60 60" className="mb-6 animate-spin">
-				<circle
-					cx="30"
-					cy="30"
-					r="26"
-					stroke="#6366f1"
-					strokeWidth="6"
-					fill="none"
-					strokeDasharray="40 60"
-				/>
-			</svg>
-		);
-	}
-	// error
-	return (
-		<svg width="120" height="120" viewBox="0 0 120 120" className="mb-6">
-			<circle cx="60" cy="60" r="56" fill="#ffeaea" stroke="#ef4444" strokeWidth="4" />
-			<line
-				x1="45"
-				y1="45"
-				x2="75"
-				y2="75"
-				stroke="#ef4444"
-				strokeWidth="6"
-				strokeLinecap="round"
-			/>
-			<line
-				x1="75"
-				y1="45"
-				x2="45"
-				y2="75"
-				stroke="#ef4444"
-				strokeWidth="6"
-				strokeLinecap="round"
-			/>
-		</svg>
-	);
-};
-
 export default function PayfastReturn() {
 	const [status, setStatus] = useState<"loading" | "success" | "notfound" | "error">("loading");
 	const [transaction, setTransaction] = useState<any>(null);
@@ -76,6 +21,7 @@ export default function PayfastReturn() {
 	const [retrying, setRetrying] = useState(false);
 	const mPaymentIdRef = useRef<string | null>(null);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
+	const receiptRef = useRef<HTMLDivElement>(null);
 
 	const validateTransaction = async (m_payment_id: string) => {
 		setStatus("loading");
@@ -157,18 +103,7 @@ export default function PayfastReturn() {
 							Thank you for your payment. Your transaction has been processed.
 						</p>
 						{transaction && (
-							<div className="mb-6 text-sm bg-green-50 border border-green-200 p-4 rounded w-full">
-								<div>
-									<b>Reference:</b>{" "}
-									{transaction.m_payment_id || transaction.pf_payment_id}
-								</div>
-								<div>
-									<b>Amount:</b> R {transaction.amount_gross}
-								</div>
-								<div>
-									<b>Status:</b> {transaction.payment_status}
-								</div>
-							</div>
+							<Receipt receiptRef={receiptRef} transaction={transaction} />
 						)}
 						<Link
 							href="/"

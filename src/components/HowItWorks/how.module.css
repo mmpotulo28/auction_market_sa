@@ -5,7 +5,7 @@
 	gap: 20px;
 	width: 100%;
 	padding: 20px 0;
-	background-color: var(--color-primary);
+	background-color: color-mix(in srgb, var(--color-secondary) 80%, var(--color-accent) 20%);
 }
 
 .howItWorksContainer {
@@ -14,7 +14,7 @@
 	gap: 20px;
 	width: 100%;
 	padding: 20px 0;
-	background-color: var(--color-primary);
+	background-color: color-mix(in srgb, var(--color-secondary) 80%, var(--color-accent) 20%);
 }
 
 .tutorialVideo {
