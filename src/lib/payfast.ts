@@ -17,6 +17,8 @@ export async function ensureTransactionsTable() {
 			} else {
 				console.error("Failed to ensure transactions table exists. Error:", error.message);
 			}
+		} else {
+			console.log("Transactions table exists.");
 		}
 	} catch (err) {
 		console.error(
@@ -29,7 +31,15 @@ export async function ensureTransactionsTable() {
 
 export async function storeTransaction(tx: iTransaction) {
 	await ensureTransactionsTable();
-	await supabase.from("transactions").insert([tx]);
+	try {
+		console.log("Storing transaction:", tx);
+		await supabase.from("transactions").insert([tx]);
+	} catch (error) {
+		console.error("Error storing transaction:", error);
+		throw new Error(
+			"Failed to store transaction." + (error instanceof Error ? error.message : ""),
+		);
+	}
 }
 
 export async function validatePayfastIPN(params: Record<string, string>) {

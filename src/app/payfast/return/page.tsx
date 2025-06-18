@@ -23,8 +23,9 @@ export default function PayfastReturn() {
 	const validateTransaction = async (m_payment_id: string) => {
 		setStatus("loading");
 		setRetrying(true);
+		let res: any;
 		try {
-			const res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
+			res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
 			if (
 				res.data &&
 				res.data.transaction &&
@@ -43,8 +44,12 @@ export default function PayfastReturn() {
 			let msg = "An unknown error occurred";
 			if (axios.isAxiosError(e)) {
 				msg = e.response?.data?.message || msg;
+			} else if (res.status === 404) {
+				msg = `Transaction ${m_payment_id} not found`;
+			} else {
+				msg = `Error ${res.status}: ${res.statusText}`;
 			}
-			console.error("Error fetching transaction:", msg);
+			console.error("Error fetching transaction:", msg, e);
 			toast.error(msg);
 		}
 		setRetrying(false);
