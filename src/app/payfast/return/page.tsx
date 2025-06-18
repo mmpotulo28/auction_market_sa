@@ -2,8 +2,6 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import axios from "axios";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
 function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
@@ -13,6 +11,63 @@ function getCookie(name: string): string | null {
 	return null;
 }
 
+const Illustration = ({ type }: { type: "success" | "error" | "loading" }) => {
+	if (type === "success") {
+		return (
+			<svg width="120" height="120" viewBox="0 0 120 120" className="mb-6">
+				<circle cx="60" cy="60" r="56" fill="#e0ffe6" stroke="#22c55e" strokeWidth="4" />
+				<polyline
+					points="40,65 55,80 80,45"
+					fill="none"
+					stroke="#22c55e"
+					strokeWidth="6"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+				/>
+			</svg>
+		);
+	}
+	if (type === "loading") {
+		return (
+			<svg width="60" height="60" viewBox="0 0 60 60" className="mb-6 animate-spin">
+				<circle
+					cx="30"
+					cy="30"
+					r="26"
+					stroke="#6366f1"
+					strokeWidth="6"
+					fill="none"
+					strokeDasharray="40 60"
+				/>
+			</svg>
+		);
+	}
+	// error
+	return (
+		<svg width="120" height="120" viewBox="0 0 120 120" className="mb-6">
+			<circle cx="60" cy="60" r="56" fill="#ffeaea" stroke="#ef4444" strokeWidth="4" />
+			<line
+				x1="45"
+				y1="45"
+				x2="75"
+				y2="75"
+				stroke="#ef4444"
+				strokeWidth="6"
+				strokeLinecap="round"
+			/>
+			<line
+				x1="75"
+				y1="45"
+				x2="45"
+				y2="75"
+				stroke="#ef4444"
+				strokeWidth="6"
+				strokeLinecap="round"
+			/>
+		</svg>
+	);
+};
+
 export default function PayfastReturn() {
 	const [status, setStatus] = useState<"loading" | "success" | "notfound" | "error">("loading");
 	const [transaction, setTransaction] = useState<any>(null);
@@ -20,13 +75,14 @@ export default function PayfastReturn() {
 	const maxRetries = 3;
 	const [retrying, setRetrying] = useState(false);
 	const mPaymentIdRef = useRef<string | null>(null);
+	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
 	const validateTransaction = async (m_payment_id: string) => {
 		setStatus("loading");
 		setRetrying(true);
-		let res: any;
+		setErrorMsg(null);
 		try {
-			res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
+			const res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
 			if (
 				res.data &&
 				res.data.transaction &&
@@ -37,22 +93,22 @@ export default function PayfastReturn() {
 			} else if (res.data && res.data.transaction) {
 				setTransaction(res.data.transaction);
 				setStatus("notfound");
+				setErrorMsg(
+					"We could not verify your payment as completed. If you have paid, please contact support.",
+				);
 			} else {
 				setStatus("notfound");
+				setErrorMsg(
+					"No transaction found for your payment. Please contact support if you have paid.",
+				);
 			}
-		} catch (e) {
+		} catch (e: any) {
 			setStatus("error");
-			let msg = "An unknown error occurred";
-			console.log(res);
-			if (res.status === 404) {
-				msg = `Transaction ${m_payment_id} not found`;
-			} else if (axios.isAxiosError(e)) {
-				msg = e.response?.data?.message || msg;
-			} else {
-				msg = `Error ${res.status}: ${res.statusText}`;
-			}
-			console.error("Error fetching transaction:", msg, e);
-			toast.error(msg);
+			setErrorMsg(
+				e?.response?.data?.error ||
+					e?.message ||
+					"An error occurred while validating your payment. Please try again or contact support.",
+			);
 		}
 		setRetrying(false);
 	};
@@ -62,6 +118,7 @@ export default function PayfastReturn() {
 		mPaymentIdRef.current = m_payment_id;
 		if (!m_payment_id) {
 			setStatus("error");
+			setErrorMsg("Missing payment reference. Please try again from your cart.");
 			return;
 		}
 		validateTransaction(m_payment_id);
@@ -75,67 +132,86 @@ export default function PayfastReturn() {
 	};
 
 	return (
-		<div className="flex flex-col items-center justify-center min-h-[60vh] py-12">
-			{status === "loading" && (
-				<>
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mb-6" />
-					<p className="mb-4 text-lg">Validating your payment...</p>
-				</>
-			)}
-			{status === "success" && (
-				<>
-					<h1 className="text-3xl font-bold mb-4">Payment Successful</h1>
-					<p className="mb-2">
-						Thank you for your payment. Your transaction has been processed.
-					</p>
-					{transaction && (
-						<div className="mb-6 text-sm bg-card p-4 rounded shadow">
-							<div>
-								<b>Reference:</b>{" "}
-								{transaction.m_payment_id || transaction.pf_payment_id}
-							</div>
-							<div>
-								<b>Amount:</b> R {transaction.amount_gross}
-							</div>
-							<div>
-								<b>Status:</b> {transaction.payment_status}
-							</div>
-						</div>
-					)}
-					<Link
-						href="/"
-						className="px-6 py-2 rounded br-3 bg-accent text-accent-foreground font-semibold">
-						Back to Home
-					</Link>
-				</>
-			)}
-			{(status === "notfound" || status === "error") && (
-				<>
-					<h1 className="text-3xl font-bold mb-4 ">
-						{status === "notfound" ? "Payment Not Completed" : "Error"}
-					</h1>
-					<p className="mb-6">
-						{status === "notfound"
-							? "We could not verify your payment as completed. If you have paid, please contact support."
-							: "An error occurred while validating your payment. Please try again or contact support."}
-					</p>
-					{retryCount <= maxRetries && (
-						<Button variant={"outline"} onClick={handleRetry} disabled={retrying}>
-							{retrying ? "Retrying..." : `Retry (${maxRetries - retryCount} left)`}
-						</Button>
-					)}
-					{retryCount >= maxRetries && (
-						<p className="mb-4 text-red-600">
-							You have reached the maximum number of retries.
+		<div
+			className="flex flex-col items-center justify-center min-h-[70vh] py-12 px-4"
+			style={{
+				background:
+					"linear-gradient(135deg, var(--color-background) 60%, var(--color-accent) 100%)",
+			}}>
+			<div className="bg-card shadow-xl rounded-2xl p-8 max-w-md w-full flex flex-col items-center">
+				{status === "loading" && (
+					<>
+						<Illustration type="loading" />
+						<p className="mb-4 text-lg font-medium text-muted-foreground">
+							Validating your payment...
 						</p>
-					)}
-					<Link
-						href="/"
-						className="px-6 py-2 rounded bg-accent text-accent-foreground font-semibold">
-						Back to Home
-					</Link>
-				</>
-			)}
+					</>
+				)}
+				{status === "success" && (
+					<>
+						<Illustration type="success" />
+						<h1 className="text-2xl font-bold mb-2 text-green-600">
+							Payment Successful
+						</h1>
+						<p className="mb-4 text-base text-muted-foreground">
+							Thank you for your payment. Your transaction has been processed.
+						</p>
+						{transaction && (
+							<div className="mb-6 text-sm bg-green-50 border border-green-200 p-4 rounded w-full">
+								<div>
+									<b>Reference:</b>{" "}
+									{transaction.m_payment_id || transaction.pf_payment_id}
+								</div>
+								<div>
+									<b>Amount:</b> R {transaction.amount_gross}
+								</div>
+								<div>
+									<b>Status:</b> {transaction.payment_status}
+								</div>
+							</div>
+						)}
+						<Link
+							href="/"
+							className="px-6 py-2 rounded bg-accent text-accent-foreground font-semibold shadow hover:bg-accent/90 transition">
+							Back to Home
+						</Link>
+					</>
+				)}
+				{(status === "notfound" || status === "error") && (
+					<>
+						<Illustration type="error" />
+						<h1 className="text-2xl font-bold mb-2 text-red-600">
+							{status === "notfound" ? "Payment Not Completed" : "Error"}
+						</h1>
+						<p className="mb-4 text-base text-muted-foreground">
+							{errorMsg ||
+								(status === "notfound"
+									? "We could not verify your payment as completed. If you have paid, please contact support."
+									: "An error occurred while validating your payment. Please try again or contact support.")}
+						</p>
+						{retryCount < maxRetries && (
+							<button
+								className="px-6 py-2 mb-4 rounded bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition disabled:opacity-60"
+								onClick={handleRetry}
+								disabled={retrying}>
+								{retrying
+									? "Retrying..."
+									: `Retry (${maxRetries - retryCount} left)`}
+							</button>
+						)}
+						{retryCount >= maxRetries && (
+							<p className="mb-4 text-red-600 font-medium">
+								You have reached the maximum number of retries.
+							</p>
+						)}
+						<Link
+							href="/"
+							className="px-6 py-2 rounded bg-accent text-accent-foreground font-semibold shadow hover:bg-accent/90 transition">
+							Back to Home
+						</Link>
+					</>
+				)}
+			</div>
 		</div>
 	);
 }
