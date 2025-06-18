@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
@@ -103,14 +104,14 @@ export default function PayfastReturn() {
 					)}
 					<Link
 						href="/"
-						className="px-6 py-2 rounded bg-accent text-accent-foreground font-semibold">
+						className="px-6 py-2 rounded br-3 bg-accent text-accent-foreground font-semibold">
 						Back to Home
 					</Link>
 				</>
 			)}
 			{(status === "notfound" || status === "error") && (
 				<>
-					<h1 className="text-3xl font-bold mb-4">
+					<h1 className="text-3xl font-bold mb-4 ">
 						{status === "notfound" ? "Payment Not Completed" : "Error"}
 					</h1>
 					<p className="mb-6">
@@ -119,12 +120,9 @@ export default function PayfastReturn() {
 							: "An error occurred while validating your payment. Please try again or contact support."}
 					</p>
 					{retryCount <= maxRetries && (
-						<button
-							className="px-6 py-2 mb-4 rounded bg-primary text-primary-foreground font-semibold disabled:opacity-60"
-							onClick={handleRetry}
-							disabled={retrying}>
+						<Button variant={"outline"} onClick={handleRetry} disabled={retrying}>
 							{retrying ? "Retrying..." : `Retry (${maxRetries - retryCount} left)`}
-						</button>
+						</Button>
 					)}
 					{retryCount >= maxRetries && (
 						<p className="mb-4 text-red-600">
