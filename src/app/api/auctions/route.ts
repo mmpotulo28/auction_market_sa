@@ -116,7 +116,7 @@ export async function PUT(req: Request) {
 
 		console.log("body", body);
 
-		const missingFields = [];
+		const missingFields: (keyof iAuction)[] = [];
 		if (!id) missingFields.push("id");
 		if (!name) missingFields.push("name");
 		if (!items_count) missingFields.push("items_count");
