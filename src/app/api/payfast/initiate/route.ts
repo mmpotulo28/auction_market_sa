@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
 		const total = items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2);
 
-		const m_payment_id = `amsa_${Date.now()}`;
+		const m_payment_id = `amsa_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 		const pfData: Record<string, string> = {
 			merchant_id: PAYFAST_MERCHANT_ID,
 			merchant_key: PAYFAST_MERCHANT_KEY,

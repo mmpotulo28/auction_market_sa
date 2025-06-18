@@ -11,7 +11,6 @@ export async function POST(req: Request) {
 
 		if (!valid) {
 			console.error("Invalid PayFast IPN received", params);
-			return NextResponse.json({ error: "Invalid PayFast IPN" }, { status: 400 });
 		}
 
 		await storeTransaction(params as unknown as iTransaction);
