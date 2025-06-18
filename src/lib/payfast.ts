@@ -33,7 +33,10 @@ export async function storeTransaction(tx: iTransaction) {
 	await ensureTransactionsTable();
 	try {
 		console.log("Storing transaction:", tx);
-		await supabase.from("transactions").insert([tx]);
+		const { data, error } = await supabase.from("transactions").insert([tx]);
+		if (error) throw error;
+		console.log("Transaction stored successfully:", data);
+		return data;
 	} catch (error) {
 		console.error("Error storing transaction:", error);
 		throw new Error(

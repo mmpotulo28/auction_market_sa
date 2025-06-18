@@ -42,10 +42,11 @@ export default function PayfastReturn() {
 		} catch (e) {
 			setStatus("error");
 			let msg = "An unknown error occurred";
-			if (axios.isAxiosError(e)) {
-				msg = e.response?.data?.message || msg;
-			} else if (res.status === 404) {
+			console.log(res);
+			if (res.status === 404) {
 				msg = `Transaction ${m_payment_id} not found`;
+			} else if (axios.isAxiosError(e)) {
+				msg = e.response?.data?.message || msg;
 			} else {
 				msg = `Error ${res.status}: ${res.statusText}`;
 			}
@@ -117,7 +118,7 @@ export default function PayfastReturn() {
 							? "We could not verify your payment as completed. If you have paid, please contact support."
 							: "An error occurred while validating your payment. Please try again or contact support."}
 					</p>
-					{retryCount < maxRetries && (
+					{retryCount <= maxRetries && (
 						<button
 							className="px-6 py-2 mb-4 rounded bg-primary text-primary-foreground font-semibold disabled:opacity-60"
 							onClick={handleRetry}
