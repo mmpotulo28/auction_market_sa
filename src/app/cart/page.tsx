@@ -112,8 +112,9 @@ export default function CartPage() {
 					amount: item.price,
 				})),
 			});
-			if (res.data && res.data.formHtml) {
-				// Insert the form HTML and submit it
+			if (res.data && res.data.formHtml && res.data.m_payment_id) {
+				// Store m_payment_id in a cookie for validation on return page
+				document.cookie = `payfast_m_payment_id=${res.data.m_payment_id}; path=/; max-age=1800; SameSite=Lax`;
 				const div = document.createElement("div");
 				div.style.display = "none";
 				div.innerHTML = res.data.formHtml;

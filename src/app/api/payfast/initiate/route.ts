@@ -18,6 +18,7 @@ export async function POST(req: Request) {
 
 		const total = items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2);
 
+		const m_payment_id = `amsa_${Date.now()}`;
 		const pfData: Record<string, string> = {
 			merchant_id: PAYFAST_MERCHANT_ID,
 			merchant_key: PAYFAST_MERCHANT_KEY,
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
 				.map((i) => i.description)
 				.join("; ")
 				.slice(0, 255),
-			m_payment_id: `cart_${Date.now()}`,
+			m_payment_id,
 		};
 
 		const formInputs = Object.entries(pfData)
@@ -57,8 +58,7 @@ export async function POST(req: Request) {
 			</html>
 		`;
 
-		// Return the HTML form as a string
-		return NextResponse.json({ formHtml: html });
+		return NextResponse.json({ formHtml: html, m_payment_id });
 	} catch (error: any) {
 		console.error("PayFast initiate error:", error);
 		return NextResponse.json(
