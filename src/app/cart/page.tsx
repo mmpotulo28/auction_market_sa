@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import Container from "@/components/common/container";
 import { Card } from "@/components/ui/card";
@@ -20,34 +20,47 @@ import {
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import axios from "axios";
 import { toast } from "sonner";
+import { iAuctionItem } from "@/lib/types";
+import Illustration from "@/components/Illustration";
 
 const TWENTY_MINUTES = 20 * 60; // seconds
 
 export default function CartPage() {
 	const { user } = useUser();
-	const { items, highestBids } = useWebSocket();
-
-	// Compute won items from websocket context
-	const wonItems = useMemo(() => {
-		if (!user) return [];
-		if (!items || !highestBids) return [];
-		const w = items.map((item) => {
-			if (highestBids[item.id]?.userId === user.id) {
-				return {
-					...item,
-					price: highestBids[item.id].amount,
-				};
-			}
-
-			return null;
-		});
-		return w.filter((item) => item !== null) as typeof items;
-	}, [items, highestBids, user]);
-
+	const { items, highestBids, isLoading: AuctionLoading } = useWebSocket();
 	const [secondsLeft, setSecondsLeft] = useState(TWENTY_MINUTES);
 	const [expired, setExpired] = useState(false);
 	const [clearError, setClearError] = useState<string | null>(null);
 	const [payfastLoading, setPayfastLoading] = useState(false);
+	const [wonItems, setWonItems] = useState<iAuctionItem[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+
+	// Compute won items from websocket context
+	useEffect(() => {
+		async function fetchWonItems() {
+			if (!user) return [];
+			if (!items || !highestBids) return [];
+			setIsLoading(true);
+
+			const w = items
+				.map((item) => {
+					if (highestBids[item.id].userId === user.id) {
+						return {
+							...item,
+							price: highestBids[item.id].amount,
+						};
+					}
+				})
+				.filter((item): item is iAuctionItem => item !== undefined);
+
+			console.log(w);
+
+			setWonItems(w);
+			setIsLoading(false);
+		}
+
+		fetchWonItems();
+	}, [items, highestBids, user]);
 
 	useEffect(() => {
 		if (expired && wonItems.length > 0) {
@@ -103,6 +116,7 @@ export default function CartPage() {
 	const handleCheckout = async () => {
 		if (wonItems.length === 0) return;
 		setPayfastLoading(true);
+		setIsLoading(true);
 		try {
 			// Generate unique ref and date string
 			const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
@@ -117,15 +131,9 @@ export default function CartPage() {
 			const order_id = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
 			// Prepare items for both endpoints
-			const orderItems = wonItems.map((item) => ({
-				id: item.id,
-				name: item.title,
-				price: item.price,
-				description: item.description,
-			}));
-
+			const orderItems = wonItems;
 			const payfastItems = wonItems.map((item) => ({
-				id: item.id,
+				...item,
 				name: auctionRef,
 				description: itemNames,
 				amount: item.price,
@@ -150,11 +158,13 @@ export default function CartPage() {
 			if (!orderRes.data || !orderRes.data.orders) {
 				toast.error("Failed to create order. Please try again.");
 				setPayfastLoading(false);
+				setIsLoading(false);
 				return;
 			}
 			if (!payfastRes.data || !payfastRes.data.formHtml || !payfastRes.data.m_payment_id) {
 				toast.error("Failed to initiate payment. Please try again.");
 				setPayfastLoading(false);
+				setIsLoading(false);
 				return;
 			}
 
@@ -178,6 +188,7 @@ export default function CartPage() {
 			toast.error(msg);
 		}
 		setPayfastLoading(false);
+		setIsLoading(false);
 	};
 
 	const formatTime = (secs: number) => {
@@ -222,7 +233,11 @@ export default function CartPage() {
 							{payfastLoading ? "Redirecting to PayFast..." : "Checkout"}
 						</Button>
 					</div>
-					{wonItems.length === 0 ? (
+					{(isLoading || AuctionLoading) && (
+						<Illustration type="loading" className="m-auto" />
+					)}
+
+					{wonItems.length === 0 && !isLoading && !AuctionLoading ? (
 						<p>You have no items in your cart.</p>
 					) : (
 						<Card className="overflow-x-auto p-0">

@@ -17,6 +17,9 @@ export async function POST(req: Request) {
 		if (!user?.id || !Array.isArray(items) || items.length === 0) {
 			return NextResponse.json({ error: "Missing user or items." }, { status: 400 });
 		}
+
+		console.log("received order to create: ", items);
+
 		const rows: Omit<iOrder, "id" | "created_at" | "updated_at">[] = items.map((item) => ({
 			order_id: order_id || "",
 			user_id: user.id,
