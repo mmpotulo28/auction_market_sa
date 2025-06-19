@@ -104,6 +104,8 @@ export default function TransactionsPage() {
 							<TableHead>Fee</TableHead>
 							<TableHead>Total</TableHead>
 							<TableHead>Email</TableHead>
+							<TableHead>User Name</TableHead>
+							<TableHead>User ID</TableHead>
 							<TableHead>Preview</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -163,6 +165,12 @@ export default function TransactionsPage() {
 									</TableCell>
 									<TableCell>{t.email_address || "-"}</TableCell>
 									<TableCell>
+										{t.name_first || t.name_last
+											? `${t.name_first || ""} ${t.name_last || ""}`.trim()
+											: "-"}
+									</TableCell>
+									<TableCell>{t.custom_str1 || "-"}</TableCell>
+									<TableCell>
 										<Dialog>
 											<DialogTrigger asChild>
 												<button
@@ -185,6 +193,7 @@ export default function TransactionsPage() {
 											</DialogContent>
 										</Dialog>
 									</TableCell>
+									{/* Username, Merchant ID, and User ID cells are intentionally omitted */}
 								</TableRow>
 							))
 						)}
