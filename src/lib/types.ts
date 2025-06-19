@@ -178,6 +178,17 @@ export interface iSupabasePayload {
 	old: iBid | null;
 }
 
+export enum iOrderStatus {
+	Unpaid = "UNPAID",
+	Pending = "PENDING",
+	Cancelled = "CANCELLED",
+	Failed = "FAILED",
+	Completed = "COMPLETED",
+	Refunded = "REFUNDED",
+	Expired = "EXPIRED",
+	Processing = "PROCESSING",
+}
+
 export interface iOrder {
 	id: number;
 	order_id: string;
@@ -185,7 +196,7 @@ export interface iOrder {
 	item_id: string;
 	item_name: string;
 	payment_id: string;
-	order_status: "UNPAID" | "PENDING" | "CANCELLED" | "FAILED" | string;
+	order_status: iOrderStatus;
 	created_at: string;
 	updated_at: string;
 	price: number;

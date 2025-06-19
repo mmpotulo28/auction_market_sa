@@ -18,6 +18,7 @@ import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
 import { iTransaction } from "@/lib/types";
+import Illustration from "@/components/Illustration";
 
 export default function TransactionsPage() {
 	const [transactions, setTransactions] = useState<iTransaction[]>([]);
@@ -69,7 +70,7 @@ export default function TransactionsPage() {
 	}, [search, transactions]);
 
 	return (
-		<div className="max-w-6xl mx-auto py-10 px-4">
+		<div className="max-w-full mx-auto py-10 px-4">
 			<h1 className="text-3xl font-bold mb-6">All Transactions</h1>
 			<Card className="mb-6 p-4">
 				<div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
@@ -113,7 +114,7 @@ export default function TransactionsPage() {
 						{loading ? (
 							<TableRow>
 								<TableCell colSpan={9} className="text-center">
-									Loading...
+									<Illustration type="loading" className="m-auto" />
 								</TableCell>
 							</TableRow>
 						) : filtered.length === 0 ? (

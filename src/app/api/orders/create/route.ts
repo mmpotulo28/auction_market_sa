@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
-import { iOrder, iAuctionItem } from "@/lib/types";
+import { iOrder, iAuctionItem, iOrderStatus } from "@/lib/types";
 import { User } from "@clerk/nextjs/server";
 
 interface CreateOrderRequest {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 			item_name: item.title,
 			price: item.price,
 			payment_id: payment_id || "",
-			order_status: "UNPAID",
+			order_status: iOrderStatus.Unpaid,
 			user_email: user.primaryEmailAddress?.emailAddress || "",
 			user_first_name: user.firstName || "",
 			user_last_name: user.lastName || "",

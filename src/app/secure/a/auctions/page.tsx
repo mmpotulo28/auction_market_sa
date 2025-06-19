@@ -30,6 +30,7 @@ import { DeleteIcon, Edit, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { iAuction } from "@/lib/types";
 import { FaSpinner } from "react-icons/fa";
+import Illustration from "@/components/Illustration";
 
 const AuctionsPage: React.FC = () => {
 	const [auctions, setAuctions] = useState<iAuction[]>([]);
@@ -243,7 +244,7 @@ const AuctionsPage: React.FC = () => {
 								<TableCell colSpan={columns.length} className="text-center">
 									{isLoading ? (
 										<>
-											<FaSpinner className="spin" /> Loading Auctions...
+											<Illustration type="loading" className="m-auto" />
 										</>
 									) : (
 										"No Auctions Found!"

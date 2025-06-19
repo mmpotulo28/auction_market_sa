@@ -31,6 +31,7 @@ import styles from "./items.module.css";
 import { DeleteIcon, Edit, PlusCircle } from "lucide-react";
 import AddNewItemForm from "@/components/dashboard/AddNewItemForm/page";
 import { AddItemData } from "@/lib/dbFunctions";
+import Illustration from "@/components/Illustration";
 
 const ItemsPage: React.FC = () => {
 	const [items, setItems] = useState<AddItemData[]>([]);
@@ -40,6 +41,7 @@ const ItemsPage: React.FC = () => {
 	const [rowSelection, setRowSelection] = useState({});
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isEditMode, setIsEditMode] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 	const [formData, setFormData] = useState<AddItemData>({
 		id: "",
 		title: "",
@@ -54,12 +56,15 @@ const ItemsPage: React.FC = () => {
 	// Fetch items
 	useEffect(() => {
 		const fetchItems = async () => {
+			setIsLoading(true);
 			const { data, error } = await supabase.from("items").select("*");
 			if (error) {
 				toast.error("Failed to fetch items.");
+				setIsLoading(false);
 				return;
 			}
 			setItems(data || []);
+			setIsLoading(false);
 		};
 		fetchItems();
 	}, []);
@@ -233,7 +238,11 @@ const ItemsPage: React.FC = () => {
 						) : (
 							<TableRow>
 								<TableCell colSpan={columns.length} className="text-center">
-									No items found.
+									{isLoading ? (
+										<Illustration type="loading" className="m-auto" />
+									) : (
+										"No items found."
+									)}
 								</TableCell>
 							</TableRow>
 						)}

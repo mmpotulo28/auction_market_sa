@@ -16,22 +16,23 @@ import { AlertCircle, Eye, Copy, Check, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
-import { iOrder, iAuctionItem, iTransaction } from "@/lib/types";
+import { iOrder, iAuctionItem, iTransaction, iOrderStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import Illustration from "@/components/Illustration";
 
-const ORDER_STATUSES = ["UNPAID", "PENDING", "PAID", "CANCELLED", "FAILED"];
+const ORDER_STATUSES = Object.values(iOrderStatus);
 
-function statusColor(status: string) {
+function statusColor(status: iOrderStatus) {
 	switch (status) {
-		case "PAID":
-		case "PENDING":
+		case iOrderStatus.Completed:
+		case iOrderStatus.Pending:
 			return "bg-green-100 text-green-700";
-		case "CANCELLED":
-		case "FAILED":
+		case iOrderStatus.Cancelled:
+		case iOrderStatus.Failed:
 			return "bg-red-100 text-red-700";
-		case "UNPAID":
+		case iOrderStatus.Unpaid:
 		default:
 			return "bg-yellow-100 text-yellow-700";
 	}
@@ -115,7 +116,7 @@ export default function AdminOrdersPage() {
 		}
 	};
 
-	const handleStatusChange = async (order: iOrder, newStatus: string) => {
+	const handleStatusChange = async (order: iOrder, newStatus: iOrderStatus) => {
 		setStatusUpdating(true);
 		setStatusUpdateError(null);
 		try {
@@ -151,7 +152,7 @@ export default function AdminOrdersPage() {
 	};
 
 	return (
-		<div className="max-w-6xl mx-auto py-10 px-4">
+		<div className="max-w-full mx-auto py-10 px-4">
 			<h1 className="text-3xl font-bold mb-6 flex items-center gap-3">
 				All Orders
 				<Button
@@ -203,8 +204,8 @@ export default function AdminOrdersPage() {
 					<TableBody>
 						{loading ? (
 							<TableRow>
-								<TableCell colSpan={9} className="text-center">
-									Loading...
+								<TableCell colSpan={9} className="text-center  ">
+									<Illustration type="loading" className="m-auto" />
 								</TableCell>
 							</TableRow>
 						) : filtered.length === 0 ? (
@@ -393,7 +394,7 @@ export default function AdminOrdersPage() {
 																		onClick={() =>
 																			handleStatusChange(
 																				expandedOrder,
-																				s,
+																				s as iOrderStatus,
 																			)
 																		}>
 																		{s}

@@ -8,7 +8,11 @@ const Illustration: React.FC<{ type: IllustrationType; className?: string }> = (
 }) => {
 	if (type === "success") {
 		return (
-			<svg width="120" height="120" viewBox="0 0 120 120" className={className ?? "mb-6"}>
+			<svg
+				width="120"
+				height="120"
+				viewBox="0 0 120 120"
+				className={"mb-6" + (className ? " " + className : "")}>
 				<circle cx="60" cy="60" r="56" fill="#e0ffe6" stroke="#22c55e" strokeWidth="4" />
 				<polyline
 					points="40,65 55,80 80,45"
@@ -27,7 +31,7 @@ const Illustration: React.FC<{ type: IllustrationType; className?: string }> = (
 				width="60"
 				height="60"
 				viewBox="0 0 60 60"
-				className={className ?? "mb-6 animate-spin"}>
+				className={"mb-6 animate-spin" + (className ? " " + className : "")}>
 				<circle
 					cx="30"
 					cy="30"
@@ -42,7 +46,11 @@ const Illustration: React.FC<{ type: IllustrationType; className?: string }> = (
 	}
 	// error
 	return (
-		<svg width="120" height="120" viewBox="0 0 120 120" className={className ?? "mb-6"}>
+		<svg
+			width="120"
+			height="120"
+			viewBox="0 0 120 120"
+			className={"mb-6" + (className ? " " + className : "")}>
 			<circle cx="60" cy="60" r="56" fill="#ffeaea" stroke="#ef4444" strokeWidth="4" />
 			<line
 				x1="45"
