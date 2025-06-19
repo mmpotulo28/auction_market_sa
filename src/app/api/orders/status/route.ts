@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
 
+interface UpdateOrderStatusRequest {
+	order_id: string;
+	status: string;
+}
+
 export async function PUT(req: Request) {
 	try {
-		const { order_id, status } = await req.json();
+		const { order_id, status }: UpdateOrderStatusRequest = await req.json();
 		if (!order_id || !status) {
 			return NextResponse.json({ error: "Missing order_id or status" }, { status: 400 });
 		}

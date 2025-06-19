@@ -1,9 +1,10 @@
+import { iTransaction } from "@/lib/types";
 import html2canvas from "html2canvas";
 import { ChevronDown, Copy, Download, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 export interface iReceiptProps {
-	transaction: any;
+	transaction: iTransaction;
 	receiptRef: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -13,7 +14,7 @@ const Receipt: React.FC<iReceiptProps> = ({ transaction, receiptRef }) => {
 	const handleCopyReceipt = () => {
 		if (!transaction) return;
 		const lines = [
-			"AUCTION MARKET SA - Store Receipt",
+			"AUCTION MARKET SA - Transaction Receipt",
 			`Date: ${
 				transaction.created_at
 					? new Date(transaction.created_at).toLocaleString()
@@ -22,7 +23,10 @@ const Receipt: React.FC<iReceiptProps> = ({ transaction, receiptRef }) => {
 			`Ref: ${transaction.m_payment_id || transaction.pf_payment_id}`,
 			`Status: ${transaction.payment_status}`,
 			`Item: ${transaction.item_name}`,
+			`Order ID: ${transaction.custom_str2}`,
 			transaction.item_description ? `Description: ${transaction.item_description}` : "",
+			`User Id: ${transaction.custom_str1}`,
+			`Payment Id: ${transaction.pf_payment_id || transaction.m_payment_id}`,
 			`Net Amount: R ${
 				transaction.amount_net !== undefined
 					? Number(transaction.amount_net).toFixed(2)
@@ -58,7 +62,7 @@ const Receipt: React.FC<iReceiptProps> = ({ transaction, receiptRef }) => {
 	return (
 		<div
 			ref={receiptRef}
-			className="mb-6 w-full mx-auto border border-dashed border-gray-400 bg-white text-gray-800 rounded-lg shadow receipt"
+			className="mb-6 w-full mx-auto border border-dashed border-gray-400 bg-white text-gray-800 rounded-sm shadow receipt text-sm"
 			style={{
 				fontFamily: "monospace, monospace",
 				padding: "1.5rem 1.0rem 0.5rem 1.0rem",
@@ -122,8 +126,20 @@ const Receipt: React.FC<iReceiptProps> = ({ transaction, receiptRef }) => {
 					</div>
 					<div className="flex justify-between mb-1">
 						<span>Item</span>
-						<span className="truncate max-w-[120px] text-right">
+						<span className="truncate max-w-[200px] text-right">
 							{transaction.item_name}
+						</span>
+					</div>
+					<div className="flex justify-between mb-1">
+						<span>Order Id</span>
+						<span className="truncate max-w-[250px] text-right">
+							{transaction.custom_str2}
+						</span>
+					</div>
+					<div className="flex justify-between mb-1">
+						<span>User Id</span>
+						<span className="truncate max-w-[200px] text-right">
+							{transaction.custom_str1}
 						</span>
 					</div>
 					<div className="border-t border-dashed border-gray-400 my-3" />

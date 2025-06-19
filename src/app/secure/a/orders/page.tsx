@@ -12,11 +12,30 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye } from "lucide-react";
+import { AlertCircle, Eye, Copy, Check, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
 import { iOrder, iAuctionItem, iTransaction } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+const ORDER_STATUSES = ["UNPAID", "PENDING", "PAID", "CANCELLED", "FAILED"];
+
+function statusColor(status: string) {
+	switch (status) {
+		case "PAID":
+		case "PENDING":
+			return "bg-green-100 text-green-700";
+		case "CANCELLED":
+		case "FAILED":
+			return "bg-red-100 text-red-700";
+		case "UNPAID":
+		default:
+			return "bg-yellow-100 text-yellow-700";
+	}
+}
 
 export default function AdminOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
@@ -27,27 +46,32 @@ export default function AdminOrdersPage() {
 	const [expandedOrder, setExpandedOrder] = useState<iOrder | null>(null);
 	const [itemDetails, setItemDetails] = useState<iAuctionItem | null>(null);
 	const [paymentInfo, setPaymentInfo] = useState<iTransaction | null>(null);
+	const [statusUpdating, setStatusUpdating] = useState(false);
+	const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
+	const [copied, setCopied] = useState<string | null>(null);
 
-	useEffect(() => {
+	const fetchOrders = async () => {
 		setLoading(true);
 		setError(null);
-		axios
-			.get("/api/admin/orders")
-			.then((res) => {
-				if (res.data && Array.isArray(res.data.orders)) {
-					setOrders(res.data.orders);
-					setFiltered(res.data.orders);
-				} else {
-					setError("Invalid response from server.");
-				}
-			})
-			.catch((e) => {
-				let msg = "Failed to fetch orders.";
-				if (e?.response?.data?.error) msg = e.response.data.error;
-				else if (e?.message) msg = e.message;
-				setError(msg);
-			})
-			.finally(() => setLoading(false));
+		try {
+			const res = await axios.get("/api/admin/orders");
+			if (res.data && Array.isArray(res.data.orders)) {
+				setOrders(res.data.orders);
+				setFiltered(res.data.orders);
+			} else {
+				setError("Invalid response from server.");
+			}
+		} catch (e: any) {
+			let msg = "Failed to fetch orders.";
+			if (e?.response?.data?.error) msg = e.response.data.error;
+			else if (e?.message) msg = e.message;
+			setError(msg);
+		}
+		setLoading(false);
+	};
+
+	useEffect(() => {
+		fetchOrders();
 	}, []);
 
 	useEffect(() => {
@@ -72,6 +96,7 @@ export default function AdminOrdersPage() {
 		setExpandedOrder(order);
 		setItemDetails(null);
 		setPaymentInfo(null);
+		setStatusUpdateError(null);
 		try {
 			const [itemRes, paymentRes] = await Promise.all([
 				axios.get<{ item: iAuctionItem }>(`/api/items/${order.item_id}`),
@@ -90,9 +115,55 @@ export default function AdminOrdersPage() {
 		}
 	};
 
+	const handleStatusChange = async (order: iOrder, newStatus: string) => {
+		setStatusUpdating(true);
+		setStatusUpdateError(null);
+		try {
+			const res = await axios.put("/api/orders/status", {
+				order_id: order.order_id,
+				status: newStatus,
+			});
+			if (res.data && res.data.success) {
+				toast.success("Order status updated!");
+				// Update local state for immediate feedback
+				setOrders((prev) =>
+					prev.map((o) => (o.id === order.id ? { ...o, order_status: newStatus } : o)),
+				);
+				setFiltered((prev) =>
+					prev.map((o) => (o.id === order.id ? { ...o, order_status: newStatus } : o)),
+				);
+				setExpandedOrder((prev) => (prev ? { ...prev, order_status: newStatus } : prev));
+			} else {
+				setStatusUpdateError(res.data?.error || "Failed to update order status.");
+			}
+		} catch (e: any) {
+			setStatusUpdateError(
+				e?.response?.data?.error || e?.message || "Failed to update order status.",
+			);
+		}
+		setStatusUpdating(false);
+	};
+
+	const handleCopy = (value: string) => {
+		navigator.clipboard.writeText(value);
+		setCopied(value);
+		setTimeout(() => setCopied(null), 1200);
+	};
+
 	return (
 		<div className="max-w-6xl mx-auto py-10 px-4">
-			<h1 className="text-3xl font-bold mb-6">All Orders</h1>
+			<h1 className="text-3xl font-bold mb-6 flex items-center gap-3">
+				All Orders
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={fetchOrders}
+					disabled={loading}
+					title="Refresh Orders"
+					className="ml-2">
+					<RefreshCw className={loading ? "animate-spin" : ""} size={18} />
+				</Button>
+			</h1>
 			<Card className="mb-6 p-4">
 				<div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
 					<Input
@@ -145,7 +216,22 @@ export default function AdminOrdersPage() {
 						) : (
 							filtered.map((o) => (
 								<TableRow key={o.id}>
-									<TableCell>{o.id}</TableCell>
+									<TableCell>
+										<span className="flex items-center gap-1">
+											{o.order_id}
+											<button
+												type="button"
+												className="ml-1 text-xs text-muted-foreground hover:text-accent"
+												onClick={() => handleCopy(o.order_id)}
+												title="Copy Order ID">
+												{copied === o.order_id ? (
+													<Check size={14} />
+												) : (
+													<Copy size={14} />
+												)}
+											</button>
+										</span>
+									</TableCell>
 									<TableCell>
 										{o.created_at
 											? new Date(o.created_at).toLocaleString()
@@ -156,10 +242,27 @@ export default function AdminOrdersPage() {
 									</TableCell>
 									<TableCell>{o.user_email || "-"}</TableCell>
 									<TableCell>{o.item_name}</TableCell>
-									<TableCell>{o.order_status}</TableCell>
 									<TableCell>
-										<span className="font-mono text-xs">
+										<Badge className={statusColor(o.order_status)}>
+											{o.order_status}
+										</Badge>
+									</TableCell>
+									<TableCell>
+										<span className="flex items-center gap-1 font-mono text-xs">
 											{o.payment_id || "-"}
+											{o.payment_id && (
+												<button
+													type="button"
+													className="ml-1 text-xs text-muted-foreground hover:text-accent"
+													onClick={() => handleCopy(o.payment_id)}
+													title="Copy Payment ID">
+													{copied === o.payment_id ? (
+														<Check size={14} />
+													) : (
+														<Copy size={14} />
+													)}
+												</button>
+											)}
 										</span>
 									</TableCell>
 									<TableCell>
@@ -179,52 +282,134 @@ export default function AdminOrdersPage() {
 													<span className="sr-only">Expand</span>
 												</button>
 											</DialogTrigger>
-											<DialogContent>
+											<DialogContent className="max-w-lg">
 												<DialogTitle>Order Details</DialogTitle>
 												{expandedOrder && (
-													<div className="space-y-2">
-														<div>
-															<strong>Order ID:</strong>{" "}
-															{expandedOrder.id}
+													<div className="space-y-3">
+														<div className="flex flex-col gap-2">
+															<div className="flex items-center gap-2">
+																<strong>Order ID:</strong>
+																<span className="font-mono">
+																	{expandedOrder.order_id}
+																</span>
+																<button
+																	type="button"
+																	className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																	onClick={() =>
+																		handleCopy(
+																			expandedOrder.order_id,
+																		)
+																	}
+																	title="Copy Order ID">
+																	{copied ===
+																	expandedOrder.order_id ? (
+																		<Check size={14} />
+																	) : (
+																		<Copy size={14} />
+																	)}
+																</button>
+															</div>
+															<div>
+																<strong>User:</strong>{" "}
+																{expandedOrder.user_first_name}{" "}
+																{expandedOrder.user_last_name} (
+																{expandedOrder.user_email})
+															</div>
+															<div>
+																<strong>Status:</strong>{" "}
+																<Badge
+																	className={statusColor(
+																		expandedOrder.order_status,
+																	)}>
+																	{expandedOrder.order_status}
+																</Badge>
+															</div>
+															<div>
+																<strong>Created:</strong>{" "}
+																{expandedOrder.created_at
+																	? new Date(
+																			expandedOrder.created_at,
+																	  ).toLocaleString()
+																	: "-"}
+															</div>
+															<div>
+																<strong>Item:</strong>{" "}
+																{expandedOrder.item_name}
+															</div>
+															<div>
+																<strong>Price:</strong> R{" "}
+																{expandedOrder.price !== undefined
+																	? Number(
+																			expandedOrder.price,
+																	  ).toFixed(2)
+																	: ""}
+															</div>
+															<div className="flex items-center gap-2">
+																<strong>Payment Ref:</strong>
+																<span className="font-mono">
+																	{expandedOrder.payment_id ||
+																		"-"}
+																</span>
+																{expandedOrder.payment_id && (
+																	<button
+																		type="button"
+																		className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																		onClick={() =>
+																			handleCopy(
+																				expandedOrder.payment_id!,
+																			)
+																		}
+																		title="Copy Payment ID">
+																		{copied ===
+																		expandedOrder.payment_id ? (
+																			<Check size={14} />
+																		) : (
+																			<Copy size={14} />
+																		)}
+																	</button>
+																)}
+															</div>
 														</div>
-														<div>
-															<strong>User:</strong>{" "}
-															{expandedOrder.user_first_name}{" "}
-															{expandedOrder.user_last_name} (
-															{expandedOrder.user_email})
-														</div>
-														<div>
-															<strong>Status:</strong>{" "}
-															{expandedOrder.order_status}
-														</div>
-														<div>
-															<strong>Created:</strong>{" "}
-															{expandedOrder.created_at
-																? new Date(
-																		expandedOrder.created_at,
-																  ).toLocaleString()
-																: "-"}
-														</div>
-														<div>
-															<strong>Item:</strong>{" "}
-															{expandedOrder.item_name}
-														</div>
-														<div>
-															<strong>Price:</strong> R{" "}
-															{expandedOrder.price !== undefined
-																? Number(
-																		expandedOrder.price,
-																  ).toFixed(2)
-																: ""}
-														</div>
-														<div>
-															<strong>Payment Ref:</strong>{" "}
-															{expandedOrder.payment_id || "-"}
+														<div className="flex flex-col gap-2 mt-2">
+															<label className="font-semibold">
+																Change Status:
+															</label>
+															<div className="flex gap-2 flex-wrap">
+																{ORDER_STATUSES.map((s) => (
+																	<Button
+																		key={s}
+																		variant={
+																			expandedOrder.order_status ===
+																			s
+																				? "default"
+																				: "outline"
+																		}
+																		size="sm"
+																		disabled={
+																			statusUpdating ||
+																			expandedOrder.order_status ===
+																				s
+																		}
+																		onClick={() =>
+																			handleStatusChange(
+																				expandedOrder,
+																				s,
+																			)
+																		}>
+																		{s}
+																	</Button>
+																))}
+															</div>
+															{statusUpdateError && (
+																<div className="text-red-600 text-xs mt-1">
+																	{statusUpdateError}
+																</div>
+															)}
 														</div>
 														{itemDetails && (
 															<div className="mt-4">
 																<strong>Item Details:</strong>
-																<pre className="bg-muted p-2 rounded text-xs mt-1">
+																<pre className="bg-muted p-2 rounded text-xs mt-1 overflow-x-auto">
 																	{JSON.stringify(
 																		itemDetails,
 																		null,
