@@ -106,7 +106,12 @@
 
 /* on mobile */
 @media (max-width: 768px) {
-	.howItWorks {
+	.howItWorksContainer {
 		grid-template-columns: 1fr;
+	}
+
+	.tutorialVideo {
+		max-width: 350px;
+		margin: auto;
 	}
 }
