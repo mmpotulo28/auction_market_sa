@@ -125,6 +125,13 @@ const Header = () => {
 								About Us
 							</NavigationMenuLink>
 						</NavigationMenuItem>
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								href="/cart"
+								className={navigationMenuTriggerStyle()}>
+								Cart
+							</NavigationMenuLink>
+						</NavigationMenuItem>
 					</NavigationMenuList>
 				</NavigationMenu>
 			</nav>

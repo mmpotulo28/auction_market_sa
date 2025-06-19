@@ -1,3 +1,4 @@
+import { User } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const PAYFAST_MERCHANT_ID = process.env.PAYFAST_MERCHANT_ID!;
@@ -10,7 +11,9 @@ const NOTIFY_URL = process.env.PAYFAST_NOTIFY_URL!;
 
 export async function POST(req: Request) {
 	try {
-		const { items } = await req.json();
+		const { items, user }: { items: any[]; user: User } = await req.json();
+
+		console.log("user", user);
 
 		if (!items || !Array.isArray(items) || items.length === 0) {
 			return NextResponse.json({ error: "No items to checkout." }, { status: 400 });
@@ -19,6 +22,8 @@ export async function POST(req: Request) {
 		const total = items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2);
 
 		const m_payment_id = `amsa_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+		const firstItem = items[0];
 		const pfData: Record<string, string> = {
 			merchant_id: PAYFAST_MERCHANT_ID,
 			merchant_key: PAYFAST_MERCHANT_KEY,
@@ -26,15 +31,14 @@ export async function POST(req: Request) {
 			cancel_url: CANCEL_URL,
 			notify_url: NOTIFY_URL,
 			amount: total,
-			item_name: items
-				.map((i) => i.name)
-				.join(", ")
-				.slice(0, 100),
-			item_description: items
-				.map((i) => i.description)
-				.join("; ")
-				.slice(0, 255),
+			item_name: firstItem.name || "",
+			item_description: firstItem.description || "",
 			m_payment_id,
+			custom_str1: user?.id || user?.externalId || "",
+			name_first: user?.firstName || "",
+			name_last: user?.lastName || "",
+			email_address: user?.primaryEmailAddress?.emailAddress || "",
+			custom_str3: items.map((item) => item.id).join(", ") || "",
 		};
 
 		const formInputs = Object.entries(pfData)

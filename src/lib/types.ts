@@ -57,6 +57,7 @@ export interface iTransaction {
 	email_address?: string;
 	merchant_id: string;
 	signature?: string;
+	created_at?: string; // or Date, depending on your usage
 }
 
 export interface iFooter {

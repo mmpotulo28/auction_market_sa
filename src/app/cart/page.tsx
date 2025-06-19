@@ -104,13 +104,21 @@ export default function CartPage() {
 		if (wonItems.length === 0) return;
 		setPayfastLoading(true);
 		try {
+			// Generate unique ref and date string
+			const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+			const uniqueRef = Math.random().toString(36).substring(2, 9);
+			const auctionRef = `AMSA-${dateStr}-${uniqueRef}-${user?.username}`;
+
+			const itemNames = wonItems.map((item) => item.title).join(", ");
+
 			const res = await axios.post("/api/payfast/initiate", {
 				items: wonItems.map((item) => ({
 					id: item.id,
-					name: item.title,
-					description: item.description,
+					name: auctionRef,
+					description: itemNames,
 					amount: item.price,
 				})),
+				user,
 			});
 			if (res.data && res.data.formHtml && res.data.m_payment_id) {
 				// Store m_payment_id in a cookie for validation on return page

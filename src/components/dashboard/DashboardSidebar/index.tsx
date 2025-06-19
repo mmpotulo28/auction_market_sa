@@ -12,7 +12,7 @@ import {
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import styles from "./dashboard-sidebar.module.css";
-import { Home, Settings, Box } from "lucide-react";
+import { Home, Settings, Box, Gavel, ReceiptText } from "lucide-react";
 import Link from "next/link";
 
 const DashboardSidebar: React.FC = () => {
@@ -31,7 +31,12 @@ const DashboardSidebar: React.FC = () => {
 		{
 			title: "Auctions",
 			url: "/secure/a/auctions",
-			icon: Box,
+			icon: Gavel,
+		},
+		{
+			title: "Transactions",
+			url: "/secure/a/transactions",
+			icon: ReceiptText,
 		},
 		{
 			title: "Settings",
