@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import axios from "axios";
 import Illustration from "@/components/Illustration";
@@ -23,41 +23,96 @@ export default function PayfastReturn() {
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 	const receiptRef = useRef<HTMLDivElement>(null);
 
-	const validateTransaction = async (m_payment_id: string) => {
-		setStatus("loading");
-		setRetrying(true);
-		setErrorMsg(null);
+	const updateOrderStatus = useCallback(async (orderId: string, status: "PENDING" | "FAILED") => {
+		if (!orderId) return { success: false, error: "Missing order id" };
 		try {
-			const res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
-			if (
-				res.data &&
-				res.data.transaction &&
-				res.data.transaction.payment_status === "COMPLETE"
-			) {
-				setTransaction(res.data.transaction);
-				setStatus("success");
-			} else if (res.data && res.data.transaction) {
-				setTransaction(res.data.transaction);
-				setStatus("notfound");
-				setErrorMsg(
-					"We could not verify your payment as completed. If you have paid, please contact support.",
-				);
+			const res = await axios.put("/api/orders/status", {
+				order_id: orderId,
+				status,
+			});
+			if (res.data && res.data.success) {
+				return { success: true };
 			} else {
-				setStatus("notfound");
-				setErrorMsg(
-					"No transaction found for your payment. Please contact support if you have paid.",
-				);
+				return { success: false, error: res.data?.error || "Unknown error updating order" };
 			}
 		} catch (e: any) {
-			setStatus("error");
-			setErrorMsg(
-				e?.response?.data?.error ||
-					e?.message ||
-					"An error occurred while validating your payment. Please try again or contact support.",
-			);
+			return {
+				success: false,
+				error: e?.response?.data?.error || e?.message || "Failed to update order status.",
+			};
 		}
-		setRetrying(false);
-	};
+	}, []);
+
+	const validateTransaction = useCallback(
+		async (m_payment_id: string) => {
+			setStatus("loading");
+			setRetrying(true);
+
+			try {
+				setErrorMsg("Validating your payment...");
+				const res = await axios.get(`/api/payfast/validate?m_payment_id=${m_payment_id}`);
+				if (
+					res.data &&
+					res.data.transaction &&
+					res.data.transaction.payment_status === "COMPLETE"
+				) {
+					setTransaction(res.data.transaction);
+					const orderId = res.data.transaction.custom_str2;
+					if (orderId) {
+						setErrorMsg("Updating your order...");
+						const updateRes = await updateOrderStatus(orderId, "PENDING");
+						if (updateRes.success) {
+							setStatus("success");
+						} else {
+							setStatus("error");
+							setErrorMsg(
+								"Payment was successful, but failed to update order status: " +
+									updateRes.error,
+							);
+						}
+					} else {
+						setStatus("error");
+						setErrorMsg("Payment was successful, but order reference is missing.");
+					}
+				} else if (res.data && res.data.transaction) {
+					setTransaction(res.data.transaction);
+					const orderId = res.data.transaction.custom_str2;
+					if (orderId) {
+						const updateRes = await updateOrderStatus(orderId, "FAILED");
+						if (!updateRes.success) {
+							setErrorMsg(
+								"We could not verify your payment as completed, and also failed to update order status: " +
+									updateRes.error,
+							);
+						} else {
+							setErrorMsg(
+								"We could not verify your payment as completed. If you have paid, please contact support.",
+							);
+						}
+					} else {
+						setErrorMsg(
+							"We could not verify your payment as completed. If you have paid, please contact support.",
+						);
+					}
+					setStatus("notfound");
+				} else {
+					setStatus("notfound");
+					setErrorMsg(
+						"No transaction found for your payment. Please contact support if you have paid.",
+					);
+				}
+			} catch (e: any) {
+				setStatus("error");
+				setErrorMsg(
+					e?.response?.data?.error ||
+						e?.message ||
+						"An error occurred while validating your payment. Please try again or contact support.",
+				);
+			}
+			setRetrying(false);
+		},
+		[updateOrderStatus],
+	);
 
 	useEffect(() => {
 		const m_payment_id = getCookie("payfast_m_payment_id");
@@ -68,7 +123,7 @@ export default function PayfastReturn() {
 			return;
 		}
 		validateTransaction(m_payment_id);
-	}, []);
+	}, [validateTransaction]);
 
 	const handleRetry = () => {
 		if (retryCount < maxRetries && mPaymentIdRef.current) {
@@ -89,7 +144,7 @@ export default function PayfastReturn() {
 					<>
 						<Illustration type="loading" />
 						<p className="mb-4 text-lg font-medium text-muted-foreground">
-							Validating your payment...
+							{errorMsg && <span>{errorMsg}</span>}
 						</p>
 					</>
 				)}

@@ -11,9 +11,13 @@ const NOTIFY_URL = process.env.PAYFAST_NOTIFY_URL!;
 
 export async function POST(req: Request) {
 	try {
-		const { items, user }: { items: any[]; user: User } = await req.json();
-
-		console.log("user", user);
+		const {
+			items,
+			user,
+			m_payment_id,
+			order_id,
+		}: { items: any[]; user: User; m_payment_id?: string; order_id?: string } =
+			await req.json();
 
 		if (!items || !Array.isArray(items) || items.length === 0) {
 			return NextResponse.json({ error: "No items to checkout." }, { status: 400 });
@@ -21,7 +25,9 @@ export async function POST(req: Request) {
 
 		const total = items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2);
 
-		const m_payment_id = `amsa_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+		// Use m_payment_id from frontend if provided
+		const paymentId =
+			m_payment_id || `amsa_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
 		const firstItem = items[0];
 		const pfData: Record<string, string> = {
@@ -33,13 +39,19 @@ export async function POST(req: Request) {
 			amount: total,
 			item_name: firstItem.name || "",
 			item_description: firstItem.description || "",
-			m_payment_id,
-			custom_str1: user?.id || user?.externalId || "",
+			m_payment_id: paymentId,
 			name_first: user?.firstName || "",
 			name_last: user?.lastName || "",
 			email_address: user?.primaryEmailAddress?.emailAddress || "",
+			custom_str1: user?.id || user?.externalId || "",
+			custom_str2: order_id || "",
 			custom_str3: items.map((item) => item.id).join(", ") || "",
 		};
+
+		// Attach the first item's custom_str2 (order id) if present
+		if (firstItem.custom_str2) {
+			pfData.custom_str2 = firstItem.custom_str2;
+		}
 
 		const formInputs = Object.entries(pfData)
 			.map(
@@ -62,7 +74,7 @@ export async function POST(req: Request) {
 			</html>
 		`;
 
-		return NextResponse.json({ formHtml: html, m_payment_id });
+		return NextResponse.json({ formHtml: html, m_payment_id: paymentId });
 	} catch (error: any) {
 		console.error("PayFast initiate error:", error);
 		return NextResponse.json(

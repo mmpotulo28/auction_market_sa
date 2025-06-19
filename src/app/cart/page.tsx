@@ -111,28 +111,62 @@ export default function CartPage() {
 
 			const itemNames = wonItems.map((item) => item.title).join(", ");
 
-			const res = await axios.post("/api/payfast/initiate", {
-				items: wonItems.map((item) => ({
-					id: item.id,
-					name: auctionRef,
-					description: itemNames,
-					amount: item.price,
-				})),
-				user,
-			});
-			if (res.data && res.data.formHtml && res.data.m_payment_id) {
-				// Store m_payment_id in a cookie for validation on return page
-				document.cookie = `payfast_m_payment_id=${res.data.m_payment_id}; path=/; max-age=1800; SameSite=Lax`;
-				const div = document.createElement("div");
-				div.style.display = "none";
-				div.innerHTML = res.data.formHtml;
-				document.body.appendChild(div);
-				const form = div.querySelector("form") as HTMLFormElement | null;
-				if (form) {
-					form.submit();
-				} else {
-					toast.error("Failed to initiate payment. Please try again.");
-				}
+			// Generate m_payment_id on the frontend
+			const m_payment_id = `amsa_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+			// generate order_id
+			const order_id = `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+			// Prepare items for both endpoints
+			const orderItems = wonItems.map((item) => ({
+				id: item.id,
+				name: item.title,
+				price: item.price,
+				description: item.description,
+			}));
+
+			const payfastItems = wonItems.map((item) => ({
+				id: item.id,
+				name: auctionRef,
+				description: itemNames,
+				amount: item.price,
+			}));
+
+			// 1. Create orders and initiate payment in parallel
+			const [orderRes, payfastRes] = await Promise.all([
+				axios.post("/api/orders/create", {
+					items: orderItems,
+					user,
+					payment_id: m_payment_id,
+					order_id,
+				}),
+				axios.post("/api/payfast/initiate", {
+					items: payfastItems,
+					user,
+					m_payment_id,
+					order_id,
+				}),
+			]);
+
+			if (!orderRes.data || !orderRes.data.orders) {
+				toast.error("Failed to create order. Please try again.");
+				setPayfastLoading(false);
+				return;
+			}
+			if (!payfastRes.data || !payfastRes.data.formHtml || !payfastRes.data.m_payment_id) {
+				toast.error("Failed to initiate payment. Please try again.");
+				setPayfastLoading(false);
+				return;
+			}
+
+			// Store m_payment_id in a cookie for validation on return page
+			document.cookie = `payfast_m_payment_id=${payfastRes.data.m_payment_id}; path=/; max-age=1800; SameSite=Lax`;
+			const div = document.createElement("div");
+			div.style.display = "none";
+			div.innerHTML = payfastRes.data.formHtml;
+			document.body.appendChild(div);
+			const form = div.querySelector("form") as HTMLFormElement | null;
+			if (form) {
+				form.submit();
 			} else {
 				toast.error("Failed to initiate payment. Please try again.");
 			}

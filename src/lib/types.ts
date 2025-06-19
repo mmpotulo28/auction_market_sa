@@ -178,4 +178,29 @@ export interface iSupabasePayload {
 	old: iBid | null;
 }
 
-// iTransaction already defined, nothing to add
+export interface iOrder {
+	id: number;
+	order_id: string;
+	user_id: string;
+	item_id: string;
+	item_name: string;
+	payment_id: string;
+	order_status: "UNPAID" | "PENDING" | "CANCELLED" | "FAILED" | string;
+	created_at: string;
+	updated_at: string;
+	price: number;
+	user_email?: string;
+	user_first_name?: string;
+	user_last_name?: string;
+	meta?: any;
+}
+
+export interface iOrderApiResponse {
+	orders: iOrder[];
+	error?: string;
+}
+
+export interface iOrderWithDetails extends iOrder {
+	item_details?: iAuctionItem;
+	payment_info?: iTransaction;
+}
