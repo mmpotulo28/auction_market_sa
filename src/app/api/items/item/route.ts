@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
 import { iAuctionItem } from "@/lib/types";
 
-// Fix: Use Next.js Route Handler signature for dynamic routes
-export async function GET(req: Request, context: { params: { id: string } }) {
-	const { id } = context.params;
+export async function GET(req: Request) {
+	const { searchParams } = new URL(req.url);
+	const id = searchParams.get("id");
 	if (!id) {
 		return NextResponse.json({ error: "Missing item id" }, { status: 400 });
 	}

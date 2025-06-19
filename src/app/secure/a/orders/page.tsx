@@ -100,7 +100,7 @@ export default function AdminOrdersPage() {
 		setStatusUpdateError(null);
 		try {
 			const [itemRes, paymentRes] = await Promise.all([
-				axios.get<{ item: iAuctionItem }>(`/api/items/${order.item_id}`),
+				axios.get<{ item: iAuctionItem }>(`/api/items/item?id=${order.item_id}`),
 				order.payment_id
 					? axios.get<{ transaction: iTransaction }>(
 							`/api/payfast/validate?m_payment_id=${order.payment_id}`,

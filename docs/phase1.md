@@ -1,122 +1,131 @@
-# Action Market SA - Phase 1 Plan
+# Auction Market SA - Phase 1 Documentation
 
 ## Project Overview
 
-Action Market SA combines Facebook Marketplace-like functionality with an auction-style purchasing system. The platform will allow users to list items for sale and purchase them in a first-come, first-served (FCFS) auction format. Future upgrades will include bidding for already purchased items.
+Auction Market SA is a digital auction marketplace for South Africa, combining real-time auction-style purchasing with a modern, scalable web platform. The system supports item listing, real-time bidding, order and transaction management, and seamless payment integration via PayFast.
 
 ## Objectives
 
-1. Build a scalable and real-time marketplace platform.
-2. Implement auction-style purchasing using WebSockets for real-time updates.
-3. Develop APIs for item management, user authentication, and transaction processing.
-4. Create a user-friendly interface for buyers and sellers.
+1. Build a scalable, real-time auction marketplace.
+2. Implement robust order, payment, and transaction flows.
+3. Provide a secure, feature-rich admin dashboard for management.
+4. Ensure type safety, error handling, and clean code throughout.
 
-## Proposed Technology Stack
+## Technology Stack
 
--   **Frontend and Backend**:
-    -   Next.js for both the auction website and backend APIs.
--   **Hosting**:
-    -   Azure for cloud hosting and scalability.
--   **Version Control**:
-    -   GitHub for codebase management.
+-   **Frontend & Backend:** Next.js (App Router, React, TypeScript)
+-   **Database:** Supabase (PostgreSQL)
+-   **Authentication:** Clerk.dev
+-   **Payments:** PayFast (sandbox and production support)
+-   **Real-Time:** WebSockets (for auction updates)
+-   **UI:** Tailwind CSS, custom components
+-   **Notifications:** Sonner (toast notifications)
+-   **Hosting:** Azure
 
-## Features (Phase 1)
+## Features
 
 ### User Features
 
--   **Item Listing**: Users can list items with details such as title, description, price, and images.
--   **Real-Time Updates**: Buyers and sellers receive real-time updates on item availability using WebSockets.
--   **Auction Purchase**: Items are purchased on a first-come, first-served basis.
+-   **Item Listing:** Users can list items with title, description, price, image, category, and condition.
+-   **Auction Participation:** Users can join auctions, place bids, and win items in real-time.
+-   **Cart & Checkout:** Won items are added to a cart with a 20-minute checkout window.
+-   **PayFast Integration:** Seamless payment initiation and validation with PayFast.
+-   **Order Tracking:** Users can track their orders and payment status.
+-   **Receipts:** Downloadable and copyable receipts for each transaction.
 
 ### Admin Features
 
--   **Dashboard**: Admins can manage users, items, and transactions through a secure admin interface.
+-   **Dashboard:** Secure admin dashboard with sidebar navigation.
+-   **Items Management:** View, add, edit, and delete items.
+-   **Auctions Management:** View, create, edit, and delete auctions.
+-   **Orders Management:** View all orders, expand for full details, change order status, copy IDs, and see payment info.
+-   **Transactions Management:** View all payment transactions, preview receipts, and search/filter.
+-   **Real-Time Updates:** Admins see live updates for items and orders.
+-   **Status Badges:** Visual status indicators for orders and transactions.
+-   **Search & Filtering:** Powerful search and filter for all admin tables.
+-   **Pagination:** Pagination for large data sets.
 
 ### APIs
 
--   **User Management**: APIs for user registration, login, and profile management.
--   **Item Management**: APIs for creating, updating, and deleting items.
--   **Transaction Processing**: APIs for handling purchases and payments.
+-   **/api/items**: CRUD for items.
+-   **/api/items/item?id=**: Fetch item details by ID.
+-   **/api/auctions**: CRUD for auctions.
+-   **/api/orders/create**: Create orders for cart items.
+-   **/api/orders/status**: Update order status (admin and payment flow).
+-   **/api/admin/orders**: Fetch all orders (admin).
+-   **/api/admin/transactions**: Fetch all transactions (admin).
+-   **/api/payfast/initiate**: Initiate PayFast payment (returns HTML form).
+-   **/api/payfast/validate**: Validate payment status by m_payment_id or pf_payment_id.
+-   **/api/payfast/notify**: PayFast IPN notification endpoint (stores transaction).
+-   **/api/items/status**: Update item status (e.g., after cart expiry).
 
 ## Architecture
 
-### Frontend and Backend
+-   **Next.js App Router**: All pages and API routes are colocated.
+-   **Supabase**: Used for all database operations, including items, auctions, orders, and transactions.
+-   **Clerk.dev**: Handles authentication and user management.
+-   **PayFast**: Used for payment processing, with secure server-side validation and notification.
+-   **WebSockets**: Used for real-time auction and bid updates.
 
--   **Next.js**: Used for both frontend and backend, leveraging its API routes for server-side functionality and React components for the user interface.
+## Data Models
 
-### Real-Time Communication
+-   **iAuctionItem**: Represents an item in the auction.
+-   **iAuction**: Represents an auction event.
+-   **iOrder**: Represents an order for a won item (with status, user, payment, etc.).
+-   **iTransaction**: Represents a payment transaction (PayFast).
+-   **iOrderStatus**: Enum for all possible order statuses.
+-   **User**: Provided by Clerk.dev.
 
--   **WebSockets**: For real-time updates on item availability and auction status.
+## Order & Payment Flow
 
-### Hosting
+1. **Cart Checkout**: User checks out won items.
+2. **Order Creation**: Frontend generates `order_id` and `m_payment_id`, creates orders via `/api/orders/create`.
+3. **Payment Initiation**: Frontend calls `/api/payfast/initiate` with the same IDs, receives a PayFast HTML form, and submits it.
+4. **Payment Validation**: On return, `/api/payfast/validate` checks payment status.
+5. **Order Status Update**: If payment is successful, `/api/orders/status` sets order to `PENDING`; if failed, to `FAILED`.
+6. **Admin Management**: Admin can view and change order status from the dashboard.
 
--   **Azure**: For hosting the Next.js application and WebSocket server.
+## Type Safety & Error Handling
 
-## Technical Planning
+-   All API endpoints and components use strict TypeScript types from `src/lib/types.ts`.
+-   All API endpoints return clear error messages and HTTP status codes.
+-   All user actions (add/edit/delete, payment, etc.) provide toast notifications for success/failure.
 
-### Pages
+## UI/UX
 
-1. **Home Page (`/`)**:
-    - Displays featured items and categories.
-    - Search bar for finding items.
-2. **Item Details Page (`/item/[id]`)**:
-    - Shows detailed information about a specific item.
-    - Includes a "Buy Now" button for auction-style purchasing.
-3. **User Profile Page (`/profile`)**:
-    - Displays user information and their listed items.
-4. **Admin Dashboard (`/admin`)**:
-    - Restricted to admin users for managing items, users, and transactions.
-5. **Authentication Pages (`/login`, `/register`)**:
-    - Login and registration forms for users.
+-   **Responsive Design:** All pages and tables are responsive.
+-   **Admin Sidebar:** Quick navigation between dashboard sections.
+-   **Dialogs:** Used for add/edit forms and expanded order views.
+-   **Illustrations:** Custom SVGs for loading, success, and error states.
+-   **Copy-to-Clipboard:** For order/payment IDs.
+-   **Status Badges:** Color-coded for clarity.
+-   **Pagination & Filtering:** For all tables.
 
-### Components
+## Security
 
-1. **Header**:
-    - Navigation bar with links to home, profile, and admin dashboard.
-2. **Footer**:
-    - Contains links to terms, privacy policy, and contact information.
-3. **ItemCard**:
-    - Displays a summary of an item (image, title, price).
-4. **ItemList**:
-    - Grid or list view of multiple `ItemCard` components.
-5. **RealTimeUpdates**:
-    - Handles WebSocket connections for live updates.
-6. **Form Components**:
-    - Reusable components for forms (e.g., `InputField`, `Button`).
-
-### APIs
-
-1. **GET `/api/items`**:
-    - Fetch a list of items.
-2. **GET `/api/items/[id]`**:
-    - Fetch details of a specific item.
-3. **POST `/api/items`**:
-    - Create a new item (restricted to authenticated users).
-4. **PUT `/api/items/[id]`**:
-    - Update an existing item (restricted to the item's owner).
-5. **DELETE `/api/items/[id]`**:
-    - Delete an item (restricted to the item's owner).
-6. **POST `/api/auth/login`**:
-    - Authenticate a user.
-7. **POST `/api/auth/register`**:
-    - Register a new user.
-8. **POST `/api/transactions`**:
-    - Handle item purchases.
+-   **Authentication:** All admin routes are protected.
+-   **Validation:** All API endpoints validate input and permissions.
+-   **PayFast:** All payment flows are server-validated and secure.
 
 ## Development Plan
 
-1. **Week 1-2**: Set up the Next.js project structure and repositories on GitHub.
-2. **Week 3-4**: Develop the frontend pages and reusable components.
-3. **Week 5-6**: Implement backend APIs using Next.js API routes.
-4. **Week 7-8**: Integrate WebSocket server for real-time updates.
-5. **Week 9-10**: Test and deploy the platform on Azure.
+1. **Project Setup:** Next.js, Supabase, Clerk, Tailwind, Sonner.
+2. **Core Models & Types:** Define all types in `src/lib/types.ts`.
+3. **API Development:** Implement all endpoints with type safety and error handling.
+4. **Frontend Pages:** Build user and admin pages with modern UI.
+5. **Payment Integration:** Integrate PayFast, handle all payment flows.
+6. **Testing:** Manual and automated tests for all flows.
+7. **Deployment:** Azure hosting.
 
-## Future Upgrades
+## Additional Notes
 
--   **Bidding System**: Allow users to bid on already purchased items.
--   **Advanced Search**: Implement filters and search functionality for better item discovery.
--   **Mobile App**: Develop a mobile app for iOS and Android.
+-   **Order IDs and Payment IDs** are generated on the frontend for traceability.
+-   **Order status** is always updated after payment validation.
+-   **All admin tables** support search, filtering, and pagination.
+-   **All code** is type-safe, robust, and clean.
+-   **All endpoints** are documented and follow RESTful conventions.
+-   **All error cases** are handled gracefully with user feedback.
 
-## Conclusion
+---
 
-Phase 1 focuses on building the core functionality of Action Market SA using Next.js for both frontend and backend, ensuring a seamless user experience and a scalable architecture. Future phases will expand the platform's capabilities based on user feedback and market needs.
+**If you add new features or flows, update this documentation accordingly.**
