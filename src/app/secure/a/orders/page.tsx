@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Illustration from "@/components/Illustration";
+import { sendNotification } from "@/lib/helpers";
 
 const ORDER_STATUSES = Object.values(iOrderStatus);
 
@@ -134,6 +135,17 @@ export default function AdminOrdersPage() {
 					prev.map((o) => (o.id === order.id ? { ...o, order_status: newStatus } : o)),
 				);
 				setExpandedOrder((prev) => (prev ? { ...prev, order_status: newStatus } : prev));
+				// Send notification to user
+				if (order.user_id) {
+					const notifRes = await sendNotification(
+						order.user_id,
+						`Order #${order.order_id} status updated to ${newStatus}.`,
+						"info",
+					);
+					if (!notifRes.success) {
+						console.error("Notification error:", notifRes.error);
+					}
+				}
 			} else {
 				setStatusUpdateError(res.data?.error || "Failed to update order status.");
 			}

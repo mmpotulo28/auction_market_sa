@@ -63,9 +63,21 @@ const Header = () => {
 				<NavigationMenu>
 					<NavigationMenuList className={`${styles.menuList} flex flex-col md:flex-row`}>
 						<NavigationMenuItem>
+							<NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
+								Home
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								href="/#features"
+								className={navigationMenuTriggerStyle()}>
+								Features
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+						<NavigationMenuItem>
 							<NavigationMenuTrigger>Account</NavigationMenuTrigger>
 							<NavigationMenuContent>
-								<ul className="grid w-[250px] gap-3 p-4">
+								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
 									<ListItem title="Account Home" href="/account">
 										Overview & quick links
 									</ListItem>
@@ -84,10 +96,22 @@ const Header = () => {
 								</ul>
 							</NavigationMenuContent>
 						</NavigationMenuItem>
+
 						<NavigationMenuItem>
-							<NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
-								Marketplace
-							</NavigationMenuLink>
+							<NavigationMenuTrigger>Support</NavigationMenuTrigger>
+							<NavigationMenuContent>
+								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+									<ListItem title="Contact Us" href="/support/contact">
+										Get in touch with our support team.
+									</ListItem>
+									<ListItem title="Help Center" href="/support/help-center">
+										Find guides and troubleshooting tips.
+									</ListItem>
+									<ListItem title="Terms & Policies" href="/support/terms">
+										Read our terms of service and privacy policy.
+									</ListItem>
+								</ul>
+							</NavigationMenuContent>
 						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuLink

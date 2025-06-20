@@ -129,3 +129,34 @@ export const fetchAuctionByName = async (name: string): Promise<iAuction | undef
 		return undefined;
 	}
 };
+
+/**
+ * Sends a notification to a user via the notifications API.
+ * @param userId - The user ID to notify.
+ * @param message - The notification message.
+ * @param type - The notification type ("info", "success", "warning", "error").
+ * @returns {Promise<{ success: boolean; error?: string }>}
+ */
+export const sendNotification = async (
+	userId: string,
+	message: string,
+	type: string = "info",
+): Promise<{ success: boolean; error?: string }> => {
+	try {
+		const res = await axios.post("/api/admin/notifications", {
+			user_id: userId || "All",
+			message,
+			type,
+		});
+		if (res.data && res.data.success) {
+			return { success: true };
+		}
+		return { success: false, error: res.data?.error || "Unknown error sending notification" };
+	} catch (e: any) {
+		let errorMsg = "Failed to send notification.";
+		if (e?.response?.data?.error) errorMsg = e.response.data.error;
+		else if (e?.message) errorMsg = e.message;
+		console.error("Notification error:", errorMsg);
+		return { success: false, error: errorMsg };
+	}
+};

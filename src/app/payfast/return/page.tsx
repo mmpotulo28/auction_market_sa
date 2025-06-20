@@ -4,6 +4,7 @@ import Link from "next/link";
 import axios from "axios";
 import Illustration from "@/components/Illustration";
 import Receipt from "@/components/Reciept";
+import { sendNotification } from "@/lib/helpers";
 
 function getCookie(name: string): string | null {
 	if (typeof document === "undefined") return null;
@@ -58,11 +59,23 @@ export default function PayfastReturn() {
 				) {
 					setTransaction(res.data.transaction);
 					const orderId = res.data.transaction.custom_str2;
+					const userId = res.data.transaction.custom_str1;
 					if (orderId) {
 						setErrorMsg("Updating your order...");
 						const updateRes = await updateOrderStatus(orderId, "PENDING");
 						if (updateRes.success) {
 							setStatus("success");
+							// Send notification for payment success
+							if (userId) {
+								const notifRes = await sendNotification(
+									userId,
+									`Payment successful for order #${orderId}.`,
+									"success",
+								);
+								if (!notifRes.success) {
+									console.error("Notification error:", notifRes.error);
+								}
+							}
 						} else {
 							setStatus("error");
 							setErrorMsg(
@@ -77,8 +90,20 @@ export default function PayfastReturn() {
 				} else if (res.data && res.data.transaction) {
 					setTransaction(res.data.transaction);
 					const orderId = res.data.transaction.custom_str2;
+					const userId = res.data.transaction.custom_str1;
 					if (orderId) {
 						const updateRes = await updateOrderStatus(orderId, "FAILED");
+						// Send notification for payment failure
+						if (userId) {
+							const notifRes = await sendNotification(
+								userId,
+								`Payment failed for order #${orderId}.`,
+								"error",
+							);
+							if (!notifRes.success) {
+								console.error("Notification error:", notifRes.error);
+							}
+						}
 						if (!updateRes.success) {
 							setErrorMsg(
 								"We could not verify your payment as completed, and also failed to update order status: " +
