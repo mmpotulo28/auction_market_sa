@@ -8,7 +8,6 @@ import {
 	TableRow,
 	TableHead,
 	TableCell,
-	TableCaption,
 } from "@/components/ui/table";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import {
@@ -25,6 +24,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationPrevious,
+	PaginationNext,
+	PaginationEllipsis,
+} from "@/components/ui/pagination";
+import Illustration from "@/components/Illustration";
 
 // Notification type colors and backgrounds
 const typeBorder = {
@@ -61,15 +70,23 @@ export default function AdminNotificationsPage() {
 	});
 	const [creating, setCreating] = useState(false);
 	const [showAdminOnly, setShowAdminOnly] = useState(false);
+	const [page, setPage] = useState(1);
+	const [pageSize] = useState(15);
+	const [total, setTotal] = useState(0);
+	const [filterType, setFilterType] = useState<string>("all");
+	const [filterRead, setFilterRead] = useState<string>("all");
+	const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
 
 	const fetchNotifications = async () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await fetch("/api/admin/notifications");
+			const res = await fetch(`/api/admin/notifications?page=${page}&pageSize=${pageSize}`);
 			const data = await res.json();
-			if (data.notifications) setNotifications(data.notifications);
-			else setError(data.error || "No notifications found.");
+			if (data.notifications) {
+				setNotifications(data.notifications);
+				setTotal(data.total || data.notifications.length);
+			} else setError(data.error || "No notifications found.");
 		} catch (e: any) {
 			setError(e.message);
 		} finally {
@@ -79,7 +96,8 @@ export default function AdminNotificationsPage() {
 
 	useEffect(() => {
 		fetchNotifications();
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [page, pageSize]);
 
 	const handleDelete = async (id: string) => {
 		if (!confirm("Delete this notification?")) return;
@@ -116,17 +134,66 @@ export default function AdminNotificationsPage() {
 		setCreating(false);
 	};
 
-	// Filter notifications based on toggle
-	const displayedNotifications = showAdminOnly
-		? notifications.filter((n) => n.admin_only)
-		: notifications;
+	// Filtering and sorting
+	const filteredAndSortedNotifications = notifications
+		.filter((n) => {
+			if (showAdminOnly && !n.admin_only) return false;
+			if (filterType !== "all" && n.type !== filterType) return false;
+			if (filterRead === "read" && !n.read) return false;
+			if (filterRead === "unread" && n.read) return false;
+			return true;
+		})
+		.sort((a, b) => {
+			const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+			const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+			return sortOrder === "desc" ? bDate - aDate : aDate - bDate;
+		});
+
+	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
 	return (
-		<div className="mx-auto py-0 px-4 max-w-6xl">
-			<div className="flex items-center justify-between mb-8">
-				<h1 className="text-3xl font-bold flex items-center gap-2">
-					<Bell className="w-7 h-7 text-accent" /> Admin Notifications
-				</h1>
+		<div className="mx-auto py-0 px-4 pb-10">
+			<div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
+				<div className="flex flex-wrap gap-4 items-center">
+					<h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 m-0">
+						<Bell className="w-7 h-7 text-accent" />
+					</h1>
+					{/* --- FILTERS --- */}
+					<div>
+						<label className="mr-2 text-sm font-medium">Type:</label>
+						<select
+							className="border rounded px-2 py-1"
+							value={filterType}
+							onChange={(e) => setFilterType(e.target.value)}>
+							<option value="all">All</option>
+							<option value="info">Info</option>
+							<option value="success">Success</option>
+							<option value="warning">Warning</option>
+							<option value="error">Error</option>
+						</select>
+					</div>
+					<div>
+						<label className="mr-2 text-sm font-medium">Read:</label>
+						<select
+							className="border rounded px-2 py-1"
+							value={filterRead}
+							onChange={(e) => setFilterRead(e.target.value)}>
+							<option value="all">All</option>
+							<option value="read">Read</option>
+							<option value="unread">Unread</option>
+						</select>
+					</div>
+					<div>
+						<label className="mr-2 text-sm font-medium">Sort by Date:</label>
+						<select
+							className="border rounded px-2 py-1"
+							value={sortOrder}
+							onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}>
+							<option value="desc">Newest First</option>
+							<option value="asc">Oldest First</option>
+						</select>
+					</div>
+				</div>
 				<div className="flex items-center gap-4">
 					<label className="flex items-center gap-2 text-sm font-medium">
 						<Switch
@@ -145,6 +212,7 @@ export default function AdminNotificationsPage() {
 					</Button>
 				</div>
 			</div>
+			{/* --- END FILTERS --- */}
 			{error && (
 				<Alert variant="destructive" className="mb-6">
 					<AlertCircle className="h-4 w-4" />
@@ -154,9 +222,6 @@ export default function AdminNotificationsPage() {
 			)}
 			<Card className="overflow-x-auto p-0 mb-10 shadow-lg">
 				<Table>
-					<TableCaption className="text-base font-medium pb-2">
-						{showAdminOnly ? "Admin Only Notifications" : "All notifications"}
-					</TableCaption>
 					<TableHeader>
 						<TableRow>
 							<TableHead className="w-12">Type</TableHead>
@@ -171,17 +236,17 @@ export default function AdminNotificationsPage() {
 						{loading ? (
 							<TableRow>
 								<TableCell colSpan={6} className="text-center">
-									Loading...
+									<Illustration type="loading" className="m-auto" />
 								</TableCell>
 							</TableRow>
-						) : displayedNotifications.length === 0 ? (
+						) : filteredAndSortedNotifications.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={6} className="text-center">
 									No notifications found.
 								</TableCell>
 							</TableRow>
 						) : (
-							displayedNotifications.map((n) => {
+							filteredAndSortedNotifications.map((n) => {
 								const border =
 									typeBorder[n.type as keyof typeof typeBorder] ||
 									typeBorder.default;
@@ -250,8 +315,56 @@ export default function AdminNotificationsPage() {
 						)}
 					</TableBody>
 				</Table>
+				<Pagination className="mt-4">
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								aria-disabled={page === 1}
+								className={page === 1 ? "pointer-events-none opacity-50" : ""}
+							/>
+						</PaginationItem>
+						{[...Array(totalPages)].map((_, idx) => {
+							const pageNum = idx + 1;
+							if (
+								pageNum === 1 ||
+								pageNum === totalPages ||
+								(pageNum >= page - 1 && pageNum <= page + 1)
+							) {
+								return (
+									<PaginationItem key={pageNum}>
+										<PaginationLink
+											onClick={() => setPage(pageNum)}
+											isActive={page === pageNum}>
+											{pageNum}
+										</PaginationLink>
+									</PaginationItem>
+								);
+							} else if (
+								(pageNum === page - 2 && page > 3) ||
+								(pageNum === page + 2 && page < totalPages - 2)
+							) {
+								return (
+									<PaginationItem key={pageNum + "-ellipsis"}>
+										<PaginationEllipsis />
+									</PaginationItem>
+								);
+							}
+							return null;
+						})}
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								aria-disabled={page === totalPages}
+								className={
+									page === totalPages ? "pointer-events-none opacity-50" : ""
+								}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</Card>
-			<Card className="bg-muted rounded-lg p-8 flex flex-col gap-6 shadow-lg max-w-3xl mx-auto">
+			<Card className="bg-muted rounded-lg p-8 flex flex-col gap-6 shadow-lg mx-auto">
 				<h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
 					<Bell className="w-5 h-5 text-accent" /> Create Notification
 				</h2>

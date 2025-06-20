@@ -8,7 +8,6 @@ import {
 	TableRow,
 	TableHead,
 	TableCell,
-	TableCaption,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -22,6 +21,15 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Illustration from "@/components/Illustration";
 import { sendNotification } from "@/lib/helpers";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationPrevious,
+	PaginationNext,
+	PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 const ORDER_STATUSES = Object.values(iOrderStatus);
 
@@ -51,15 +59,19 @@ export default function AdminOrdersPage() {
 	const [statusUpdating, setStatusUpdating] = useState(false);
 	const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
 	const [copied, setCopied] = useState<string | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize] = useState(15);
+	const [total, setTotal] = useState(0);
 
 	const fetchOrders = async () => {
 		setLoading(true);
 		setError(null);
 		try {
-			const res = await axios.get("/api/admin/orders");
+			const res = await axios.get(`/api/admin/orders?page=${page}&pageSize=${pageSize}`);
 			if (res.data && Array.isArray(res.data.orders)) {
 				setOrders(res.data.orders);
 				setFiltered(res.data.orders);
+				setTotal(res.data.total || res.data.orders.length);
 			} else {
 				setError("Invalid response from server.");
 			}
@@ -74,7 +86,8 @@ export default function AdminOrdersPage() {
 
 	useEffect(() => {
 		fetchOrders();
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [page, pageSize]);
 
 	useEffect(() => {
 		if (!search) {
@@ -163,6 +176,8 @@ export default function AdminOrdersPage() {
 		setTimeout(() => setCopied(null), 1200);
 	};
 
+	const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
 	return (
 		<div className="max-w-full mx-auto py-10 px-4">
 			<h1 className="text-3xl font-bold mb-6 flex items-center gap-3">
@@ -199,7 +214,6 @@ export default function AdminOrdersPage() {
 			)}
 			<Card className="overflow-x-auto p-0">
 				<Table>
-					<TableCaption>All orders</TableCaption>
 					<TableHeader>
 						<TableRow>
 							<TableHead>Order ID</TableHead>
@@ -450,6 +464,54 @@ export default function AdminOrdersPage() {
 						)}
 					</TableBody>
 				</Table>
+				<Pagination className="mt-4">
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								aria-disabled={page === 1}
+								className={page === 1 ? "pointer-events-none opacity-50" : ""}
+							/>
+						</PaginationItem>
+						{[...Array(totalPages)].map((_, idx) => {
+							const pageNum = idx + 1;
+							if (
+								pageNum === 1 ||
+								pageNum === totalPages ||
+								(pageNum >= page - 1 && pageNum <= page + 1)
+							) {
+								return (
+									<PaginationItem key={pageNum}>
+										<PaginationLink
+											onClick={() => setPage(pageNum)}
+											isActive={page === pageNum}>
+											{pageNum}
+										</PaginationLink>
+									</PaginationItem>
+								);
+							} else if (
+								(pageNum === page - 2 && page > 3) ||
+								(pageNum === page + 2 && page < totalPages - 2)
+							) {
+								return (
+									<PaginationItem key={pageNum + "-ellipsis"}>
+										<PaginationEllipsis />
+									</PaginationItem>
+								);
+							}
+							return null;
+						})}
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								aria-disabled={page === totalPages}
+								className={
+									page === totalPages ? "pointer-events-none opacity-50" : ""
+								}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</Card>
 		</div>
 	);

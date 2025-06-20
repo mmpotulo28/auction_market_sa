@@ -44,6 +44,11 @@ const DashboardSidebar: React.FC = () => {
 			icon: ReceiptText,
 		},
 		{
+			title: "Ads",
+			url: "/secure/a/ads",
+			icon: Box,
+		},
+		{
 			title: "Notifications",
 			url: "/secure/a/notifications",
 			icon: Bell,

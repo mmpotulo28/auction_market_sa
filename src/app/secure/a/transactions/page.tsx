@@ -8,13 +8,21 @@ import {
 	TableRow,
 	TableHead,
 	TableCell,
-	TableCaption,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye } from "lucide-react";
 import axios from "axios";
+import {
+	Pagination,
+	PaginationContent,
+	PaginationItem,
+	PaginationLink,
+	PaginationPrevious,
+	PaginationNext,
+	PaginationEllipsis,
+} from "@/components/ui/pagination";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
 import { iTransaction } from "@/lib/types";
@@ -27,17 +35,21 @@ export default function TransactionsPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
 	const [selectedTx, setSelectedTx] = useState<iTransaction | null>(null);
+	const [page, setPage] = useState(1);
+	const [pageSize] = useState(15);
+	const [total, setTotal] = useState(0);
 	const receiptRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		setLoading(true);
 		setError(null);
 		axios
-			.get("/api/admin/transactions")
+			.get(`/api/admin/transactions?page=${page}&pageSize=${pageSize}`)
 			.then((res) => {
 				if (res.data && Array.isArray(res.data.transactions)) {
 					setTransactions(res.data.transactions);
 					setFiltered(res.data.transactions);
+					setTotal(res.data.total || res.data.transactions.length);
 				} else {
 					setError("Invalid response from server.");
 				}
@@ -49,7 +61,8 @@ export default function TransactionsPage() {
 				setError(msg);
 			})
 			.finally(() => setLoading(false));
-	}, []);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [page, pageSize]);
 
 	useEffect(() => {
 		if (!search) {
@@ -68,6 +81,8 @@ export default function TransactionsPage() {
 			),
 		);
 	}, [search, transactions]);
+
+	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
 	return (
 		<div className="max-w-full mx-auto py-10 px-4">
@@ -94,7 +109,6 @@ export default function TransactionsPage() {
 			)}
 			<Card className="overflow-x-auto p-0">
 				<Table>
-					<TableCaption>All payment transactions</TableCaption>
 					<TableHeader>
 						<TableRow>
 							<TableHead>Date</TableHead>
@@ -200,6 +214,54 @@ export default function TransactionsPage() {
 						)}
 					</TableBody>
 				</Table>
+				<Pagination className="mt-4">
+					<PaginationContent>
+						<PaginationItem>
+							<PaginationPrevious
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								aria-disabled={page === 1}
+								className={page === 1 ? "pointer-events-none opacity-50" : ""}
+							/>
+						</PaginationItem>
+						{[...Array(totalPages)].map((_, idx) => {
+							const pageNum = idx + 1;
+							if (
+								pageNum === 1 ||
+								pageNum === totalPages ||
+								(pageNum >= page - 1 && pageNum <= page + 1)
+							) {
+								return (
+									<PaginationItem key={pageNum}>
+										<PaginationLink
+											onClick={() => setPage(pageNum)}
+											isActive={page === pageNum}>
+											{pageNum}
+										</PaginationLink>
+									</PaginationItem>
+								);
+							} else if (
+								(pageNum === page - 2 && page > 3) ||
+								(pageNum === page + 2 && page < totalPages - 2)
+							) {
+								return (
+									<PaginationItem key={pageNum + "-ellipsis"}>
+										<PaginationEllipsis />
+									</PaginationItem>
+								);
+							}
+							return null;
+						})}
+						<PaginationItem>
+							<PaginationNext
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								aria-disabled={page === totalPages}
+								className={
+									page === totalPages ? "pointer-events-none opacity-50" : ""
+								}
+							/>
+						</PaginationItem>
+					</PaginationContent>
+				</Pagination>
 			</Card>
 		</div>
 	);

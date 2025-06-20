@@ -8,7 +8,6 @@ import {
 	TableRow,
 	TableHead,
 	TableCell,
-	TableCaption,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -91,7 +90,6 @@ export default function UserOrdersPage() {
 				)}
 				<Card className="overflow-x-auto p-0">
 					<Table>
-						<TableCaption>Your order history</TableCaption>
 						<TableHeader>
 							<TableRow>
 								<TableHead>Order ID</TableHead>

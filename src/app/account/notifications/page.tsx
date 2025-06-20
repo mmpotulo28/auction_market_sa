@@ -8,6 +8,8 @@ import { RotateCcw } from "lucide-react";
 import Container from "@/components/common/container";
 import axios from "axios";
 import Illustration from "@/components/Illustration";
+import { Switch } from "@/components/ui/switch";
+import { CustomerAd } from "@/components/ads/CustomerAd";
 
 // Add type for notification
 interface Notification {
@@ -47,6 +49,7 @@ export default function NotificationsPage() {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [showOld, setShowOld] = useState(false);
 
 	const fetchNotifications = async () => {
 		setLoading(true);
@@ -101,85 +104,118 @@ export default function NotificationsPage() {
 		}
 	};
 
+	// Filter notifications based on switch
+	const now = Date.now();
+	const filteredNotifications = notifications.filter((n) => {
+		const created = n.created_at ? new Date(n.created_at).getTime() : 0;
+		const isOld = n.read && now - created > 5 * 60 * 1000;
+		const isNew = !isOld;
+		return showOld ? isOld : isNew;
+	});
+
 	return (
 		<Container>
 			<div className="mx-auto py-10 px-4">
-				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<Bell className="w-6 h-6 text-accent" /> Notifications
-					</h1>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={fetchNotifications}
-						title="Refetch notifications">
-						<RotateCcw className="w-5 h-5" />
-					</Button>
-				</div>
-				{error && (
-					<Alert variant="destructive" className="mb-6">
-						<AlertCircle className="h-4 w-4" />
-						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error}</AlertDescription>
-					</Alert>
-				)}
-				<Card className="overflow-x-auto px-4">
-					<ul className="divide-y">
-						{loading ? (
-							<Illustration type="loading" className="m-auto" />
-						) : notifications.length === 0 ? (
-							<li className="p-4 text-center">No notifications found.</li>
-						) : (
-							notifications.map((n) => {
-								const border =
-									typeBorder[n.type as keyof typeof typeBorder] ||
-									typeBorder.default;
-								const bg = typeBg[n.type as keyof typeof typeBg] || typeBg.default;
-								return (
-									<li
-										key={n.id}
-										className={`flex items-center gap-3 p-5 transition-colors rounded-lg my-2 shadow-sm group
-											${border} ${bg}
-											${n.read ? "opacity-60" : "hover:bg-accent/10"}
-										`}
-										style={{
-											boxShadow: n.read
-												? "none"
-												: "0 2px 8px 0 rgba(1,75,139,0.07)",
-											borderLeftWidth: 6,
-										}}>
-										<span className="flex-shrink-0 scale-110">
-											{typeIcon[n.type as keyof typeof typeIcon] ||
-												typeIcon.default}
-										</span>
-										<div className="flex-1">
-											<div className="font-medium text-lg flex items-center gap-2">
-												{n.message}
-												{n.read && (
-													<CheckCircle2 className="w-4 h-4 text-green-400" />
-												)}
-											</div>
-											<div className="text-xs text-muted-foreground mt-1">
-												{n.created_at
-													? new Date(n.created_at).toLocaleString()
-													: "-"}
-											</div>
-										</div>
-										{!n.read && (
-											<Button
-												size="sm"
-												variant="outline"
-												className="transition group-hover:border-accent group-hover:text-accent"
-												onClick={() => markAsRead(n.id)}>
-												Mark as read
-											</Button>
-										)}
-									</li>
-								);
-							})
+				<div className="flex flex-col md:flex-row md:items-start gap-8">
+					<div className="flex-1 min-w-0">
+						<div className="flex items-center justify-between mb-6">
+							<h1 className="text-2xl font-bold flex items-center gap-2">
+								<Bell className="w-6 h-6 text-accent" /> Notifications
+							</h1>
+							<div className="flex items-center gap-4">
+								<label className="flex items-center gap-2 text-sm font-medium">
+									<Switch
+										checked={showOld}
+										onCheckedChange={setShowOld}
+										id="show-old-notifications"
+									/>
+									<span>
+										{showOld
+											? "Show Old (Read & >5min)"
+											: "Show New (<5min or Unread)"}
+									</span>
+								</label>
+								<Button
+									variant="ghost"
+									size="icon"
+									onClick={fetchNotifications}
+									title="Refetch notifications">
+									<RotateCcw className="w-5 h-5" />
+								</Button>
+							</div>
+						</div>
+						{error && (
+							<Alert variant="destructive" className="mb-6">
+								<AlertCircle className="h-4 w-4" />
+								<AlertTitle>Error</AlertTitle>
+								<AlertDescription>{error}</AlertDescription>
+							</Alert>
 						)}
-					</ul>
-				</Card>
+						<Card className="overflow-x-auto px-4">
+							<ul className="divide-y">
+								{loading ? (
+									<Illustration type="loading" className="m-auto" />
+								) : filteredNotifications.length === 0 ? (
+									<li className="p-4 text-center">No notifications found.</li>
+								) : (
+									filteredNotifications.map((n) => {
+										const border =
+											typeBorder[n.type as keyof typeof typeBorder] ||
+											typeBorder.default;
+										const bg =
+											typeBg[n.type as keyof typeof typeBg] || typeBg.default;
+										return (
+											<li
+												key={n.id}
+												className={`flex items-center gap-3 p-5 transition-colors rounded-lg my-2 shadow-sm group
+													${border} ${bg}
+													${n.read ? "opacity-60" : "hover:bg-accent/10"}
+												`}
+												style={{
+													boxShadow: n.read
+														? "none"
+														: "0 2px 8px 0 rgba(1,75,139,0.07)",
+													borderLeftWidth: 6,
+												}}>
+												<span className="flex-shrink-0 scale-110">
+													{typeIcon[n.type as keyof typeof typeIcon] ||
+														typeIcon.default}
+												</span>
+												<div className="flex-1">
+													<div className="font-medium text-lg flex items-center gap-2">
+														{n.message}
+														{n.read && (
+															<CheckCircle2 className="w-4 h-4 text-green-400" />
+														)}
+													</div>
+													<div className="text-xs text-muted-foreground mt-1">
+														{n.created_at
+															? new Date(
+																	n.created_at,
+															  ).toLocaleString()
+															: "-"}
+													</div>
+												</div>
+												{!n.read && (
+													<Button
+														size="sm"
+														variant="outline"
+														className="transition group-hover:border-accent group-hover:text-accent"
+														onClick={() => markAsRead(n.id)}>
+														Mark as read
+													</Button>
+												)}
+											</li>
+										);
+									})
+								)}
+							</ul>
+						</Card>
+					</div>
+					<div className="w-full md:w-[340px] flex-shrink-0">
+						<CustomerAd />
+					</div>
+				</div>
 			</div>
 		</Container>
 	);

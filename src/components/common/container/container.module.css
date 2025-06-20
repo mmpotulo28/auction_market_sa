@@ -1,19 +1,21 @@
 .container {
-  display: block;
-  max-width: 1300px;
-  margin: 0 auto;
-  width: 100%;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	max-width: 1300px;
+	margin: 0 auto;
+	width: 100%;
 }
 
 .container.padded {
-  padding: 20px;
+	padding: 20px;
 }
 
 .container.fullWidth {
-  min-width: 100%;
-  max-width: 100vw !important;
+	min-width: 100%;
+	max-width: 100vw !important;
 }
 
 .dark {
-  background-color: var(--foreground);
+	background-color: var(--foreground);
 }

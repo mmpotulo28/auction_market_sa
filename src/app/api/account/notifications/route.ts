@@ -19,16 +19,24 @@ export async function GET(req: NextRequest) {
 		if (!userId) {
 			return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 		}
-		const { data, error } = await supabase
+		const { searchParams } = new URL(req.url);
+		const page = parseInt(searchParams.get("page") || "1", 10);
+		const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
+		const from = (page - 1) * pageSize;
+		const to = from + pageSize - 1;
+
+		const { data, error, count } = await supabase
 			.from("notifications")
-			.select("*")
+			.select("*", { count: "exact" })
 			.or(`user_id.eq.${userId},user_id.eq.All`)
-			.order("created_at", { ascending: false });
+			.order("created_at", { ascending: false })
+			.range(from, to);
+
 		if (error) {
 			console.error("Error fetching notifications:", error);
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
-		return NextResponse.json({ notifications: data as Notification[] });
+		return NextResponse.json({ notifications: data as Notification[], total: count });
 	} catch (err: any) {
 		console.error("Unexpected error:", err);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });

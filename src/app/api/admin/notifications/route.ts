@@ -13,16 +13,24 @@ type Notification = {
 };
 
 // GET: Admin fetch all notifications
-export async function GET() {
+export async function GET(req: NextRequest) {
 	try {
-		const { data, error } = await supabaseAdmin
+		const { searchParams } = new URL(req.url);
+		const page = parseInt(searchParams.get("page") || "1", 10);
+		const pageSize = parseInt(searchParams.get("pageSize") || "15", 10);
+		const from = (page - 1) * pageSize;
+		const to = from + pageSize - 1;
+
+		const { data, error, count } = await supabaseAdmin
 			.from("notifications")
-			.select("*")
-			.order("created_at", { ascending: false });
+			.select("*", { count: "exact" })
+			.order("created_at", { ascending: false })
+			.range(from, to);
+
 		if (error) {
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
-		return NextResponse.json({ notifications: data as Notification[] });
+		return NextResponse.json({ notifications: data as Notification[], total: count });
 	} catch (err: any) {
 		console.error("Unexpected error:", err);
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
