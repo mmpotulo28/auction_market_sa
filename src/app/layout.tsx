@@ -5,7 +5,6 @@ import Header from "@/components/header";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
-import { dark } from "@clerk/themes";
 import { ThemeProvider } from "@/context/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -22,10 +21,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={`antialiased`}>
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					<ClerkProvider
-						appearance={{
-							baseTheme: dark,
-						}}>
+					<ClerkProvider>
 						<WebSocketProvider>
 							<Header />
 							<main className="w-full h-full min-h-full">{children}</main>
