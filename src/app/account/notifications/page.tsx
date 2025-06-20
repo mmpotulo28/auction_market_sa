@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import Container from "@/components/common/container";
 import axios from "axios";
+import Illustration from "@/components/Illustration";
 
 // Add type for notification
 interface Notification {
@@ -74,6 +75,7 @@ export default function NotificationsPage() {
 
 	const markAsRead = async (id: string) => {
 		try {
+			setLoading(true);
 			const { data } = await axios.patch<{ success: boolean; error?: string }>(
 				"/api/account/notifications",
 				{
@@ -94,6 +96,8 @@ export default function NotificationsPage() {
 			} else {
 				setError("Failed to mark notification as read.");
 			}
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -122,7 +126,7 @@ export default function NotificationsPage() {
 				<Card className="overflow-x-auto px-4">
 					<ul className="divide-y">
 						{loading ? (
-							<li className="p-4 text-center">Loading...</li>
+							<Illustration type="loading" className="m-auto" />
 						) : notifications.length === 0 ? (
 							<li className="p-4 text-center">No notifications found.</li>
 						) : (

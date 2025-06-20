@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 // Notification type colors and backgrounds
 const typeBorder = {
@@ -59,6 +60,7 @@ export default function AdminNotificationsPage() {
 		admin_only: false,
 	});
 	const [creating, setCreating] = useState(false);
+	const [showAdminOnly, setShowAdminOnly] = useState(false);
 
 	const fetchNotifications = async () => {
 		setLoading(true);
@@ -114,19 +116,34 @@ export default function AdminNotificationsPage() {
 		setCreating(false);
 	};
 
+	// Filter notifications based on toggle
+	const displayedNotifications = showAdminOnly
+		? notifications.filter((n) => n.admin_only)
+		: notifications;
+
 	return (
 		<div className="mx-auto py-0 px-4 max-w-6xl">
 			<div className="flex items-center justify-between mb-8">
 				<h1 className="text-3xl font-bold flex items-center gap-2">
 					<Bell className="w-7 h-7 text-accent" /> Admin Notifications
 				</h1>
-				<Button
-					variant="ghost"
-					size="icon"
-					onClick={fetchNotifications}
-					title="Refetch notifications">
-					<RotateCcw className="w-5 h-5" />
-				</Button>
+				<div className="flex items-center gap-4">
+					<label className="flex items-center gap-2 text-sm font-medium">
+						<Switch
+							checked={showAdminOnly}
+							onCheckedChange={setShowAdminOnly}
+							id="admin-only-toggle"
+						/>
+						<span>Show Admin Only</span>
+					</label>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={fetchNotifications}
+						title="Refetch notifications">
+						<RotateCcw className="w-5 h-5" />
+					</Button>
+				</div>
 			</div>
 			{error && (
 				<Alert variant="destructive" className="mb-6">
@@ -138,7 +155,7 @@ export default function AdminNotificationsPage() {
 			<Card className="overflow-x-auto p-0 mb-10 shadow-lg">
 				<Table>
 					<TableCaption className="text-base font-medium pb-2">
-						All notifications
+						{showAdminOnly ? "Admin Only Notifications" : "All notifications"}
 					</TableCaption>
 					<TableHeader>
 						<TableRow>
@@ -157,14 +174,14 @@ export default function AdminNotificationsPage() {
 									Loading...
 								</TableCell>
 							</TableRow>
-						) : notifications.length === 0 ? (
+						) : displayedNotifications.length === 0 ? (
 							<TableRow>
 								<TableCell colSpan={6} className="text-center">
 									No notifications found.
 								</TableCell>
 							</TableRow>
 						) : (
-							notifications.map((n) => {
+							displayedNotifications.map((n) => {
 								const border =
 									typeBorder[n.type as keyof typeof typeBorder] ||
 									typeBorder.default;

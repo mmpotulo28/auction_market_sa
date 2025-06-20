@@ -27,6 +27,7 @@ import {
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import Illustration from "@/components/Illustration";
 
 export default function UserOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
@@ -104,7 +105,7 @@ export default function UserOrdersPage() {
 							{loading ? (
 								<TableRow>
 									<TableCell colSpan={5} className="text-center">
-										Loading...
+										<Illustration type="loading" className="m-auto" />
 									</TableCell>
 								</TableRow>
 							) : orders.length === 0 ? (

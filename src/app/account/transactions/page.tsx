@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
+import Illustration from "@/components/Illustration";
 
 export default function UserTransactionsPage() {
 	const [transactions, setTransactions] = useState<iTransaction[]>([]);
@@ -110,7 +111,7 @@ export default function UserTransactionsPage() {
 							{loading ? (
 								<TableRow>
 									<TableCell colSpan={8} className="text-center">
-										Loading...
+										<Illustration type="loading" className="m-auto" />
 									</TableCell>
 								</TableRow>
 							) : transactions.length === 0 ? (
