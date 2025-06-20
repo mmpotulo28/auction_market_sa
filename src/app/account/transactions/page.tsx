@@ -27,6 +27,7 @@ import {
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export default function UserTransactionsPage() {
 	const [transactions, setTransactions] = useState<iTransaction[]>([]);
@@ -38,19 +39,34 @@ export default function UserTransactionsPage() {
 	const [pageSize] = useState(10);
 	const [total, setTotal] = useState(0);
 
-	useEffect(() => {
+	const fetchTransactions = async () => {
 		setLoading(true);
 		setError(null);
-		fetch(`/api/transactions/user?page=${page}&pageSize=${pageSize}`)
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.transactions) {
-					setTransactions(data.transactions);
-					setTotal(data.total || 0);
-				} else setError(data.error || "No transactions found.");
-			})
-			.catch((e) => setError(e.message))
-			.finally(() => setLoading(false));
+		try {
+			const res = await axios.get<{
+				transactions: iTransaction[];
+				total: number;
+				error?: string;
+			}>(`/api/transactions/user?page=${page}&pageSize=${pageSize}`);
+			const data = res.data;
+			if (data.transactions) {
+				setTransactions(data.transactions);
+				setTotal(data.total || 0);
+			} else setError(data.error || "No transactions found.");
+		} catch (e: unknown) {
+			if (axios.isAxiosError(e)) {
+				setError(e.response?.data?.error || e.message);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchTransactions();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [page, pageSize]);
 
 	const totalPages = Math.ceil(total / pageSize);
@@ -63,20 +79,7 @@ export default function UserTransactionsPage() {
 					<Button
 						variant="ghost"
 						size="icon"
-						onClick={() => {
-							setLoading(true);
-							setError(null);
-							fetch(`/api/transactions/user?page=${page}&pageSize=${pageSize}`)
-								.then((res) => res.json())
-								.then((data) => {
-									if (data.transactions) {
-										setTransactions(data.transactions);
-										setTotal(data.total || 0);
-									} else setError(data.error || "No transactions found.");
-								})
-								.catch((e) => setError(e.message))
-								.finally(() => setLoading(false));
-						}}
+						onClick={fetchTransactions}
 						title="Refetch transactions">
 						<RotateCcw className="w-5 h-5" />
 					</Button>

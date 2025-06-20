@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/pagination";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
 export default function UserOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
@@ -35,19 +36,34 @@ export default function UserOrdersPage() {
 	const [pageSize] = useState(10);
 	const [total, setTotal] = useState(0);
 
-	useEffect(() => {
+	const fetchOrders = async () => {
 		setLoading(true);
 		setError(null);
-		fetch(`/api/orders/user?page=${page}&pageSize=${pageSize}`)
-			.then((res) => res.json())
-			.then((data) => {
-				if (data.orders) {
-					setOrders(data.orders);
-					setTotal(data.total || 0);
-				} else setError(data.error || "No orders found.");
-			})
-			.catch((e) => setError(e.message))
-			.finally(() => setLoading(false));
+		try {
+			const res = await axios.get<{
+				orders: iOrder[];
+				total: number;
+				error?: string;
+			}>(`/api/orders/user?page=${page}&pageSize=${pageSize}`);
+			const data = res.data;
+			if (data.orders) {
+				setOrders(data.orders);
+				setTotal(data.total || 0);
+			} else setError(data.error || "No orders found.");
+		} catch (e: unknown) {
+			if (axios.isAxiosError(e)) {
+				setError(e.response?.data?.error || e.message);
+			} else {
+				setError("An unexpected error occurred.");
+			}
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchOrders();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [page, pageSize]);
 
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -60,20 +76,7 @@ export default function UserOrdersPage() {
 					<Button
 						variant="ghost"
 						size="icon"
-						onClick={() => {
-							setLoading(true);
-							setError(null);
-							fetch(`/api/orders/user?page=${page}&pageSize=${pageSize}`)
-								.then((res) => res.json())
-								.then((data) => {
-									if (data.orders) {
-										setOrders(data.orders);
-										setTotal(data.total || 0);
-									} else setError(data.error || "No orders found.");
-								})
-								.catch((e) => setError(e.message))
-								.finally(() => setLoading(false));
-						}}
+						onClick={fetchOrders}
 						title="Refetch orders">
 						<RotateCcw className="w-5 h-5" />
 					</Button>
