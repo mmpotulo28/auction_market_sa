@@ -13,15 +13,18 @@ import {
 import Image from "next/image";
 
 import { iAuctionItem } from "@/lib/types";
+import { useWebSocket } from "@/context/WebSocketProvider";
+import Illustration from "../Illustration";
 
 interface iCarouselDApiSlider {
-	items: iAuctionItem[];
+	items?: iAuctionItem[];
 	controls?: boolean;
 }
 
-export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items, controls = true }) => {
+export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = true }) => {
 	const [api, setApi] = React.useState<CarouselApi>();
 	const [current, setCurrent] = React.useState(0);
+	const { items, isLoading } = useWebSocket();
 
 	React.useEffect(() => {
 		if (!api) {
@@ -43,13 +46,14 @@ export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items, contr
 		<div className="mx-auto max-w-xs">
 			<Carousel
 				setApi={setApi}
-				className="w-full max-w-xs"
+				className="w-full max-w-xs min-w-xs"
 				plugins={[
 					Autoplay({
 						delay: 2000,
 					}),
 				]}>
 				<CarouselContent>
+					{isLoading && <Illustration type="loading" className="m-auto" />}
 					{items?.slice(0, 10)?.map((item, index) => (
 						<CarouselItem key={index}>
 							<Card>

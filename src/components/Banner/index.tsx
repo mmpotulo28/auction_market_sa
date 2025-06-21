@@ -20,7 +20,7 @@ const Banner: React.FC<iBannerProps> = ({
 	title,
 	content,
 	actions,
-	size = iSize.Small,
+	size = iSize.Medium,
 	image = { src: "banner-image1.jpg", alt: "banner image" },
 }) => {
 	const classSize = () => {

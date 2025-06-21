@@ -4,8 +4,13 @@
 	align-items: center;
 	gap: 20px;
 	width: 100%;
-	padding: 20px 0;
+	padding: 20px;
 	background-color: color-mix(in srgb, var(--color-secondary) 80%, var(--color-accent) 20%);
+	background: url("/images/9c8de4b9-33ab-42cc-bee3-575719a8a663.jpeg");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
 }
 
 .howItWorksContainer {
@@ -13,8 +18,8 @@
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 	width: 100%;
-	padding: 20px 0;
-	background-color: color-mix(in srgb, var(--color-secondary) 80%, var(--color-accent) 20%);
+	background-color: color-mix(in srgb, var(--color-secondary) 50%, transparent 50%);
+	border-radius: var(--radius-md);
 }
 
 .tutorialVideo {
