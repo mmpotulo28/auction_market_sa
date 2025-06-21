@@ -11,6 +11,8 @@ import Illustration from "@/components/Illustration";
 import { Switch } from "@/components/ui/switch";
 import { CustomerAd } from "@/components/ads/CustomerAd";
 import styles from "./notifications.module.css";
+import { CarouselDApiSlider } from "@/components/TopBanner/slider";
+import { useWebSocket } from "@/context/WebSocketProvider";
 
 // Add type for notification
 interface Notification {
@@ -51,6 +53,7 @@ export default function NotificationsPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [showOld, setShowOld] = useState(false);
+	const { items } = useWebSocket();
 
 	const fetchNotifications = async () => {
 		setLoading(true);
@@ -217,9 +220,10 @@ export default function NotificationsPage() {
 						</Card>
 					</div>
 					<div className={styles.notificationsAd}>
-						<CustomerAd />
+						<CarouselDApiSlider items={items} controls={false} />
 					</div>
 				</div>
+				<CustomerAd variant="banner" />
 			</div>
 		</Container>
 	);

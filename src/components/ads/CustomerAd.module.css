@@ -1,0 +1,263 @@
+.adRoot {
+	position: relative;
+	min-width: 100%;
+	margin: 0 auto;
+	transition: all 0.2s;
+}
+
+/* Big Card */
+.adCardBig {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-radius: 1rem;
+	box-shadow: 0 4px 24px 0 rgba(1, 75, 139, 0.1);
+	background: linear-gradient(135deg, #e0f2fe 60%, #bae6fd 100%);
+	border: 1px solid #bfdbfe;
+	overflow: hidden;
+	transition: box-shadow 0.2s, border 0.2s;
+	width: 400px;
+	text-decoration: none;
+	height: 500px;
+	position: relative;
+}
+.adCardBig:hover {
+	box-shadow: 0 8px 32px 0 rgba(1, 75, 139, 0.18);
+	border-color: #60a5fa;
+}
+.adImageBig {
+	width: 100%;
+	height: 300px;
+	object-fit: cover;
+	border-top-left-radius: 1rem;
+	border-top-right-radius: 1rem;
+}
+.adContentBig {
+	padding: 10px 15px;
+	max-width: fit-content;
+	height: fit-content;
+	text-wrap: wrap;
+}
+.adTitleBig {
+	font-weight: bold;
+	font-size: 1.25rem;
+	color: #1e3a8a;
+	margin-bottom: 0.25rem;
+}
+.adDescriptionBig {
+	font-size: 1rem;
+	color: #2563eb;
+	margin-bottom: 0.75rem;
+}
+.adCtaBig {
+	display: inline-block;
+	padding: 0.5rem 1.25rem;
+	background: #1d4ed8;
+	color: #fff;
+	border-radius: 9999px;
+	font-size: 1rem;
+	font-weight: 600;
+	transition: background 0.2s;
+}
+.adCardBig:hover .adCtaBig {
+	background: #2563eb;
+}
+
+/* Small Card */
+.adCardSmall {
+	display: block;
+	border-radius: 0.75rem;
+	box-shadow: 0 2px 8px 0 rgba(1, 75, 139, 0.1);
+	background: linear-gradient(135deg, #e0f2fe 60%, #bae6fd 100%);
+	border: 1px solid #bfdbfe;
+	overflow: hidden;
+	transition: box-shadow 0.2s, border 0.2s;
+	width: 256px;
+	height: 200px;
+	text-decoration: none;
+}
+.adCardSmall:hover {
+	box-shadow: 0 6px 16px 0 rgba(1, 75, 139, 0.13);
+	border-color: #60a5fa;
+}
+.adImageSmall {
+	width: 100%;
+	height: 100px;
+	object-fit: cover;
+	border-top-left-radius: 0.75rem;
+	border-top-right-radius: 0.75rem;
+}
+.adContentSmall {
+	padding: 0.75rem;
+}
+.adTitleSmall {
+	font-weight: 600;
+	font-size: 1rem;
+	color: #1e3a8a;
+	margin-bottom: 0.15rem;
+}
+.adDescriptionSmall {
+	font-size: 0.9rem;
+	color: #2563eb;
+	margin-bottom: 0.5rem;
+}
+.adCtaSmall {
+	display: inline-block;
+	padding: 0.35rem 1rem;
+	background: #1d4ed8;
+	color: #fff;
+	border-radius: 9999px;
+	font-size: 0.95rem;
+	font-weight: 500;
+	transition: background 0.2s;
+}
+.adCardSmall:hover .adCtaSmall {
+	background: #2563eb;
+}
+
+/* Banner */
+.adBanner {
+	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+	border-radius: 0.75rem;
+	box-shadow: 0 2px 8px 0 rgba(1, 75, 139, 0.1);
+	background: linear-gradient(90deg, #e0f2fe 60%, #bae6fd 100%);
+	border: 1px solid #bfdbfe;
+	overflow: hidden;
+	transition: box-shadow 0.2s, border 0.2s;
+	max-width: 100%;
+	min-width: 100%;
+	border-radius: var(--radius-sm);
+	padding: 0;
+	position: relative;
+	min-height: 250px;
+}
+.adBanner:hover {
+	box-shadow: 0 6px 16px 0 rgba(1, 75, 139, 0.13);
+	border-color: #60a5fa;
+}
+.adBannerImage {
+	width: 260px;
+	min-width: 200px;
+	max-width: 320px;
+	height: auto;
+	object-fit: cover;
+	object-position: center;
+	border-radius: 0;
+	flex-shrink: 0;
+	display: block;
+	align-self: stretch;
+}
+.adBannerContent {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	padding: 1.5rem 2.5rem;
+	gap: 0.3rem;
+	min-width: 0;
+	width: 100%;
+	flex-wrap: wrap;
+}
+.adBannerTitle {
+	font-weight: bold;
+	font-size: 1.35rem;
+	color: #1e3a8a;
+	margin-bottom: 0.1rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.adBannerDescription {
+	font-size: 1.05rem;
+	color: #2563eb;
+	margin-bottom: 0.4rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: wrap;
+	max-width: 100%;
+}
+.adBannerCta {
+	display: inline-block;
+	background: #1d4ed8;
+	color: #fff;
+	border-radius: 9999px;
+	font-size: 1.05rem;
+	font-weight: 600;
+	transition: background 0.2s;
+	margin-top: 0.2rem;
+	white-space: nowrap;
+	padding: 0.5rem 1.5rem;
+	min-width: unset;
+	width: fit-content;
+	box-sizing: border-box;
+}
+
+.adBanner:hover .adBannerCta {
+	background: #2563eb;
+}
+
+@media (max-width: 900px) {
+	.adBannerContent {
+		padding: 1rem 1rem;
+	}
+	.adBannerImage {
+		width: 140px;
+		min-width: 100px;
+		max-width: 160px;
+	}
+	.adBanner {
+		min-height: 80px;
+	}
+}
+
+@media (max-width: 600px) {
+	.adBanner {
+		flex-direction: column;
+		align-items: stretch;
+		padding: 0;
+		min-width: 0;
+	}
+	.adBannerImage {
+		width: 100%;
+		max-width: 100%;
+		min-width: 0;
+		height: 120px;
+		border-radius: 0;
+	}
+	.adBannerContent {
+		padding: 0.75rem 1rem 1.25rem 1rem;
+	}
+	.adBannerTitle,
+	.adBannerDescription {
+		white-space: normal;
+	}
+
+	.adBannerImage:last-child {
+		border: 2px solid red;
+		display: none;
+	}
+}
+
+/* Dots */
+.adDots {
+	position: absolute;
+	bottom: 0.75rem;
+	right: 10%;
+	transform: translateX(10%);
+	display: flex;
+	gap: 0.5rem;
+}
+.adDot {
+	height: 0.5rem;
+	width: 0.5rem;
+	border-radius: 9999px;
+	background: #93c5fd;
+	border: none;
+	cursor: pointer;
+	transition: background 0.2s, opacity 0.2s;
+}
+.adDotActive {
+	background: #1d4ed8;
+	opacity: 1 !important;
+}

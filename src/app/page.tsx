@@ -9,6 +9,7 @@ import Features from "@/components/Features";
 import { ArrowRightIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { iSize } from "@/lib/types";
+import CustomerAd from "@/components/ads/CustomerAd";
 
 export default function Home() {
 	const router = useRouter();
@@ -31,7 +32,9 @@ export default function Home() {
 					Upcoming Auctions
 				</h1>
 				<UpcomingAuctions />
-				<Separator />
+				<Separator className="my-3" />
+				<CustomerAd variant="banner" />
+				<Separator className="my-3" />
 			</Container>
 
 			<Container fullWidth padded={false}>
@@ -40,7 +43,7 @@ export default function Home() {
 
 			<Container>
 				<Features />
-				<Separator />
+				<Separator className="my-3" />
 			</Container>
 
 			<Banner

@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import styles from "./CustomerAd.module.css";
 
 export type AdVariant = "banner" | "card-small" | "card-big";
 
@@ -17,7 +18,8 @@ export interface AdSlide {
 
 interface CustomerAdProps {
 	className?: string;
-	apiUrl?: string; // Optionally override API endpoint
+	apiUrl?: string;
+	variant?: AdVariant; // Optionally force a variant
 }
 
 const fallbackSlides: AdSlide[] = [
@@ -31,7 +33,7 @@ const fallbackSlides: AdSlide[] = [
 		cta: "Advertise Now",
 	},
 	{
-		variant: "card-big",
+		variant: "card-small",
 		title: "Get 10% Off Your Next Bid!",
 		description: "Use code AUCTION10 at checkout. Limited time only.",
 		imageUrl: "/images/ad-discount.jpeg",
@@ -39,7 +41,7 @@ const fallbackSlides: AdSlide[] = [
 		cta: "Use Code",
 	},
 	{
-		variant: "card-big",
+		variant: "banner",
 		title: "Featured Seller: TechZone",
 		description: "Exclusive electronics deals from TechZone. Shop now and save.",
 		imageUrl: "/images/ad-techzone.jpeg",
@@ -58,7 +60,11 @@ function shuffle<T>(arr: T[]): T[] {
 	return a;
 }
 
-export const CustomerAd: React.FC<CustomerAdProps> = ({ className, apiUrl = "/api/ads" }) => {
+export const CustomerAd: React.FC<CustomerAdProps> = ({
+	className,
+	apiUrl = "/api/ads",
+	variant = "card-big",
+}) => {
 	const [slides, setSlides] = useState<AdSlide[]>(fallbackSlides);
 	const [current, setCurrent] = useState(0);
 
@@ -90,43 +96,88 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({ className, apiUrl = "/ap
 	}, [slides]);
 
 	const slide = slides[current];
+	const adVariant = variant || slide.variant || "card-big";
 
 	return (
-		<div className={cn("relative transition-all", className)}>
-			<a
-				href={slide.linkUrl}
-				target="_blank"
-				rel="noopener noreferrer"
-				className={cn(
-					"block rounded-xl shadow-xl bg-gradient-to-br from-blue-100 to-blue-300 border border-blue-200 hover:shadow-2xl transition w-96",
-					"overflow-hidden",
-				)}>
-				<Image
-					src={slide.imageUrl}
-					alt={slide.title}
-					width={384}
-					height={180}
-					className="object-cover rounded-t-xl"
-				/>
-				<div className="p-5">
-					<div className="font-bold text-xl text-blue-900 mb-1">{slide.title}</div>
-					<div className="text-sm text-blue-800 mb-3">{slide.description}</div>
-					<span className="inline-block px-4 py-2 bg-blue-700 text-white rounded-full text-sm font-semibold hover:bg-blue-800 transition">
-						{slide.cta}
-					</span>
+		<div className={cn(styles.adRoot, className)}>
+			{adVariant === "card-big" && (
+				<div className={styles.adCardBig}>
+					<Image
+						src={slide.imageUrl}
+						alt={slide.title}
+						width={384}
+						height={180}
+						className={styles.adImageBig}
+					/>
+					<div className={styles.adContentBig}>
+						<div className={styles.adTitleBig}>{slide.title}</div>
+						<div className={styles.adDescriptionBig}>{slide.description}</div>
+						<a
+							href={slide.linkUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={styles.adCtaBig}>
+							{slide.cta}
+						</a>
+					</div>
 				</div>
-			</a>
-			<div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+			)}
+			{adVariant === "card-small" && (
+				<div className={styles.adCardSmall}>
+					<Image
+						src={slide.imageUrl}
+						alt={slide.title}
+						width={256}
+						height={100}
+						className={styles.adImageSmall}
+					/>
+					<div className={styles.adContentSmall}>
+						<div className={styles.adTitleSmall}>{slide.title}</div>
+						<div className={styles.adDescriptionSmall}>{slide.description}</div>
+						<a
+							href={slide.linkUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={styles.adCtaSmall}>
+							{slide.cta}
+						</a>
+					</div>
+				</div>
+			)}
+			{adVariant === "banner" && (
+				<div className={styles.adBanner}>
+					<Image
+						src={slide.imageUrl}
+						alt={slide.title}
+						width={120}
+						height={80}
+						className={styles.adBannerImage}
+					/>
+					<div className={styles.adBannerContent}>
+						<div className={styles.adBannerTitle}>{slide.title}</div>
+						<div className={styles.adBannerDescription}>{slide.description}</div>
+						<a href={slide.linkUrl} className={styles.adBannerCta}>
+							{slide.cta}
+						</a>
+					</div>
+					<Image
+						src={slide.imageUrl}
+						alt={slide.title}
+						width={120}
+						height={80}
+						className={styles.adBannerImage}
+					/>
+				</div>
+			)}
+			<div className={styles.adDots}>
 				{slides.map((_, idx) => (
 					<button
 						key={idx}
-						className={cn(
-							"h-2 w-2 rounded-full transition-all",
-							idx === current ? "bg-blue-700" : "bg-blue-300",
-						)}
+						className={cn(styles.adDot, idx === current ? styles.adDotActive : "")}
 						style={{ opacity: idx === current ? 1 : 0.5 }}
 						onClick={() => setCurrent(idx)}
-						aria-label={`Go to slide ${idx + 1}`}></button>
+						aria-label={`Go to slide ${idx + 1}`}
+					/>
 				))}
 			</div>
 		</div>

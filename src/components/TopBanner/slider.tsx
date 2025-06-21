@@ -16,9 +16,10 @@ import { iAuctionItem } from "@/lib/types";
 
 interface iCarouselDApiSlider {
 	items: iAuctionItem[];
+	controls?: boolean;
 }
 
-export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items }) => {
+export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items, controls = true }) => {
 	const [api, setApi] = React.useState<CarouselApi>();
 	const [current, setCurrent] = React.useState(0);
 
@@ -65,8 +66,12 @@ export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ items }) => 
 						</CarouselItem>
 					))}
 				</CarouselContent>
-				<CarouselPrevious />
-				<CarouselNext />
+				{controls && (
+					<>
+						<CarouselPrevious />
+						<CarouselNext />
+					</>
+				)}
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
 				{current} of {items?.slice(0, 10)?.length}
