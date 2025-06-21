@@ -7,6 +7,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Trash2, PlusCircle, RefreshCw } from "lucide-react";
 import { AdVariant, AdSlide } from "@/components/ads/CustomerAd";
 import { toast } from "sonner";
+import Image from "next/image";
 
 const variantOptions: AdVariant[] = ["banner", "card-small", "card-big"];
 
@@ -196,9 +197,11 @@ export default function AdminAdsPage() {
 					<ul className="divide-y">
 						{ads.map((ad) => (
 							<li key={ad.id} className="flex items-center gap-4 py-4">
-								<img
+								<Image
 									src={ad.imageUrl}
 									alt={ad.title}
+									width={96}
+									height={64}
 									className="w-24 h-16 object-cover rounded"
 								/>
 								<div className="flex-1">

@@ -1,0 +1,201 @@
+.notificationsRoot {
+	max-width: 100vw;
+	padding: 2.5rem 0.5rem 2.5rem 0.5rem;
+}
+
+.notificationsLayout {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+.notificationsMain {
+	flex: 1 1 0%;
+	min-width: 0;
+}
+
+.notificationsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.notificationsTitle {
+	font-size: 1.5rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.notificationsTitleIcon {
+	width: 1.5rem;
+	height: 1.5rem;
+	color: var(--accent);
+}
+
+.notificationsHeaderControls {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.notificationsSwitchLabel {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.95rem;
+	font-weight: 500;
+}
+
+.notificationsRefreshBtn {
+	margin-left: 0;
+}
+
+.notificationsAlert {
+	margin-bottom: 1.5rem;
+}
+
+.notificationsCard {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	justify-content: center;
+	overflow-x: auto;
+	padding: 0 10px;
+	min-height: 200px;
+}
+
+.notificationsList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.notificationsEmpty {
+	padding: 1rem;
+	text-align: center;
+}
+
+.notificationsLoading {
+	margin: auto;
+}
+
+.notificationItem {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0.5rem;
+	padding: 1rem;
+	margin: 0.5rem 0;
+	border-radius: 0.75rem;
+	box-shadow: 0 2px 8px 0 rgba(1, 75, 139, 0.07);
+	transition: background 0.2s, box-shadow 0.2s;
+	border-left-width: 6px;
+	position: relative;
+}
+
+.notificationRead {
+	opacity: 0.6;
+	box-shadow: none;
+}
+
+.notificationUnread:hover {
+	border-right-width: 6px;
+}
+
+.notificationIcon {
+	flex-shrink: 0;
+	transform: scale(1.1);
+	margin-bottom: 0.5rem;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+.notificationContent {
+	flex: 1 1 0%;
+	width: 100%;
+}
+
+.notificationMessage {
+	font-weight: 500;
+	font-size: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.notificationReadIcon {
+	width: 1.1rem;
+	height: 1.1rem;
+	color: #22c55e;
+	margin-left: 0.5rem;
+}
+
+.notificationDate {
+	font-size: 0.85rem;
+	color: var(--text-muted-foreground);
+	margin-top: 0.25rem;
+}
+
+.notificationMarkReadBtn {
+	margin-top: 0.5rem;
+}
+
+.notificationsAd {
+	width: 100%;
+	margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+	.notificationsAd {
+		width: 340px;
+		margin-top: 0;
+		flex-shrink: 0;
+	}
+
+	.notificationsLayout {
+		flex-direction: row;
+		align-items: flex-start;
+	}
+}
+
+@media (min-width: 640px) {
+	.notificationsHeader {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.notificationMarkReadBtn {
+		margin-top: 0;
+	}
+
+	.notificationMessage {
+		font-size: 1.125rem;
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.notificationItem {
+		flex-direction: row;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 1.25rem;
+	}
+
+	.notificationsHeaderControls {
+		flex-direction: row;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.notificationIcon {
+		position: relative;
+		margin: 0;
+		top: 0;
+	}
+}
