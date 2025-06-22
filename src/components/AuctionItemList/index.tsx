@@ -279,7 +279,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 									{!auctionNotStarted && (
 										<div className={styles.auctionTimer}>
 											<TimerContainer
-												size={iSize.Small}
+												size={iSize.Medium}
 												targetDate={auctionEndTime.toLocaleString()}
 												onExpire={() => {
 													setAuctionClosed(true);
