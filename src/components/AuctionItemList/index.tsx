@@ -281,6 +281,9 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 											<TimerContainer
 												size={iSize.Small}
 												targetDate={auctionEndTime.toLocaleString()}
+												onExpire={() => {
+													setAuctionClosed(true);
+												}}
 											/>
 										</div>
 									)}
