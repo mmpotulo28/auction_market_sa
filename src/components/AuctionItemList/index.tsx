@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,11 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { AlertCircle } from "lucide-react";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { useUser } from "@clerk/nextjs";
-import { iAuction } from "@/lib/types";
+import { iAuction, iSize, typeBg, typeBorder } from "@/lib/types";
+import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
+import Container from "../common/container";
+import { TimerContainer } from "../CountdownTimer";
+import LockUp from "../common/lockup";
 
 interface AuctionItemListProps {
 	itemsPerPage?: number;
@@ -57,9 +61,6 @@ const AuctionClosed: React.FC<{ ownedCount: number }> = ({ ownedCount }) => {
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, auction }) => {
 	const { user } = useUser();
 	const router = useRouter();
-	if (!auction) {
-		console.log("No auction data provided");
-	}
 
 	const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 
@@ -72,6 +73,35 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 		new Set(["new", "used"]),
 	);
 	const [pendingBids, setPendingBids] = useState<string[]>([]);
+	const [showBidHistory, setShowBidHistory] = useState(false);
+	const [auctionNotStarted, setAuctionNotStarted] = useState(false);
+	const [auctionClosed, setAuctionClosed] = useState(false);
+	const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
+
+	useEffect(() => {
+		if (auction) {
+			const auctionStart = new Date(auction.start_time).getTime();
+			const auctionEnd = auctionStart + (auction.duration || 0) * 60 * 1000;
+			const now = Date.now();
+
+			setAuctionNotStarted(now < auctionStart);
+			setAuctionClosed(now > auctionEnd);
+			setAuctionEndTime(new Date(auctionEnd));
+		}
+	}, [auction]);
+
+	// User bid history
+	const userBids = useMemo(() => {
+		if (!user) return [];
+		const allBids = Object.values(highestBids)
+			.filter((bid) => bid.userId === user.id)
+			.map((bid) => ({
+				...bid,
+				item: items.find((item) => item.id === bid.itemId),
+			}))
+			.filter((b) => b.item);
+		return allBids;
+	}, [highestBids, user, items]);
 
 	const filteredItems = useMemo(
 		() =>
@@ -177,12 +207,39 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 		[proposedBids, user, placeBid, highestBids, router],
 	);
 
-	const auctionClosed = false; // Set to true to test
-
 	const ownedCount = useMemo(() => {
 		if (!user) return 0;
 		return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
 	}, [highestBids, user]);
+
+	if (!auction) {
+		return (
+			<Container>
+				<Alert variant="destructive">
+					<AlertCircle />
+					<AlertTitle>No auction data available</AlertTitle>
+					<AlertDescription>
+						Please check your connection or try again later.
+					</AlertDescription>
+				</Alert>
+			</Container>
+		);
+	}
+
+	// Show error alert if error exists
+	if (error.length > 0) {
+		return (
+			<Container>
+				<div className="max-w-2xl mx-auto py-10 px-4">
+					<Alert variant="destructive" className="mb-6">
+						<AlertCircle className="h-4 w-4" />
+						<AlertTitle>Error</AlertTitle>
+						<AlertDescription>{error.join(",")}</AlertDescription>
+					</Alert>
+				</div>
+			</Container>
+		);
+	}
 
 	if (auctionClosed) {
 		return <AuctionClosed ownedCount={ownedCount} />;
@@ -202,25 +259,86 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 				/>
 				<SidebarInset>
 					<main className={styles.mainContent}>
-						<div className={styles.contentHeader}>
+						<Card
+							className={`${styles.contentHeader} ${
+								auctionNotStarted ? typeBorder.warning : typeBorder.success
+							} ${auctionNotStarted ? typeBg.warning : typeBg.success}`}>
 							<SidebarTrigger />
-							<Alert variant="destructive">
-								<AlertCircle className="h-4 w-4" />
-								<AlertTitle>Action not yet Open!</AlertTitle>
-								<AlertDescription>
-									This is a demo version of the auction system. The auction is not
-									yet open for bidding. Please check back later.
-								</AlertDescription>
-							</Alert>
-
-							{error?.map((err, index) => (
-								<Alert key={index} variant="destructive">
-									<AlertCircle className="h-4 w-4" />
-									<AlertTitle>Error!</AlertTitle>
-									<AlertDescription>{err}</AlertDescription>
-								</Alert>
-							))}
-						</div>
+							<span className={styles.auctionTitle}>
+								<LockUp
+									title={auction.name}
+									overline={
+										auctionNotStarted
+											? "Auction not started"
+											: "it's on, Have fun!"
+									}
+								/>
+							</span>
+							{auction && (
+								<div className={styles.auctionHeader}>
+									{!auctionNotStarted && (
+										<div className={styles.auctionTimer}>
+											<TimerContainer
+												size={iSize.Small}
+												targetDate={auctionEndTime.toLocaleString()}
+											/>
+										</div>
+									)}
+									{auctionNotStarted && (
+										<div className={styles.auctionTimer}>
+											<TimerContainer
+												size={iSize.Medium}
+												targetDate={(auction?.start_time).toLocaleString()}
+												onExpire={() => {
+													setAuctionNotStarted(false);
+												}}
+											/>
+										</div>
+									)}
+								</div>
+							)}
+							<Button
+								variant="outline"
+								size="sm"
+								onClick={() => setShowBidHistory(true)}
+								className="ml-auto"
+								disabled={auctionNotStarted}>
+								Your Bids
+							</Button>
+							{/* ...existing alerts... */}
+						</Card>
+						{/* User Bid History Dialog */}
+						<Dialog open={showBidHistory} onOpenChange={setShowBidHistory}>
+							<DialogContent>
+								<DialogTitle>Your Bid History</DialogTitle>
+								{userBids.length === 0 ? (
+									<p className="text-muted-foreground">
+										You have not placed any bids yet.
+									</p>
+								) : (
+									<ul className="divide-y">
+										{userBids.map((bid) => (
+											<li key={bid.itemId} className="py-2">
+												<div className="flex flex-col sm:flex-row sm:items-center gap-2">
+													<span className="font-semibold">
+														{bid.item?.title}
+													</span>
+													<span className="text-sm text-muted-foreground">
+														Bid: R {Number(bid.amount).toFixed(2)}
+													</span>
+													<span className="text-xs text-muted-foreground">
+														{bid.timestamp &&
+															new Date(
+																bid.timestamp,
+															).toLocaleString()}
+													</span>
+												</div>
+											</li>
+										))}
+									</ul>
+								)}
+							</DialogContent>
+						</Dialog>
 						<div className={styles.grid}>
 							{paginatedItems.map((item) => {
 								const highestBid = highestBids[item.id];
@@ -282,7 +400,10 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 												variant="outline"
 												onClick={() => adjustBid(item.id, -10)}
 												disabled={
-													currentBid <= (highestBid?.amount || item.price)
+													currentBid <=
+														(highestBid?.amount || item.price) ||
+													auctionClosed ||
+													auctionNotStarted
 												}>
 												{isLoading ? (
 													<FaSpinner className="spin" />
@@ -296,7 +417,9 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 												disabled={
 													currentBid <=
 														(highestBid?.amount || item.price) ||
-													pendingBids.includes(item.id)
+													pendingBids.includes(item.id) ||
+													auctionClosed ||
+													auctionNotStarted
 												}>
 												{currentBid > (highestBid?.amount || item.price) &&
 													!pendingBids.includes(item.id) &&
@@ -308,7 +431,8 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 											</Button>
 											<Button
 												variant="outline"
-												onClick={() => adjustBid(item.id, 10)}>
+												onClick={() => adjustBid(item.id, 10)}
+												disabled={auctionClosed || auctionNotStarted}>
 												{isLoading ? (
 													<FaSpinner className="spin" />
 												) : (

@@ -7,6 +7,9 @@
 
 .contentHeader {
 	display: flex;
+	flex-direction: row;
+	padding: 0px 5px;
+	margin: 0 10px;
 	justify-content: space-between;
 	align-items: center;
 }
@@ -31,6 +34,29 @@
 .checkbox label {
 	margin-left: 10px;
 	color: var(--color-muted-foreground);
+}
+
+.auctionHeader {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 0;
+}
+
+.auctionTimer {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 0px;
+	font-size: 1rem;
+	color: var(--color-muted-foreground);
+	width: fit-content;
+	padding: 0;
+}
+
+.auctionTimer span {
+	margin: 0;
 }
 
 .mainContent {

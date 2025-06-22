@@ -73,10 +73,12 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 							return parsed.data;
 						}
 					}
-				} catch {
+				} catch (error) {
 					// ignore parse errors
+					console.error("Failed to parse auction cache:", error);
+					return [];
 				}
-				return null;
+				return [];
 			})();
 
 			if (cached) {
@@ -86,9 +88,9 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 			}
 		}
 
-		const url = "/api/auctions";
-		const response = (await axios.get(url)) || { data: [] };
-		const data = response.data || [];
+		const url = "https://amsa.mpotulo.com/api/auctions";
+		const response = await fetch(url);
+		const data = (await response.json()) || [];
 
 		// Set cookie (client-side only)
 		if (typeof window !== "undefined") {
@@ -100,25 +102,26 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 		return data;
 	} catch (err) {
 		onError?.(err instanceof Error ? err.message : "Failed to fetch auctions");
-		console.error(err);
+		console.error(`Failed to fetch auctions: ${err}`);
 	} finally {
 		setIsLoading?.(false);
 	}
 
-	return null;
+	return [];
 };
 
 // Fetch auction by name with improved efficiency and error handling
 export const fetchAuctionByName = async (name: string): Promise<iAuction | undefined> => {
 	try {
-		const auctions = await fetchAuctions({});
+		const auctions: iAuction[] = await fetchAuctions({});
 
-		if (!Array.isArray(auctions) || !name) return undefined;
+		if (auctions.length === 0 || !name) return undefined;
 
 		const normalizedTarget = stringToUrl(name);
 
 		// Use a for loop for early exit on match (more efficient than .find for large arrays)
 		for (const auction of auctions) {
+			console.log(normalizedTarget, stringToUrl(auction.name));
 			if (stringToUrl(auction.name) === normalizedTarget) {
 				return auction;
 			}

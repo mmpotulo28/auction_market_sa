@@ -12,10 +12,11 @@ const AuctionPage = async ({
 	params: Promise<{ name: string; auction: iAuction }>;
 }) => {
 	const { name } = await params;
+	console.log("Auction Name: ", name);
 
 	// fetch the auction data using the name
 	const auction = await fetchAuctionByName(name);
-	console.log(auction);
+	console.log("Auction: ", auction);
 
 	return (
 		<div>

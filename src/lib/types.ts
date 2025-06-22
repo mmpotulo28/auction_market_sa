@@ -149,6 +149,7 @@ export interface iAuctionItem {
 	category: string;
 	condition: iCondition;
 	auction: iAuction;
+	sold?: boolean; // Add this line
 }
 
 export interface iAuction {
@@ -215,3 +216,19 @@ export interface iOrderWithDetails extends iOrder {
 	item_details?: iAuctionItem;
 	payment_info?: iTransaction;
 }
+
+export const typeBorder = {
+	info: "border-l-4 border-blue-400",
+	warning: "border-l-4 border-yellow-400",
+	error: "border-l-4 border-red-400",
+	success: "border-l-4 border-green-400",
+	default: "border-l-4 border-gray-300",
+};
+
+export const typeBg = {
+	info: "bg-blue-50 dark:bg-blue-900/30",
+	warning: "bg-yellow-50 dark:bg-yellow-900/20",
+	error: "bg-red-50 dark:bg-red-900/20",
+	success: "bg-green-50 dark:bg-green-900/20",
+	default: "bg-muted",
+};

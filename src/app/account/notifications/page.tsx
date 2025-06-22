@@ -13,6 +13,7 @@ import { CustomerAd } from "@/components/ads/CustomerAd";
 import styles from "./notifications.module.css";
 import { CarouselDApiSlider } from "@/components/TopBanner/slider";
 import { useWebSocket } from "@/context/WebSocketProvider";
+import { typeBg, typeBorder } from "@/lib/types";
 
 // Add type for notification
 interface Notification {
@@ -30,22 +31,6 @@ const typeIcon = {
 	error: <XCircle className="text-red-500" />,
 	success: <CheckCircle2 className="text-green-500" />,
 	default: <Bell className="text-gray-400" />,
-};
-
-const typeBorder = {
-	info: "border-l-4 border-blue-400",
-	warning: "border-l-4 border-yellow-400",
-	error: "border-l-4 border-red-400",
-	success: "border-l-4 border-green-400",
-	default: "border-l-4 border-gray-300",
-};
-
-const typeBg = {
-	info: "bg-blue-50 dark:bg-blue-900/30",
-	warning: "bg-yellow-50 dark:bg-yellow-900/20",
-	error: "bg-red-50 dark:bg-red-900/20",
-	success: "bg-green-50 dark:bg-green-900/20",
-	default: "bg-muted",
 };
 
 export default function NotificationsPage() {

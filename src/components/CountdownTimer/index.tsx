@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { NumberBox } from "./NumberBox";
 import styles from "./countdown-timer.module.css";
+import { iSize } from "@/lib/types";
 
 interface timeProps {
 	targetDate: string; // Target date in string format
+	size?: iSize;
+	onExpire?: () => void;
 }
 
-export const TimerContainer = ({ targetDate }: timeProps) => {
+export const TimerContainer = ({ targetDate, size = iSize.Medium, onExpire }: timeProps) => {
 	const [time, setTime] = useState({
 		months: 0,
 		days: 0,
@@ -14,6 +17,13 @@ export const TimerContainer = ({ targetDate }: timeProps) => {
 		minutes: 0,
 		seconds: 0,
 	});
+	const [expired, setExpired] = useState(false);
+
+	useEffect(() => {
+		if (expired && onExpire) {
+			onExpire();
+		}
+	}, [expired, onExpire]);
 
 	useEffect(() => {
 		const calculateTimeLeft = () => {
@@ -52,6 +62,7 @@ export const TimerContainer = ({ targetDate }: timeProps) => {
 
 			if (target.getTime() <= now.getTime()) {
 				setTime({ months: 0, days: 0, hours: 0, minutes: 0, seconds: 0 });
+				setExpired(true);
 			} else {
 				setTime({ months, days, hours, minutes, seconds });
 			}
@@ -65,7 +76,7 @@ export const TimerContainer = ({ targetDate }: timeProps) => {
 	const { months, days, hours, minutes, seconds } = time;
 
 	return (
-		<div className={styles.timerContainer}>
+		<div className={`${styles[size]} ${styles.timerContainer}`}>
 			<div className={styles.timerGrid}>
 				<NumberBox num={months} unit="Mon" />
 				<span className={styles.colon}>:</span>

@@ -71,6 +71,22 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				}, {});
 
 				setHighestBids((prev) => ({ ...prev, ...dbBidsMap }));
+
+				// After fetching items and bids, add a field to each item if auction ended
+				setItems(
+					(items as iAuctionItem[]).map((item) => {
+						const auctionEnd =
+							item.auction && item.auction.start_time
+								? new Date(item.auction.start_time).getTime() +
+								  (item.auction.duration || 0) * 60 * 1000
+								: 0;
+						const now = Date.now();
+						return {
+							...item,
+							sold: auctionEnd > 0 && now > auctionEnd,
+						};
+					}),
+				);
 			} catch (err) {
 				console.error("Unexpected error fetching bids:", err);
 				setError((prev) => [...prev, "Unexpected error fetching bids"]);
