@@ -14,6 +14,10 @@
 	align-items: center;
 }
 
+.auctionClosed {
+	display: flex;
+}
+
 .sidebar {
 	position: absolute;
 	min-height: 100%;
@@ -169,4 +173,23 @@
 	background-color: var(--color-primary-foreground);
 	color: var(--color-foreground);
 	cursor: pointer;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+	.contentHeader {
+		display: flex;
+		flex-wrap: wrap;
+	}
+}
+
+.auctionHeader {
+	position: fixed;
+	bottom: 20%;
+	right: 0;
+	transform: translate(0%, 20%);
+	z-index: 10;
+	background-color: var(--color-background);
+	padding: 0;
+	border-radius: var(--radius-lg);
 }

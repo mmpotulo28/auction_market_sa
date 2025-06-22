@@ -45,16 +45,18 @@ interface iBid {
 const AuctionClosed: React.FC<{ ownedCount: number }> = ({ ownedCount }) => {
 	const router = useRouter();
 	return (
-		<div className="flex flex-col items-center justify-center py-16">
-			<h2 className="text-2xl font-bold mb-4">Auction Closed</h2>
-			<p className="mb-4">
-				You have <span className="font-semibold">{ownedCount}</span> item
-				{ownedCount !== 1 && "s"} in your cart.
-			</p>
-			<Button variant="default" onClick={() => router.push("/cart")}>
-				Go to Cart
-			</Button>
-		</div>
+		<Container>
+			<Card className={`${styles.contentHeader} ${typeBorder.error} ${typeBg.error} p-8`}>
+				<h2 className="text-2xl font-bold">Auction Closed</h2>
+				<p>
+					You have <span className="font-semibold">{ownedCount}</span> item
+					{ownedCount !== 1 && "s"} in your cart.
+				</p>
+				<Button variant="default" onClick={() => router.push("/cart")}>
+					Go to Cart
+				</Button>
+			</Card>
+		</Container>
 	);
 };
 
@@ -226,21 +228,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 		);
 	}
 
-	// Show error alert if error exists
-	if (error.length > 0) {
-		return (
-			<Container>
-				<div className="max-w-2xl mx-auto py-10 px-4">
-					<Alert variant="destructive" className="mb-6">
-						<AlertCircle className="h-4 w-4" />
-						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error.join(",")}</AlertDescription>
-					</Alert>
-				</div>
-			</Container>
-		);
-	}
-
 	if (auctionClosed) {
 		return <AuctionClosed ownedCount={ownedCount} />;
 	}
@@ -259,10 +246,23 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 				/>
 				<SidebarInset>
 					<main className={styles.mainContent}>
+						{error.length > 0 && (
+							<Card className="max-w-2xl mx-auto py-10 px-4">
+								{error.map((err, index) => (
+									<Alert key={index} variant="destructive" className="mb-6">
+										<AlertCircle className="h-4 w-4" />
+										<AlertTitle>Error</AlertTitle>
+										<AlertDescription>{err}</AlertDescription>
+									</Alert>
+								))}
+							</Card>
+						)}
+
+						{/* header */}
 						<Card
 							className={`${styles.contentHeader} ${
-								auctionNotStarted ? typeBorder.warning : typeBorder.success
-							} ${auctionNotStarted ? typeBg.warning : typeBg.success}`}>
+								auctionNotStarted ? typeBorder.error : typeBorder.success
+							} ${auctionNotStarted ? typeBg.error : typeBg.success}`}>
 							<SidebarTrigger />
 							<span className={styles.auctionTitle}>
 								<LockUp
@@ -304,12 +304,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 								variant="outline"
 								size="sm"
 								onClick={() => setShowBidHistory(true)}
-								className="ml-auto"
-								disabled={auctionNotStarted}>
+								className="ml-auto">
 								Your Bids
 							</Button>
 							{/* ...existing alerts... */}
 						</Card>
+
 						{/* User Bid History Dialog */}
 						<Dialog open={showBidHistory} onOpenChange={setShowBidHistory}>
 							<DialogContent>
@@ -342,6 +342,8 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 								)}
 							</DialogContent>
 						</Dialog>
+
+						{/* items grid */}
 						<div className={styles.grid}>
 							{paginatedItems.map((item) => {
 								const highestBid = highestBids[item.id];
@@ -447,6 +449,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 								);
 							})}
 						</div>
+
 						<div className={styles.pagination}>
 							<Pagination>
 								<PaginationContent>

@@ -88,7 +88,7 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 			}
 		}
 
-		const url = "https://amsa.mpotulo.com/api/auctions";
+		const url = "/api/auctions";
 		const response = await fetch(url);
 		const data = (await response.json()) || [];
 

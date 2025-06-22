@@ -1,34 +1,50 @@
+"use client";
+import { useEffect, useState } from "react";
 import CustomerAd from "@/components/ads/CustomerAd";
 import AuctionItemList from "@/components/AuctionItemList";
 import { fetchAuctionByName } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
-import { Suspense } from "react";
 import Container from "@/components/common/container";
+import React from "react";
 
-const AuctionPage = async ({
-	params,
-}: {
-	params: Promise<{ name: string; auction: iAuction }>;
-}) => {
-	const { name } = await params;
-	console.log("Auction Name: ", name);
+interface AuctionPageProps {
+	params: Promise<{ name: string }>;
+}
 
-	// fetch the auction data using the name
-	const auction = await fetchAuctionByName(name);
-	console.log("Auction: ", auction);
+const AuctionPage = ({ params }: AuctionPageProps) => {
+	const [auction, setAuction] = useState<iAuction | undefined>();
+	const [loading, setLoading] = useState(true);
+	const { name } = React.use(params);
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				const auctionData = await fetchAuctionByName(name);
+				setAuction(auctionData);
+			} catch (error) {
+				console.error("Error fetching auction:", error);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchData();
+	}, [name]);
 
 	return (
 		<div>
-			<Suspense fallback={<div>Loading items...</div>}>
-				<AuctionItemList auction={auction} itemsPerPage={10} />
-
-				<Container>
-					<Separator className="my-3" />
-					<CustomerAd variant="banner" />
-					<Separator className="my-3" />
-				</Container>
-			</Suspense>
+			{loading ? (
+				<div>Loading items...</div>
+			) : (
+				<>
+					<AuctionItemList auction={auction} itemsPerPage={10} />
+					<Container>
+						<Separator className="my-3" />
+						<CustomerAd variant="banner" />
+						<Separator className="my-3" />
+					</Container>
+				</>
+			)}
 		</div>
 	);
 };
