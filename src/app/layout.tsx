@@ -41,7 +41,13 @@ export default function RootLayout({
 						<WebSocketProvider>
 							<Header />
 							<main className="w-full h-full min-h-full">{children}</main>
-							<Toaster />
+							<Toaster
+								position="top-right"
+								closeButton
+								expand
+								richColors
+								theme="system"
+							/>
 							<Footer />
 						</WebSocketProvider>
 					</ClerkProvider>
