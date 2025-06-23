@@ -56,7 +56,7 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 		setIsLoading?.(true);
 
 		const cookieName = "auction_cache";
-		const cacheDuration = 5 * 60 * 1000; // 5 minutes in ms
+		const cacheDuration = 1 * 60 * 1000; // 1 minute in ms
 
 		// Only cache on client side
 		if (typeof window !== "undefined") {

@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import supabase from "@/lib/db";
 import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { logger } from "@sentry/nextjs";
 
 interface WebSocketContextProps {
 	placeBid: (itemId: string, amount: number, userId: string) => Promise<void>;
@@ -60,6 +61,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					.order("timestamp", { ascending: false });
 
 				if (error) {
+					logger.error("Error fetching bids:", { error });
 					throw new Error(`Error fetching bids: ${error.message}`);
 				}
 
@@ -88,7 +90,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					}),
 				);
 			} catch (err) {
-				console.error("Unexpected error fetching bids:", err);
+				logger.error("Unexpected error fetching bids:", { err });
 				setError((prev) => [...prev, "Unexpected error fetching bids"]);
 			} finally {
 				setIsLoading(false);
@@ -96,7 +98,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		};
 
 		initializeBids();
-		console.log("WebSocketProvider initialized");
+		logger.info("WebSocketProvider initialized");
 	}, []);
 
 	// Subscribe to real-time updates for the "bids" table
@@ -117,7 +119,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 								previousBid.userId !== bid.userId &&
 								bid.amount > previousBid.amount
 							) {
-								toast(`You lost the bid for item "${bid.itemId}"`);
+								toast.info(`You lost the bid for item "${bid.itemId}"`);
 							}
 							return { ...prev, [bid.itemId]: bid };
 						});
@@ -128,7 +130,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			)
 			.subscribe();
 
-		console.log("WebSocket subscription created");
+		logger.info("WebSocket subscription created");
 
 		return () => {
 			supabase.removeChannel(subscription);
@@ -141,7 +143,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			if (error) throw new Error(`Error fetching bids: ${error.message}`);
 			setBids((data ?? []) as iBid[]);
 		} catch (err) {
-			console.error("Unexpected error fetching bids:", err);
+			logger.error("Unexpected error fetching bids:", { err });
 		}
 	}, []);
 
@@ -157,10 +159,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			]);
 
 			if (error) {
-				console.error("Error placing bid:", error);
+				logger.error("Error placing bid:", { error });
 			}
 		} catch (err) {
-			console.error("Unexpected error placing bid:", err);
+			logger.error("Unexpected error placing bid:", { err });
 		}
 	}, []);
 

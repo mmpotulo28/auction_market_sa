@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import supabase from "@/lib/db";
+import { logger } from "@sentry/nextjs";
 
 export async function PUT(req: Request) {
 	try {
@@ -26,11 +27,13 @@ export async function PUT(req: Request) {
 		}
 
 		if (errors.length > 0) {
+			logger.warn("[PUT /api/items/status] Partial success:", { updated: results, errors });
 			return NextResponse.json({ updated: results, errors }, { status: 207 });
 		}
 
 		return NextResponse.json({ updated: results }, { status: 200 });
 	} catch (error) {
+		logger.error("[PUT /api/items/status] Exception:", { error });
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : "Unknown error" },
 			{ status: 500 },

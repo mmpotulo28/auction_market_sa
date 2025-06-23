@@ -1,4 +1,5 @@
 import { User } from "@clerk/nextjs/server";
+import { logger } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 const PAYFAST_MERCHANT_ID = process.env.PAYFAST_MERCHANT_ID!;
@@ -76,7 +77,7 @@ export async function POST(req: Request) {
 
 		return NextResponse.json({ formHtml: html, m_payment_id: paymentId });
 	} catch (error: any) {
-		console.error("PayFast initiate error:", error);
+		logger.error("PayFast initiate error:", { error });
 		return NextResponse.json(
 			{ error: error?.message || "Failed to initiate PayFast payment." },
 			{ status: 500 },

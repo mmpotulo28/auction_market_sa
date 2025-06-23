@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
 import { iOrder, iAuctionItem, iOrderStatus } from "@/lib/types";
 import { User } from "@clerk/nextjs/server";
+import { logger } from "@sentry/nextjs";
 
 interface CreateOrderRequest {
 	items: iAuctionItem[];
@@ -17,8 +18,6 @@ export async function POST(req: Request) {
 		if (!user?.id || !Array.isArray(items) || items.length === 0) {
 			return NextResponse.json({ error: "Missing user or items." }, { status: 400 });
 		}
-
-		console.log("received order to create: ", items);
 
 		const rows: Omit<iOrder, "id" | "created_at" | "updated_at">[] = items.map((item) => ({
 			order_id: order_id || "",
@@ -39,14 +38,14 @@ export async function POST(req: Request) {
 		const { data, error } = await supabaseAdmin.from("orders").insert(rows).select();
 
 		if (error) {
-			console.error("Order creation error:", error);
+			logger.error("Order creation error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
 
-		console.log("Order creation success:", data);
+		logger.info("Order creation success:", { data });
 		return NextResponse.json({ orders: data as iOrder[] });
 	} catch (err: any) {
-		console.error("Unexpected order creation error:", err);
+		logger.error("Unexpected order creation error:", { err });
 		return NextResponse.json(
 			{ error: err?.message || "Order creation failed." },
 			{ status: 500 },
