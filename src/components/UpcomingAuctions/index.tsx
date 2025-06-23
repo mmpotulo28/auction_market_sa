@@ -10,11 +10,12 @@ import { Button } from "../ui/button";
 import { stringToUrl, fetchAuctions } from "@/lib/helpers";
 import { TimerContainer } from "../CountdownTimer";
 import { toast } from "sonner";
+import Illustration from "../Illustration";
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
 	const [auctions, setAuctions] = React.useState<iAuction[]>([]);
-	const [isLoading, setIsLoading] = React.useState(false);
+	const [isLoading, setIsLoading] = React.useState(true);
 	const [error, setError] = React.useState<string | null>(null);
 
 	useEffect(() => {
@@ -22,6 +23,7 @@ const UpcomingAuctions: React.FC = () => {
 			setIsLoading,
 			onLoad: (data: iAuction[]) => {
 				toast.success("Fetched auctions successfully");
+				console.log("auctions:", data);
 				setAuctions(data);
 			},
 			onError: (error: string) => {
@@ -35,7 +37,11 @@ const UpcomingAuctions: React.FC = () => {
 
 	return (
 		<div className={styles.grid}>
-			{isLoading && <div className={styles.loading}>Fetching Auctions</div>}
+			{isLoading && (
+				<div className={styles.loading}>
+					<Illustration type="loading" className="mx-auto my-5" />
+				</div>
+			)}
 			{auctions?.map((auction, index: number) => (
 				<div key={index} className={styles.card}>
 					<div className={styles.cardHeader}>

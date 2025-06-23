@@ -78,10 +78,12 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 					console.error("Failed to parse auction cache:", error);
 					return [];
 				}
+
 				return [];
 			})();
 
-			if (cached) {
+			if (cached && cached.length > 0) {
+				console.log("auctions (cache):", cached);
 				onLoad?.(cached);
 				setIsLoading?.(false);
 				return cached;

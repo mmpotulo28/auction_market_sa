@@ -5,7 +5,6 @@ import { iAuction } from "@/lib/types";
 import { logger } from "@sentry/nextjs";
 
 export async function GET() {
-	logger.info("[GET /api/auctions] Fetching all auctions");
 	try {
 		const { data, error } = await supabase
 			.from("auctions")
@@ -16,6 +15,8 @@ export async function GET() {
 			logger.error("[GET /api/auctions] Supabase error:", { error });
 			throw new Error(`Failed to fetch auctions: ${error.message}`);
 		}
+
+		logger.info("[GET /api/auctions] Fetched auctions successfully:", { data });
 
 		return NextResponse.json(data, { status: 200 });
 	} catch (error) {
