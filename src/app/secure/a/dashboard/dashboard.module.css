@@ -1,8 +1,8 @@
 .dashboardGrid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 2rem;
-	margin-bottom: 2rem;
+	grid-template-columns: auto auto;
+	gap: 10px;
+	margin-bottom: 10px;
 }
 
 .chartCard {
@@ -10,6 +10,7 @@
 	background: var(--card);
 	border-radius: var(--radius-lg);
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+	width: auto !important;
 }
 @media (max-width: 900px) {
 	.dashboardGrid {

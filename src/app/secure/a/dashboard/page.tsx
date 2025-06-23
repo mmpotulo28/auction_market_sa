@@ -15,6 +15,9 @@ import {
 	Line,
 	CartesianGrid,
 	Legend,
+	Pie,
+	Cell,
+	PieChart,
 } from "recharts";
 import {
 	Table,
@@ -24,6 +27,14 @@ import {
 	TableRow,
 	TableCell,
 } from "@/components/ui/table";
+import {
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	ChartLegend,
+	ChartLegendContent,
+	ChartConfig,
+} from "@/components/ui/chart";
 
 export default function AdminDashboard() {
 	const { items, highestBids, bids, getAllBids } = useWebSocket();
@@ -89,6 +100,26 @@ export default function AdminDashboard() {
 		return activity;
 	}, [bids]);
 
+	const ChartContainerConfig: ChartConfig = {
+		// Add any specific configuration for the ChartContainer here
+		price: {
+			label: "Price",
+			color: "var(--chart-1)",
+		},
+		highestBid: {
+			label: "Highest Bid",
+			color: "var(--chart-2)",
+		},
+	};
+
+	const colors = [
+		"var(--chart-1)",
+		"var(--chart-2)",
+		"var(--chart-3)",
+		"var(--chart-4)",
+		"var(--chart-5)",
+	];
+
 	return (
 		<Container>
 			<div className={styles.dashboardGrid}>
@@ -98,18 +129,26 @@ export default function AdminDashboard() {
 						Highest Bid vs Starting Price per Item
 					</h2>
 					<ResponsiveContainer width="100%" height={300}>
-						<BarChart data={bidsPerItem}>
-							<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-							<YAxis />
-							<Tooltip />
-							<Legend />
-							<Bar dataKey="price" fill="#b0b0b0" name="Starting Price" />
-							<Bar dataKey="highestBid" fill="#8884d8" name="Highest Bid" />
-						</BarChart>
+						<ChartContainer
+							config={ChartContainerConfig}
+							className="min-h-[200px] w-full">
+							<BarChart accessibilityLayer data={bidsPerItem}>
+								<XAxis dataKey="name" tick={{ fontSize: 12 }} />
+								<YAxis />
+								<ChartTooltip content={<ChartTooltipContent />} />
+								<ChartLegend content={<ChartLegendContent />} />
+								<Bar dataKey="price" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+								<Bar
+									dataKey="highestBid"
+									fill="var(--chart-2)"
+									radius={[4, 4, 0, 0]}
+								/>
+							</BarChart>
+						</ChartContainer>
 					</ResponsiveContainer>
 				</Card>
 				{/* Highest Bids Table */}
-				<Card className={styles.chartCard}>
+				<Card className={styles.chartCard + " sm:overflow-auto"}>
 					<h2 className="text-xl font-semibold mb-4">Highest Bids Table</h2>
 					<Table>
 						<TableHeader>
@@ -153,13 +192,25 @@ export default function AdminDashboard() {
 				<Card className={styles.chartCard}>
 					<h2 className="text-xl font-semibold mb-4">Trending Items</h2>
 					<ResponsiveContainer width="100%" height={300}>
-						<BarChart data={trendingItems}>
-							<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-							<YAxis allowDecimals={false} />
+						<PieChart>
+							<Pie
+								data={trendingItems}
+								dataKey="count"
+								nameKey="name"
+								cx="50%"
+								cy="50%"
+								outerRadius={80}
+								fill="#8884d8">
+								{trendingItems.map((entry, index) => (
+									<Cell
+										key={`cell-${index}`}
+										fill={colors[index % colors.length]}
+									/>
+								))}
+							</Pie>
 							<Tooltip />
 							<Legend />
-							<Bar dataKey="count" fill="#8884d8" name="Bid Activity" />
-						</BarChart>
+						</PieChart>
 					</ResponsiveContainer>
 				</Card>
 			</div>
