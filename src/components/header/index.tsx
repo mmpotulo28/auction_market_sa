@@ -107,8 +107,11 @@ const Header = () => {
 									<ListItem title="Help Center" href="/support/help-center">
 										Find guides and troubleshooting tips.
 									</ListItem>
-									<ListItem title="Terms & Policies" href="/support/terms">
+									<ListItem title="Terms & Policies" href="/policy/terms">
 										Read our terms of service and privacy policy.
+									</ListItem>
+									<ListItem title="Privacy Policy" href="/policy/privacy">
+										Read our privacy policy.
 									</ListItem>
 								</ul>
 							</NavigationMenuContent>
