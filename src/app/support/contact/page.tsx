@@ -138,6 +138,7 @@ export default function ContactPage() {
 								onChange={handleChange}
 								rows={5}
 								required
+								style={{ minHeight: "200px" }}
 							/>
 							<Button type="submit" disabled={loading} className="w-fit self-end">
 								{loading ? (
