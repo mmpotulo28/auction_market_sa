@@ -103,12 +103,13 @@ export default function AdminEmailsPage() {
 			}
 		} catch (err: any) {
 			toast.error(err?.response?.data?.error || err?.message || "Failed to send email.");
+			console.error(err);
 		}
 		setSending(false);
 	};
 
 	return (
-		<div className="max-w-5xl mx-auto py-10 px-4">
+		<div className=" mx-auto py-10 px-4">
 			<div className="flex items-center justify-between mb-8">
 				<h1 className="text-3xl font-bold flex items-center gap-2">
 					<Mail className="text-accent" /> Admin Emails
