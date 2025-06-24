@@ -26,7 +26,7 @@ const faqs = [
 	},
 	{
 		question: "Who do I contact for support?",
-		answer: "Use the Contact Us page to reach our support team, or email support@actionmarket.sa.",
+		answer: "Use the Contact Us page to reach our support team, or email support@auctionmarket.tech.",
 	},
 ];
 

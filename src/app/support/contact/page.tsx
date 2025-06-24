@@ -5,13 +5,31 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, Send, MessageCircle, Users, Smile } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CustomerAd from "@/components/ads/CustomerAd";
+import axios from "axios";
+import { contactFormTemplate, contactFormUserConfirmationTemplate } from "@/lib/email_templates";
+import * as Sentry from "@sentry/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 export default function ContactPage() {
-	const [form, setForm] = useState({ name: "", email: "", message: "" });
+	const { user } = useUser();
+	const [form, setForm] = useState({
+		name: user ? [user.firstName, user.lastName].filter(Boolean).join(" ") : "",
+		email: user?.primaryEmailAddress?.emailAddress || "",
+		message: "",
+	});
 	const [loading, setLoading] = useState(false);
+
+	// Prefill form when user changes (e.g., after login)
+	useEffect(() => {
+		setForm((prev) => ({
+			...prev,
+			name: user ? [user.firstName, user.lastName].filter(Boolean).join(" ") : "",
+			email: user?.primaryEmailAddress?.emailAddress || "",
+		}));
+	}, [user]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		setForm({ ...form, [e.target.name]: e.target.value });
@@ -20,11 +38,69 @@ export default function ContactPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		setTimeout(() => {
-			toast.success("Message sent! We'll get back to you soon.");
-			setForm({ name: "", email: "", message: "" });
-			setLoading(false);
-		}, 1000);
+
+		try {
+			// Send support email
+			const { data } = await axios.post(
+				"/api/email/send",
+				{
+					to: "mpotulom28@gmail.com",
+					from: form.email,
+					subject: `Contact Form: ${form.name}`,
+					html: contactFormTemplate({
+						name: form.name,
+						email: form.email,
+						message: form.message,
+					}),
+					text: `Name: ${form.name}\nEmail: ${form.email}\nMessage:\n${form.message}`,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_EMAIL_API_KEY || ""}`,
+					},
+				},
+			);
+
+			// Send user confirmation email (do not block UI on error)
+			axios
+				.post(
+					"/api/email/send",
+					{
+						to: form.email,
+						from: "support@auctionmarket.tech",
+						subject: "We've received your message at Auction Market SA",
+						html: contactFormUserConfirmationTemplate({
+							name: form.name,
+							email: form.email,
+							message: form.message,
+						}),
+						text: `Hi ${form.name},\n\nThank you for contacting Auction Market SA. We have received your message and will get back to you soon.\n\nYour message:\n${form.message}\n\nBest regards,\nAuction Market SA Team`,
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.NEXT_PUBLIC_EMAIL_API_KEY || ""}`,
+						},
+					},
+				)
+				.catch((err) => {
+					Sentry.captureException(err);
+					console.error("User confirmation email error:", err);
+				});
+
+			if (data.success) {
+				toast.success("Message sent! We'll get back to you soon.");
+				setForm({ name: "", email: "", message: "" });
+			} else {
+				Sentry.captureException(new Error(data.error || "Failed to send message."));
+				console.error("Contact form error:", data.error || "Failed to send message.");
+				toast.error(data.error || "Failed to send message.");
+			}
+		} catch (err: any) {
+			Sentry.captureException(err);
+			console.error("Contact form error:", err);
+			toast.error(err?.response?.data?.error || err?.message || "Failed to send message.");
+		}
+		setLoading(false);
 	};
 
 	return (
@@ -76,7 +152,7 @@ export default function ContactPage() {
 						</form>
 						<div className="mt-8 space-y-2 text-sm text-muted-foreground">
 							<div className="flex items-center gap-2">
-								<Mail size={18} /> support@actionmarket.sa
+								<Mail size={18} /> support@auctionmarket.tech
 							</div>
 							<div className="flex items-center gap-2">
 								<Phone size={18} /> +1 234 567 890
