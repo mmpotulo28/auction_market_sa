@@ -47,12 +47,27 @@ function statusColor(status: iOrderStatus) {
 	}
 }
 
+// Interface for grouped orders
+interface GroupedOrder {
+	order_id: string;
+	payment_id: string;
+	user_name: string;
+	user_email: string;
+	created_at: string;
+	items_count: number;
+	total_amount: number;
+	order_status: iOrderStatus;
+	orders: iOrder[];
+}
+
 export default function AdminOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
-	const [filtered, setFiltered] = useState<iOrder[]>([]);
+	const [groupedOrders, setGroupedOrders] = useState<GroupedOrder[]>([]);
+	const [filteredGroups, setFilteredGroups] = useState<GroupedOrder[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
+	const [selectedOrderGroup, setSelectedOrderGroup] = useState<GroupedOrder | null>(null);
 	const [expandedOrder, setExpandedOrder] = useState<iOrder | null>(null);
 	const [itemDetails, setItemDetails] = useState<iAuctionItem | null>(null);
 	const [paymentInfo, setPaymentInfo] = useState<iTransaction | null>(null);
@@ -61,7 +76,7 @@ export default function AdminOrdersPage() {
 	const [copied, setCopied] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(15);
-	const [total, setTotal] = useState(0);
+	const [, setTotal] = useState(0);
 
 	const fetchOrders = async () => {
 		setLoading(true);
@@ -70,7 +85,12 @@ export default function AdminOrdersPage() {
 			const res = await axios.get(`/api/admin/orders?page=${page}&pageSize=${pageSize}`);
 			if (res.data && Array.isArray(res.data.orders)) {
 				setOrders(res.data.orders);
-				setFiltered(res.data.orders);
+
+				// Group orders by order_id
+				const grouped = groupOrdersByOrderId(res.data.orders);
+				setGroupedOrders(grouped);
+				setFilteredGroups(grouped);
+
 				setTotal(res.data.total || res.data.orders.length);
 			} else {
 				setError("Invalid response from server.");
@@ -84,6 +104,51 @@ export default function AdminOrdersPage() {
 		setLoading(false);
 	};
 
+	// Function to group orders by order_id
+	const groupOrdersByOrderId = (orders: iOrder[]): GroupedOrder[] => {
+		const grouped = orders.reduce((acc, order) => {
+			const orderId = order.order_id;
+			if (!acc[orderId]) {
+				acc[orderId] = {
+					order_id: orderId,
+					user_name: `${order.user_first_name || ""} ${
+						order.user_last_name || ""
+					}`.trim(),
+					user_email: order.user_email || "",
+					created_at: order.created_at,
+					items_count: 0,
+					total_amount: 0,
+					order_status: order.order_status,
+					orders: [],
+					payment_id: order.payment_id || "",
+				};
+			}
+			acc[orderId].orders.push(order);
+			acc[orderId].items_count = acc[orderId].orders.length;
+			acc[orderId].total_amount += order.price || 0;
+
+			// Use the latest status or highest priority status
+			const statusPriority = {
+				[iOrderStatus.Failed]: 6,
+				[iOrderStatus.Cancelled]: 5,
+				[iOrderStatus.Unpaid]: 4,
+				[iOrderStatus.Pending]: 3,
+				[iOrderStatus.Processing]: 2,
+				[iOrderStatus.Completed]: 1,
+				[iOrderStatus.Refunded]: 7,
+				[iOrderStatus.Expired]: 8,
+			};
+
+			if (statusPriority[order.order_status] > statusPriority[acc[orderId].order_status]) {
+				acc[orderId].order_status = order.order_status;
+			}
+
+			return acc;
+		}, {} as Record<string, GroupedOrder>);
+
+		return Object.values(grouped);
+	};
+
 	useEffect(() => {
 		fetchOrders();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,21 +156,25 @@ export default function AdminOrdersPage() {
 
 	useEffect(() => {
 		if (!search) {
-			setFiltered(orders);
+			setFilteredGroups(groupedOrders);
 			return;
 		}
 		const s = search.toLowerCase();
-		setFiltered(
-			orders.filter(
-				(o) =>
-					o.id?.toString().includes(s) ||
-					o.user_email?.toLowerCase().includes(s) ||
-					o.item_name?.toLowerCase().includes(s) ||
-					o.order_status?.toLowerCase().includes(s) ||
-					o.payment_id?.toLowerCase().includes(s),
+		setFilteredGroups(
+			groupedOrders.filter(
+				(group) =>
+					group.order_id?.toLowerCase().includes(s) ||
+					group.user_email?.toLowerCase().includes(s) ||
+					group.user_name?.toLowerCase().includes(s) ||
+					group.order_status?.toLowerCase().includes(s) ||
+					group.orders.some(
+						(order) =>
+							order.item_name?.toLowerCase().includes(s) ||
+							order.payment_id?.toLowerCase().includes(s),
+					),
 			),
 		);
-	}, [search, orders]);
+	}, [search, groupedOrders]);
 
 	const handleExpandOrder = async (order: iOrder) => {
 		setExpandedOrder(order);
@@ -144,9 +213,14 @@ export default function AdminOrdersPage() {
 				setOrders((prev) =>
 					prev.map((o) => (o.id === order.id ? { ...o, order_status: newStatus } : o)),
 				);
-				setFiltered((prev) =>
-					prev.map((o) => (o.id === order.id ? { ...o, order_status: newStatus } : o)),
+				// Refresh grouped orders
+				const updatedOrders = orders.map((o) =>
+					o.id === order.id ? { ...o, order_status: newStatus } : o,
 				);
+				const grouped = groupOrdersByOrderId(updatedOrders);
+				setGroupedOrders(grouped);
+				setFilteredGroups(grouped);
+
 				setExpandedOrder((prev) => (prev ? { ...prev, order_status: newStatus } : prev));
 				// Send notification to user
 				if (order.user_id) {
@@ -176,23 +250,11 @@ export default function AdminOrdersPage() {
 		setTimeout(() => setCopied(null), 1200);
 	};
 
-	const totalPages = Math.max(1, Math.ceil(total / pageSize));
+	const totalPages = Math.max(1, Math.ceil(groupedOrders.length / pageSize));
 
 	return (
-		<div className="max-w-full mx-auto py-10 px-4">
-			<h1 className="text-3xl font-bold mb-6 flex items-center gap-3">
-				All Orders
-				<Button
-					variant="outline"
-					size="icon"
-					onClick={fetchOrders}
-					disabled={loading}
-					title="Refresh Orders"
-					className="ml-2">
-					<RefreshCw className={loading ? "animate-spin" : ""} size={18} />
-				</Button>
-			</h1>
-			<Card className="mb-6 p-4">
+		<div className="max-w-full mx-auto py-0 px-4">
+			<div className="mb-6 px-0 py-2 ">
 				<div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
 					<Input
 						placeholder="Search by order id, item, email, status, payment id..."
@@ -200,11 +262,24 @@ export default function AdminOrdersPage() {
 						onChange={(e) => setSearch(e.target.value)}
 						className="max-w-xs"
 					/>
-					<span className="text-muted-foreground text-sm">
-						Showing {filtered.length} of {orders.length} orders
-					</span>
+
+					<div className="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+						<span className="text-muted-foreground text-sm">
+							Showing {filteredGroups.length} of {groupedOrders.length} order groups
+						</span>
+
+						<Button
+							variant="outline"
+							size="icon"
+							onClick={fetchOrders}
+							disabled={loading}
+							title="Refresh Orders"
+							className="ml-2">
+							<RefreshCw className={loading ? "animate-spin" : ""} size={18} />
+						</Button>
+					</div>
 				</div>
-			</Card>
+			</div>
 			{error && (
 				<Alert variant="destructive" className="mb-6">
 					<AlertCircle className="h-4 w-4" />
@@ -216,42 +291,41 @@ export default function AdminOrdersPage() {
 				<Table>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Order ID</TableHead>
+							<TableHead>Order Number</TableHead>
 							<TableHead>Date</TableHead>
-							<TableHead>User</TableHead>
+							<TableHead>User Name</TableHead>
 							<TableHead>Email</TableHead>
-							<TableHead>Item</TableHead>
+							<TableHead>Items Count</TableHead>
+							<TableHead>Total Amount</TableHead>
 							<TableHead>Status</TableHead>
-							<TableHead>Payment Ref</TableHead>
-							<TableHead>Price</TableHead>
-							<TableHead>Expand</TableHead>
+							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{loading ? (
 							<TableRow>
-								<TableCell colSpan={9} className="text-center  ">
+								<TableCell colSpan={8} className="text-center  ">
 									<Illustration type="loading" className="m-auto" />
 								</TableCell>
 							</TableRow>
-						) : filtered.length === 0 ? (
+						) : filteredGroups.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={9} className="text-center">
+								<TableCell colSpan={8} className="text-center">
 									No orders found.
 								</TableCell>
 							</TableRow>
 						) : (
-							filtered.map((o) => (
-								<TableRow key={o.id}>
+							filteredGroups.map((group) => (
+								<TableRow key={group.order_id}>
 									<TableCell>
 										<span className="flex items-center gap-1">
-											{o.order_id}
+											{group.order_id}
 											<button
 												type="button"
 												className="ml-1 text-xs text-muted-foreground hover:text-accent"
-												onClick={() => handleCopy(o.order_id)}
+												onClick={() => handleCopy(group.order_id)}
 												title="Copy Order ID">
-												{copied === o.order_id ? (
+												{copied === group.order_id ? (
 													<Check size={14} />
 												) : (
 													<Copy size={14} />
@@ -260,198 +334,422 @@ export default function AdminOrdersPage() {
 										</span>
 									</TableCell>
 									<TableCell>
-										{o.created_at
-											? new Date(o.created_at).toLocaleString()
+										{group.created_at
+											? new Date(group.created_at).toLocaleString()
 											: "-"}
 									</TableCell>
+									<TableCell>{group.user_name || "-"}</TableCell>
+									<TableCell>{group.user_email || "-"}</TableCell>
 									<TableCell>
-										{o.user_first_name || ""} {o.user_last_name || ""}
+										<Badge variant="outline">{group.items_count} items</Badge>
 									</TableCell>
-									<TableCell>{o.user_email || "-"}</TableCell>
-									<TableCell>{o.item_name}</TableCell>
+									<TableCell>R {Number(group.total_amount).toFixed(2)}</TableCell>
 									<TableCell>
-										<Badge className={statusColor(o.order_status)}>
-											{o.order_status}
+										<Badge className={statusColor(group.order_status)}>
+											{group.order_status}
 										</Badge>
-									</TableCell>
-									<TableCell>
-										<span className="flex items-center gap-1 font-mono text-xs">
-											{o.payment_id || "-"}
-											{o.payment_id && (
-												<button
-													type="button"
-													className="ml-1 text-xs text-muted-foreground hover:text-accent"
-													onClick={() => handleCopy(o.payment_id)}
-													title="Copy Payment ID">
-													{copied === o.payment_id ? (
-														<Check size={14} />
-													) : (
-														<Copy size={14} />
-													)}
-												</button>
-											)}
-										</span>
-									</TableCell>
-									<TableCell>
-										{o.price !== undefined
-											? `R ${Number(o.price).toFixed(2)}`
-											: ""}
 									</TableCell>
 									<TableCell>
 										<Dialog>
 											<DialogTrigger asChild>
-												<button
-													type="button"
-													className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-foreground border border-gray-200 hover:bg-gray-100 transition"
-													onClick={() => handleExpandOrder(o)}
-													title="Expand Order">
-													<Eye className="w-4 h-4" />
-													<span className="sr-only">Expand</span>
-												</button>
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={() => setSelectedOrderGroup(group)}
+													title="View Order Details">
+													<Eye className="w-4 h-4 mr-1" />
+													View Order
+												</Button>
 											</DialogTrigger>
-											<DialogContent className="max-w-lg">
-												<DialogTitle>Order Details</DialogTitle>
-												{expandedOrder && (
-													<div className="space-y-3">
-														<div className="flex flex-col gap-2">
-															<div className="flex items-center gap-2">
-																<strong>Order ID:</strong>
-																<span className="font-mono">
-																	{expandedOrder.order_id}
-																</span>
-																<button
-																	type="button"
-																	className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																	onClick={() =>
-																		handleCopy(
-																			expandedOrder.order_id,
-																		)
-																	}
-																	title="Copy Order ID">
-																	{copied ===
-																	expandedOrder.order_id ? (
-																		<Check size={14} />
-																	) : (
-																		<Copy size={14} />
+											<DialogContent className="flex flex-col gap-2.5">
+												<DialogTitle>
+													Order Details - {group.order_id}
+												</DialogTitle>
+												{selectedOrderGroup && (
+													<div className="space-y-4 w-full max-w-[100%] max-h-[80vh]  block">
+														<div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+															<div>
+																<strong>Order ID:</strong>{" "}
+																<span className="flex items-center gap-1 font-mono text-xs">
+																	{selectedOrderGroup.order_id ||
+																		"-"}
+																	{selectedOrderGroup.order_id && (
+																		<button
+																			type="button"
+																			className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																			onClick={() =>
+																				handleCopy(
+																					selectedOrderGroup.order_id,
+																				)
+																			}
+																			title="Copy Order ID">
+																			{copied ===
+																			selectedOrderGroup.order_id ? (
+																				<Check size={14} />
+																			) : (
+																				<Copy size={14} />
+																			)}
+																		</button>
 																	)}
-																</button>
+																</span>
 															</div>
-															<div>
-																<strong>User:</strong>{" "}
-																{expandedOrder.user_first_name}{" "}
-																{expandedOrder.user_last_name} (
-																{expandedOrder.user_email})
+															<div className="flex flex-col">
+																<strong>Customer:</strong>{" "}
+																{selectedOrderGroup.user_name}
 															</div>
-															<div>
-																<strong>Status:</strong>{" "}
+															<div className="flex flex-col">
+																<strong>Email:</strong>{" "}
+																{selectedOrderGroup.user_email}
+															</div>
+															<div className="flex flex-col">
+																<strong>Created At:</strong>{" "}
+																{new Date(
+																	selectedOrderGroup.created_at,
+																).toLocaleString()}
+															</div>
+															<div className="flex flex-col">
+																<strong>Items Count:</strong>{" "}
+																{selectedOrderGroup.items_count}
+															</div>
+															<div className="flex flex-col">
+																<strong>Total Amount:</strong> R{" "}
+																{Number(
+																	selectedOrderGroup.total_amount,
+																).toFixed(2)}
+															</div>
+															<div className="flex flex-col">
+																<strong>Status:</strong>
 																<Badge
-																	className={statusColor(
-																		expandedOrder.order_status,
-																	)}>
-																	{expandedOrder.order_status}
+																	className={`ml-2 ${statusColor(
+																		selectedOrderGroup.order_status,
+																	)}`}>
+																	{
+																		selectedOrderGroup.order_status
+																	}
 																</Badge>
 															</div>
-															<div>
-																<strong>Created:</strong>{" "}
-																{expandedOrder.created_at
-																	? new Date(
-																			expandedOrder.created_at,
-																	  ).toLocaleString()
-																	: "-"}
-															</div>
-															<div>
-																<strong>Item:</strong>{" "}
-																{expandedOrder.item_name}
-															</div>
-															<div>
-																<strong>Price:</strong> R{" "}
-																{expandedOrder.price !== undefined
-																	? Number(
-																			expandedOrder.price,
-																	  ).toFixed(2)
-																	: ""}
-															</div>
-															<div className="flex items-center gap-2">
-																<strong>Payment Ref:</strong>
-																<span className="font-mono">
-																	{expandedOrder.payment_id ||
+															<div className="flex flex-col">
+																<strong>Payment ref:</strong>{" "}
+																<span className="flex items-center gap-1 font-mono text-xs">
+																	{selectedOrderGroup.payment_id ||
 																		"-"}
-																</span>
-																{expandedOrder.payment_id && (
-																	<button
-																		type="button"
-																		className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																		onClick={() =>
-																			handleCopy(
-																				expandedOrder.payment_id!,
-																			)
-																		}
-																		title="Copy Payment ID">
-																		{copied ===
-																		expandedOrder.payment_id ? (
-																			<Check size={14} />
-																		) : (
-																			<Copy size={14} />
-																		)}
-																	</button>
-																)}
-															</div>
-														</div>
-														<div className="flex flex-col gap-2 mt-2">
-															<label className="font-semibold">
-																Change Status:
-															</label>
-															<div className="flex gap-2 flex-wrap">
-																{ORDER_STATUSES.map((s) => (
-																	<Button
-																		key={s}
-																		variant={
-																			expandedOrder.order_status ===
-																			s
-																				? "default"
-																				: "outline"
-																		}
-																		size="sm"
-																		disabled={
-																			statusUpdating ||
-																			expandedOrder.order_status ===
-																				s
-																		}
-																		onClick={() =>
-																			handleStatusChange(
-																				expandedOrder,
-																				s as iOrderStatus,
-																			)
-																		}>
-																		{s}
-																	</Button>
-																))}
-															</div>
-															{statusUpdateError && (
-																<div className="text-red-600 text-xs mt-1">
-																	{statusUpdateError}
-																</div>
-															)}
-														</div>
-														{itemDetails && (
-															<div className="mt-4">
-																<strong>Item Details:</strong>
-																<pre className="bg-muted p-2 rounded text-xs mt-1 overflow-x-auto">
-																	{JSON.stringify(
-																		itemDetails,
-																		null,
-																		2,
+																	{selectedOrderGroup.payment_id && (
+																		<button
+																			type="button"
+																			className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																			onClick={() =>
+																				handleCopy(
+																					selectedOrderGroup.payment_id,
+																				)
+																			}
+																			title="Copy Payment ID">
+																			{copied ===
+																			selectedOrderGroup.payment_id ? (
+																				<Check size={14} />
+																			) : (
+																				<Copy size={14} />
+																			)}
+																		</button>
 																	)}
-																</pre>
+																</span>
 															</div>
-														)}
-														{paymentInfo && (
-															<div className="mt-4">
-																<strong>Payment Info:</strong>
-																<Receipt
-																	transaction={paymentInfo}
-																	receiptRef={{ current: null }}
-																/>
+														</div>
+
+														<div className="w-full">
+															<h3 className="text-lg font-semibold mb-3">
+																Order Items
+															</h3>
+															<Table className="overflow-x-auto max-w-[100%]">
+																<TableHeader>
+																	<TableRow>
+																		<TableHead>
+																			Item Name
+																		</TableHead>
+																		<TableHead>Price</TableHead>
+																		<TableHead>
+																			Item ID
+																		</TableHead>
+																		<TableHead>
+																			Status
+																		</TableHead>
+																		<TableHead>
+																			Actions
+																		</TableHead>
+																	</TableRow>
+																</TableHeader>
+																<TableBody>
+																	{selectedOrderGroup.orders.map(
+																		(order) => (
+																			<TableRow
+																				key={order.id}>
+																				<TableCell>
+																					{
+																						order.item_name
+																					}
+																				</TableCell>
+																				<TableCell>
+																					R{" "}
+																					{Number(
+																						order.price,
+																					).toFixed(2)}
+																				</TableCell>
+																				<TableCell>
+																					{order.item_id}
+																				</TableCell>
+																				<TableCell>
+																					<Badge
+																						className={statusColor(
+																							order.order_status,
+																						)}>
+																						{
+																							order.order_status
+																						}
+																					</Badge>
+																				</TableCell>
+																				<TableCell>
+																					<Dialog>
+																						<DialogTrigger
+																							asChild>
+																							<Button
+																								variant="outline"
+																								size="sm"
+																								onClick={() =>
+																									handleExpandOrder(
+																										order,
+																									)
+																								}
+																								title="View Item Details">
+																								<Eye className="w-4 h-4" />
+																							</Button>
+																						</DialogTrigger>
+																						<DialogContent className="max-w-lg">
+																							<DialogTitle>
+																								Item
+																								Details
+																							</DialogTitle>
+																							{expandedOrder && (
+																								<div className="space-y-3">
+																									<div className="flex flex-col gap-2">
+																										<div className="flex items-center gap-2">
+																											<strong>
+																												Order
+																												ID:
+																											</strong>
+																											<span className="font-mono">
+																												{
+																													expandedOrder.order_id
+																												}
+																											</span>
+																											<button
+																												type="button"
+																												className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																												onClick={() =>
+																													handleCopy(
+																														expandedOrder.order_id,
+																													)
+																												}
+																												title="Copy Order ID">
+																												{copied ===
+																												expandedOrder.order_id ? (
+																													<Check
+																														size={
+																															14
+																														}
+																													/>
+																												) : (
+																													<Copy
+																														size={
+																															14
+																														}
+																													/>
+																												)}
+																											</button>
+																										</div>
+																										<div>
+																											<strong>
+																												User:
+																											</strong>{" "}
+																											{
+																												expandedOrder.user_first_name
+																											}{" "}
+																											{
+																												expandedOrder.user_last_name
+																											}{" "}
+																											(
+																											{
+																												expandedOrder.user_email
+																											}
+
+																											)
+																										</div>
+																										<div>
+																											<strong>
+																												Status:
+																											</strong>{" "}
+																											<Badge
+																												className={statusColor(
+																													expandedOrder.order_status,
+																												)}>
+																												{
+																													expandedOrder.order_status
+																												}
+																											</Badge>
+																										</div>
+																										<div>
+																											<strong>
+																												Created:
+																											</strong>{" "}
+																											{expandedOrder.created_at
+																												? new Date(
+																														expandedOrder.created_at,
+																												  ).toLocaleString()
+																												: "-"}
+																										</div>
+																										<div>
+																											<strong>
+																												Item:
+																											</strong>{" "}
+																											{
+																												expandedOrder.item_name
+																											}
+																										</div>
+																										<div>
+																											<strong>
+																												Price:
+																											</strong>{" "}
+																											R{" "}
+																											{expandedOrder.price !==
+																											undefined
+																												? Number(
+																														expandedOrder.price,
+																												  ).toFixed(
+																														2,
+																												  )
+																												: ""}
+																										</div>
+																										<div className="flex items-center gap-2">
+																											<strong>
+																												Payment
+																												Ref:
+																											</strong>
+																											<span className="font-mono">
+																												{expandedOrder.payment_id ||
+																													"-"}
+																											</span>
+																											{expandedOrder.payment_id && (
+																												<button
+																													type="button"
+																													className="ml-1 text-xs text-muted-foreground hover:text-accent"
+																													onClick={() =>
+																														handleCopy(
+																															expandedOrder.payment_id!,
+																														)
+																													}
+																													title="Copy Payment ID">
+																													{copied ===
+																													expandedOrder.payment_id ? (
+																														<Check
+																															size={
+																																14
+																															}
+																														/>
+																													) : (
+																														<Copy
+																															size={
+																																14
+																															}
+																														/>
+																													)}
+																												</button>
+																											)}
+																										</div>
+																									</div>
+
+																									{itemDetails && (
+																										<div className="mt-4">
+																											<strong>
+																												Item
+																												Details:
+																											</strong>
+																											<pre className="bg-muted p-2 rounded text-xs mt-1 overflow-x-auto">
+																												{JSON.stringify(
+																													itemDetails,
+																													null,
+																													2,
+																												)}
+																											</pre>
+																										</div>
+																									)}
+																									{paymentInfo && (
+																										<div className="mt-4">
+																											<strong>
+																												Payment
+																												Info:
+																											</strong>
+																											<Receipt
+																												transaction={
+																													paymentInfo
+																												}
+																												receiptRef={{
+																													current:
+																														null,
+																												}}
+																											/>
+																										</div>
+																									)}
+																								</div>
+																							)}
+																						</DialogContent>
+																					</Dialog>
+																				</TableCell>
+																			</TableRow>
+																		),
+																	)}
+																</TableBody>
+															</Table>
+														</div>
+
+														{expandedOrder && (
+															<div className="flex flex-col gap-2 mt-2">
+																<label className="font-semibold">
+																	Change Status:
+																</label>
+																<div
+																	className="grid gap-2"
+																	style={{
+																		gridTemplateColumns:
+																			"repeat(auto-fit, minmax(100px, 1fr))",
+																	}}>
+																	{ORDER_STATUSES.map((s) => (
+																		<Button
+																			key={s}
+																			variant={
+																				expandedOrder.order_status ===
+																				s
+																					? "default"
+																					: "outline"
+																			}
+																			size="sm"
+																			disabled={
+																				statusUpdating ||
+																				expandedOrder.order_status ===
+																					s
+																			}
+																			onClick={() =>
+																				handleStatusChange(
+																					expandedOrder,
+																					s as iOrderStatus,
+																				)
+																			}>
+																			{s}
+																		</Button>
+																	))}
+																</div>
+																{statusUpdateError && (
+																	<div className="text-red-600 text-xs mt-1">
+																		{statusUpdateError}
+																	</div>
+																)}
 															</div>
 														)}
 													</div>

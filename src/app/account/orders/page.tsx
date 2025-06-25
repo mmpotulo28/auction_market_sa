@@ -9,11 +9,14 @@ import {
 	TableHead,
 	TableCell,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Eye, RotateCcw } from "lucide-react";
 import { iOrder } from "@/lib/types";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Container from "@/components/common/container";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import Illustration from "@/components/Illustration";
 import {
 	Pagination,
 	PaginationContent,
@@ -23,15 +26,20 @@ import {
 	PaginationNext,
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
-import { RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import Illustration from "@/components/Illustration";
+
+interface GroupedOrder {
+	order_id: string;
+	user_name: string;
+	order_date: string;
+	order_status: string;
+	items: iOrder[];
+}
 
 export default function UserOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [selectedOrder, setSelectedOrder] = useState<GroupedOrder | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(10);
 	const [total, setTotal] = useState(0);
@@ -66,13 +74,33 @@ export default function UserOrdersPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [page, pageSize]);
 
+	// Group orders by order_id
+	const groupedOrders: GroupedOrder[] = (() => {
+		const map = new Map<string, GroupedOrder>();
+		for (const order of orders) {
+			if (!map.has(order.order_id)) {
+				map.set(order.order_id, {
+					order_id: order.order_id,
+					user_name: [order.user_first_name, order.user_last_name]
+						.filter(Boolean)
+						.join(" "),
+					order_date: order.created_at,
+					order_status: order.order_status,
+					items: [],
+				});
+			}
+			map.get(order.order_id)!.items.push(order);
+		}
+		return Array.from(map.values());
+	})();
+
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
 	return (
 		<Container>
-			<div className="max-w-full mx-auto py-10 px-4">
+			<div className="max-w-full w-full mx-auto py-10 px-4">
 				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-3xl font-bold">My Orders</h1>
+					<h1 className="text-3xl font-bold mb-6">My Orders</h1>
 					<Button
 						variant="ghost"
 						size="icon"
@@ -92,43 +120,110 @@ export default function UserOrdersPage() {
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead>Order ID</TableHead>
-								<TableHead>Date</TableHead>
-								<TableHead>Item</TableHead>
+								<TableHead>Order Number</TableHead>
+								<TableHead>User Name</TableHead>
+								<TableHead>Order Date</TableHead>
+								<TableHead>Items</TableHead>
 								<TableHead>Status</TableHead>
-								<TableHead>Price</TableHead>
+								<TableHead>View</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{loading ? (
 								<TableRow>
-									<TableCell colSpan={5} className="text-center">
+									<TableCell colSpan={6} className="text-center">
 										<Illustration type="loading" className="m-auto" />
 									</TableCell>
 								</TableRow>
-							) : orders.length === 0 ? (
+							) : groupedOrders.length === 0 ? (
 								<TableRow>
-									<TableCell colSpan={5} className="text-center">
+									<TableCell colSpan={6} className="text-center">
 										No orders found.
 									</TableCell>
 								</TableRow>
 							) : (
-								orders.map((o) => (
-									<TableRow key={o.id}>
-										<TableCell>{o.order_id}</TableCell>
+								groupedOrders.map((group) => (
+									<TableRow key={group.order_id}>
+										<TableCell>{group.order_id}</TableCell>
+										<TableCell>{group.user_name}</TableCell>
 										<TableCell>
-											{o.created_at
-												? new Date(o.created_at).toLocaleString()
+											{group.order_date
+												? new Date(group.order_date).toLocaleString()
 												: "-"}
 										</TableCell>
-										<TableCell>{o.item_name}</TableCell>
+										<TableCell>{group.items.length}</TableCell>
+										<TableCell>{group.order_status}</TableCell>
 										<TableCell>
-											<Badge>{o.order_status}</Badge>
-										</TableCell>
-										<TableCell>
-											{o.price !== undefined
-												? `R ${Number(o.price).toFixed(2)}`
-												: ""}
+											<Dialog>
+												<DialogTrigger asChild>
+													<button
+														type="button"
+														className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-foreground border border-gray-200 hover:bg-gray-100 transition"
+														onClick={() => setSelectedOrder(group)}
+														title="View Order">
+														<Eye className="w-4 h-4" />
+														<span className="sr-only">View</span>
+													</button>
+												</DialogTrigger>
+												{selectedOrder &&
+													selectedOrder.order_id === group.order_id && (
+														<DialogContent>
+															<DialogTitle>
+																Order #{selectedOrder.order_id}
+															</DialogTitle>
+															<div className="mb-2">
+																<b>User:</b>{" "}
+																{selectedOrder.user_name}
+																<br />
+																<b>Date:</b>{" "}
+																{selectedOrder.order_date
+																	? new Date(
+																			selectedOrder.order_date,
+																	  ).toLocaleString()
+																	: "-"}
+																<br />
+																<b>Status:</b>{" "}
+																{selectedOrder.order_status}
+															</div>
+															<Table>
+																<TableHeader>
+																	<TableRow>
+																		<TableHead>
+																			Item Name
+																		</TableHead>
+																		<TableHead>
+																			Description
+																		</TableHead>
+																		<TableHead>Price</TableHead>
+																	</TableRow>
+																</TableHeader>
+																<TableBody>
+																	{selectedOrder.items.map(
+																		(item) => (
+																			<TableRow
+																				key={item.item_id}>
+																				<TableCell>
+																					{item.item_name}
+																				</TableCell>
+																				<TableCell>
+																					{item.meta
+																						?.item_description ||
+																						"-"}
+																				</TableCell>
+																				<TableCell>
+																					R{" "}
+																					{Number(
+																						item.price,
+																					).toFixed(2)}
+																				</TableCell>
+																			</TableRow>
+																		),
+																	)}
+																</TableBody>
+															</Table>
+														</DialogContent>
+													)}
+											</Dialog>
 										</TableCell>
 									</TableRow>
 								))
