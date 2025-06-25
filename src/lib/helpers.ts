@@ -1,5 +1,5 @@
 import axios from "axios";
-import { iAuction } from "./types";
+import { iAuction, iGroupedOrder, iOrder, iOrderStatus } from "./types";
 
 /**
  * Converts a given string into a URL-friendly format.
@@ -164,4 +164,61 @@ export const sendNotification = async (
 		console.error("Notification error:", errorMsg);
 		return { success: false, error: errorMsg };
 	}
+};
+
+export function statusColor(status: iOrderStatus) {
+	switch (status) {
+		case iOrderStatus.Completed:
+		case iOrderStatus.Pending:
+			return "bg-green-100 text-green-700";
+		case iOrderStatus.Cancelled:
+		case iOrderStatus.Failed:
+			return "bg-red-100 text-red-700";
+		case iOrderStatus.Unpaid:
+		default:
+			return "bg-yellow-100 text-yellow-700";
+	}
+}
+
+// Function to group orders by order_id
+export const groupOrdersByOrderId = (orders: iOrder[]): iGroupedOrder[] => {
+	const grouped = orders.reduce((acc, order) => {
+		const orderId = order.order_id;
+		if (!acc[orderId]) {
+			acc[orderId] = {
+				order_id: orderId,
+				user_name: `${order.user_first_name || ""} ${order.user_last_name || ""}`.trim(),
+				user_email: order.user_email || "",
+				created_at: order.created_at,
+				items_count: 0,
+				total_amount: 0,
+				order_status: order.order_status,
+				orders: [],
+				payment_id: order.payment_id || "",
+			};
+		}
+		acc[orderId].orders.push(order);
+		acc[orderId].items_count = acc[orderId].orders.length;
+		acc[orderId].total_amount += order.price || 0;
+
+		// Use the latest status or highest priority status
+		const statusPriority = {
+			[iOrderStatus.Failed]: 6,
+			[iOrderStatus.Cancelled]: 5,
+			[iOrderStatus.Unpaid]: 4,
+			[iOrderStatus.Pending]: 3,
+			[iOrderStatus.Processing]: 2,
+			[iOrderStatus.Completed]: 1,
+			[iOrderStatus.Refunded]: 7,
+			[iOrderStatus.Expired]: 8,
+		};
+
+		if (statusPriority[order.order_status] > statusPriority[acc[orderId].order_status]) {
+			acc[orderId].order_status = order.order_status;
+		}
+
+		return acc;
+	}, {} as Record<string, iGroupedOrder>);
+
+	return Object.values(grouped);
 };

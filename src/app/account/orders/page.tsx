@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, RotateCcw } from "lucide-react";
-import { iOrder } from "@/lib/types";
+import { iGroupedOrder, iOrder } from "@/lib/types";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Container from "@/components/common/container";
 import { Button } from "@/components/ui/button";
@@ -26,20 +26,15 @@ import {
 	PaginationNext,
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
-
-interface GroupedOrder {
-	order_id: string;
-	user_name: string;
-	order_date: string;
-	order_status: string;
-	items: iOrder[];
-}
+import { Badge } from "@/components/ui/badge";
+import { groupOrdersByOrderId, statusColor } from "@/lib/helpers";
+import CopyElement from "@/components/CopyElement";
 
 export default function UserOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [selectedOrder, setSelectedOrder] = useState<GroupedOrder | null>(null);
+	const [selectedOrder, setSelectedOrder] = useState<iGroupedOrder | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(10);
 	const [total, setTotal] = useState(0);
@@ -75,24 +70,7 @@ export default function UserOrdersPage() {
 	}, [page, pageSize]);
 
 	// Group orders by order_id
-	const groupedOrders: GroupedOrder[] = (() => {
-		const map = new Map<string, GroupedOrder>();
-		for (const order of orders) {
-			if (!map.has(order.order_id)) {
-				map.set(order.order_id, {
-					order_id: order.order_id,
-					user_name: [order.user_first_name, order.user_last_name]
-						.filter(Boolean)
-						.join(" "),
-					order_date: order.created_at,
-					order_status: order.order_status,
-					items: [],
-				});
-			}
-			map.get(order.order_id)!.items.push(order);
-		}
-		return Array.from(map.values());
-	})();
+	const groupedOrders: iGroupedOrder[] = groupOrdersByOrderId(orders);
 
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -116,12 +94,14 @@ export default function UserOrdersPage() {
 						<AlertDescription>{error}</AlertDescription>
 					</Alert>
 				)}
-				<Card className="overflow-x-auto p-0">
+				<Card className="overflow-x-auto p-5">
 					<Table>
 						<TableHeader>
 							<TableRow>
 								<TableHead>Order Number</TableHead>
+								<TableHead>Payment Ref</TableHead>
 								<TableHead>User Name</TableHead>
+								<TableHead>User Email</TableHead>
 								<TableHead>Order Date</TableHead>
 								<TableHead>Items</TableHead>
 								<TableHead>Status</TableHead>
@@ -144,15 +124,26 @@ export default function UserOrdersPage() {
 							) : (
 								groupedOrders.map((group) => (
 									<TableRow key={group.order_id}>
-										<TableCell>{group.order_id}</TableCell>
-										<TableCell>{group.user_name}</TableCell>
 										<TableCell>
-											{group.order_date
-												? new Date(group.order_date).toLocaleString()
+											{" "}
+											<CopyElement content={group.order_id} />
+										</TableCell>
+										<TableCell>
+											<CopyElement content={group.payment_id} />
+										</TableCell>
+										<TableCell>{group.user_name}</TableCell>
+										<TableCell>{group.user_email}</TableCell>
+										<TableCell>
+											{group.created_at
+												? new Date(group.created_at).toLocaleString()
 												: "-"}
 										</TableCell>
-										<TableCell>{group.items.length}</TableCell>
-										<TableCell>{group.order_status}</TableCell>
+										<TableCell>{group.orders.length}</TableCell>
+										<TableCell>
+											<Badge className={statusColor(group.order_status)}>
+												{group.order_status}
+											</Badge>
+										</TableCell>
 										<TableCell>
 											<Dialog>
 												<DialogTrigger asChild>
@@ -176,14 +167,19 @@ export default function UserOrdersPage() {
 																{selectedOrder.user_name}
 																<br />
 																<b>Date:</b>{" "}
-																{selectedOrder.order_date
+																{selectedOrder.created_at
 																	? new Date(
-																			selectedOrder.order_date,
+																			selectedOrder.created_at,
 																	  ).toLocaleString()
 																	: "-"}
 																<br />
 																<b>Status:</b>{" "}
-																{selectedOrder.order_status}
+																<Badge
+																	className={statusColor(
+																		group.order_status,
+																	)}>
+																	{selectedOrder.order_status}
+																</Badge>
 															</div>
 															<Table>
 																<TableHeader>
@@ -198,7 +194,7 @@ export default function UserOrdersPage() {
 																	</TableRow>
 																</TableHeader>
 																<TableBody>
-																	{selectedOrder.items.map(
+																	{selectedOrder.orders.map(
 																		(item) => (
 																			<TableRow
 																				key={item.item_id}>

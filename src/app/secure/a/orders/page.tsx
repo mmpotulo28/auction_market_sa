@@ -11,16 +11,16 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, Copy, Check, RefreshCw } from "lucide-react";
+import { AlertCircle, Eye, RefreshCw } from "lucide-react";
 import axios from "axios";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
-import { iOrder, iAuctionItem, iTransaction, iOrderStatus } from "@/lib/types";
+import { iOrder, iAuctionItem, iTransaction, iOrderStatus, iGroupedOrder } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import Illustration from "@/components/Illustration";
-import { sendNotification } from "@/lib/helpers";
+import { groupOrdersByOrderId, sendNotification, statusColor } from "@/lib/helpers";
 import {
 	Pagination,
 	PaginationContent,
@@ -30,50 +30,25 @@ import {
 	PaginationNext,
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
+import CopyElement from "@/components/CopyElement";
 
 const ORDER_STATUSES = Object.values(iOrderStatus);
 
-function statusColor(status: iOrderStatus) {
-	switch (status) {
-		case iOrderStatus.Completed:
-		case iOrderStatus.Pending:
-			return "bg-green-100 text-green-700";
-		case iOrderStatus.Cancelled:
-		case iOrderStatus.Failed:
-			return "bg-red-100 text-red-700";
-		case iOrderStatus.Unpaid:
-		default:
-			return "bg-yellow-100 text-yellow-700";
-	}
-}
-
 // Interface for grouped orders
-interface GroupedOrder {
-	order_id: string;
-	payment_id: string;
-	user_name: string;
-	user_email: string;
-	created_at: string;
-	items_count: number;
-	total_amount: number;
-	order_status: iOrderStatus;
-	orders: iOrder[];
-}
 
 export default function AdminOrdersPage() {
 	const [orders, setOrders] = useState<iOrder[]>([]);
-	const [groupedOrders, setGroupedOrders] = useState<GroupedOrder[]>([]);
-	const [filteredGroups, setFilteredGroups] = useState<GroupedOrder[]>([]);
+	const [groupedOrders, setGroupedOrders] = useState<iGroupedOrder[]>([]);
+	const [filteredGroups, setFilteredGroups] = useState<iGroupedOrder[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [search, setSearch] = useState("");
-	const [selectedOrderGroup, setSelectedOrderGroup] = useState<GroupedOrder | null>(null);
+	const [selectedOrderGroup, setSelectedOrderGroup] = useState<iGroupedOrder | null>(null);
 	const [expandedOrder, setExpandedOrder] = useState<iOrder | null>(null);
 	const [itemDetails, setItemDetails] = useState<iAuctionItem | null>(null);
 	const [paymentInfo, setPaymentInfo] = useState<iTransaction | null>(null);
 	const [statusUpdating, setStatusUpdating] = useState(false);
 	const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
-	const [copied, setCopied] = useState<string | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(15);
 	const [, setTotal] = useState(0);
@@ -102,51 +77,6 @@ export default function AdminOrdersPage() {
 			setError(msg);
 		}
 		setLoading(false);
-	};
-
-	// Function to group orders by order_id
-	const groupOrdersByOrderId = (orders: iOrder[]): GroupedOrder[] => {
-		const grouped = orders.reduce((acc, order) => {
-			const orderId = order.order_id;
-			if (!acc[orderId]) {
-				acc[orderId] = {
-					order_id: orderId,
-					user_name: `${order.user_first_name || ""} ${
-						order.user_last_name || ""
-					}`.trim(),
-					user_email: order.user_email || "",
-					created_at: order.created_at,
-					items_count: 0,
-					total_amount: 0,
-					order_status: order.order_status,
-					orders: [],
-					payment_id: order.payment_id || "",
-				};
-			}
-			acc[orderId].orders.push(order);
-			acc[orderId].items_count = acc[orderId].orders.length;
-			acc[orderId].total_amount += order.price || 0;
-
-			// Use the latest status or highest priority status
-			const statusPriority = {
-				[iOrderStatus.Failed]: 6,
-				[iOrderStatus.Cancelled]: 5,
-				[iOrderStatus.Unpaid]: 4,
-				[iOrderStatus.Pending]: 3,
-				[iOrderStatus.Processing]: 2,
-				[iOrderStatus.Completed]: 1,
-				[iOrderStatus.Refunded]: 7,
-				[iOrderStatus.Expired]: 8,
-			};
-
-			if (statusPriority[order.order_status] > statusPriority[acc[orderId].order_status]) {
-				acc[orderId].order_status = order.order_status;
-			}
-
-			return acc;
-		}, {} as Record<string, GroupedOrder>);
-
-		return Object.values(grouped);
 	};
 
 	useEffect(() => {
@@ -244,12 +174,6 @@ export default function AdminOrdersPage() {
 		setStatusUpdating(false);
 	};
 
-	const handleCopy = (value: string) => {
-		navigator.clipboard.writeText(value);
-		setCopied(value);
-		setTimeout(() => setCopied(null), 1200);
-	};
-
 	const totalPages = Math.max(1, Math.ceil(groupedOrders.length / pageSize));
 
 	return (
@@ -318,20 +242,7 @@ export default function AdminOrdersPage() {
 							filteredGroups.map((group) => (
 								<TableRow key={group.order_id}>
 									<TableCell>
-										<span className="flex items-center gap-1">
-											{group.order_id}
-											<button
-												type="button"
-												className="ml-1 text-xs text-muted-foreground hover:text-accent"
-												onClick={() => handleCopy(group.order_id)}
-												title="Copy Order ID">
-												{copied === group.order_id ? (
-													<Check size={14} />
-												) : (
-													<Copy size={14} />
-												)}
-											</button>
-										</span>
+										<CopyElement content={group.order_id} />
 									</TableCell>
 									<TableCell>
 										{group.created_at
@@ -339,7 +250,9 @@ export default function AdminOrdersPage() {
 											: "-"}
 									</TableCell>
 									<TableCell>{group.user_name || "-"}</TableCell>
-									<TableCell>{group.user_email || "-"}</TableCell>
+									<TableCell>
+										<CopyElement content={group.user_email || "-"} />
+									</TableCell>
 									<TableCell>
 										<Badge variant="outline">{group.items_count} items</Badge>
 									</TableCell>
@@ -370,28 +283,11 @@ export default function AdminOrdersPage() {
 														<div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
 															<div>
 																<strong>Order ID:</strong>{" "}
-																<span className="flex items-center gap-1 font-mono text-xs">
-																	{selectedOrderGroup.order_id ||
-																		"-"}
-																	{selectedOrderGroup.order_id && (
-																		<button
-																			type="button"
-																			className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																			onClick={() =>
-																				handleCopy(
-																					selectedOrderGroup.order_id,
-																				)
-																			}
-																			title="Copy Order ID">
-																			{copied ===
-																			selectedOrderGroup.order_id ? (
-																				<Check size={14} />
-																			) : (
-																				<Copy size={14} />
-																			)}
-																		</button>
-																	)}
-																</span>
+																<CopyElement
+																	content={
+																		selectedOrderGroup.order_id
+																	}
+																/>
 															</div>
 															<div className="flex flex-col">
 																<strong>Customer:</strong>{" "}
@@ -399,7 +295,11 @@ export default function AdminOrdersPage() {
 															</div>
 															<div className="flex flex-col">
 																<strong>Email:</strong>{" "}
-																{selectedOrderGroup.user_email}
+																<CopyElement
+																	content={
+																		selectedOrderGroup.user_email
+																	}
+																/>
 															</div>
 															<div className="flex flex-col">
 																<strong>Created At:</strong>{" "}
@@ -430,28 +330,9 @@ export default function AdminOrdersPage() {
 															</div>
 															<div className="flex flex-col">
 																<strong>Payment ref:</strong>{" "}
-																<span className="flex items-center gap-1 font-mono text-xs">
-																	{selectedOrderGroup.payment_id ||
-																		"-"}
-																	{selectedOrderGroup.payment_id && (
-																		<button
-																			type="button"
-																			className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																			onClick={() =>
-																				handleCopy(
-																					selectedOrderGroup.payment_id,
-																				)
-																			}
-																			title="Copy Payment ID">
-																			{copied ===
-																			selectedOrderGroup.payment_id ? (
-																				<Check size={14} />
-																			) : (
-																				<Copy size={14} />
-																			)}
-																		</button>
-																	)}
-																</span>
+																<CopyElement
+																	content={group.payment_id}
+																/>
 															</div>
 														</div>
 
@@ -535,35 +416,11 @@ export default function AdminOrdersPage() {
 																												Order
 																												ID:
 																											</strong>
-																											<span className="font-mono">
-																												{
+																											<CopyElement
+																												content={
 																													expandedOrder.order_id
 																												}
-																											</span>
-																											<button
-																												type="button"
-																												className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																												onClick={() =>
-																													handleCopy(
-																														expandedOrder.order_id,
-																													)
-																												}
-																												title="Copy Order ID">
-																												{copied ===
-																												expandedOrder.order_id ? (
-																													<Check
-																														size={
-																															14
-																														}
-																													/>
-																												) : (
-																													<Copy
-																														size={
-																															14
-																														}
-																													/>
-																												)}
-																											</button>
+																											/>
 																										</div>
 																										<div>
 																											<strong>
@@ -632,36 +489,11 @@ export default function AdminOrdersPage() {
 																												Payment
 																												Ref:
 																											</strong>
-																											<span className="font-mono">
-																												{expandedOrder.payment_id ||
-																													"-"}
-																											</span>
-																											{expandedOrder.payment_id && (
-																												<button
-																													type="button"
-																													className="ml-1 text-xs text-muted-foreground hover:text-accent"
-																													onClick={() =>
-																														handleCopy(
-																															expandedOrder.payment_id!,
-																														)
-																													}
-																													title="Copy Payment ID">
-																													{copied ===
-																													expandedOrder.payment_id ? (
-																														<Check
-																															size={
-																																14
-																															}
-																														/>
-																													) : (
-																														<Copy
-																															size={
-																																14
-																															}
-																														/>
-																													)}
-																												</button>
-																											)}
+																											<CopyElement
+																												content={
+																													expandedOrder.payment_id
+																												}
+																											/>
 																										</div>
 																									</div>
 
