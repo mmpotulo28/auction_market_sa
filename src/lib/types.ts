@@ -205,6 +205,7 @@ export interface iOrder {
 	user_first_name?: string;
 	user_last_name?: string;
 	meta?: any;
+	item?: iAuctionItem;
 }
 
 export interface iOrderApiResponse {

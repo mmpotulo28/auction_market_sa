@@ -9,6 +9,8 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import axios from "axios";
 import { Badge } from "../ui/badge";
+import Image from "next/image";
+import styles from "./order-view.module.css";
 
 const ORDER_STATUSES = Object.values(iOrderStatus);
 
@@ -25,7 +27,7 @@ const OrderView: React.FC<iOrderViewProps> = ({ group, fetchOrders, admin = fals
 	const [expandedOrder, setExpandedOrder] = useState<iOrder | null>(null);
 
 	const handleExpandOrder = async (order: iOrder) => {
-		setExpandedOrder((prev) => (prev === order ? null : order));
+		setExpandedOrder(order);
 	};
 
 	const handleStatusChange = async (order: iGroupedOrder, newStatus: iOrderStatus) => {
@@ -155,20 +157,27 @@ const OrderView: React.FC<iOrderViewProps> = ({ group, fetchOrders, admin = fals
 															<Eye className="w-4 h-4" />
 														</Button>
 													</DialogTrigger>
-													<DialogContent className="max-w-lg">
-														<DialogTitle>Item Details</DialogTitle>
+													<DialogContent>
 														{expandedOrder && (
-															<div className="space-y-3">
-																<div className="flex flex-col gap-2">
-																	<div className="flex items-center gap-2">
-																		<strong>Order ID:</strong>
-																		<CopyElement
-																			content={(
-																				expandedOrder.id ||
-																				"00000000"
-																			).toString()}
-																		/>
-																	</div>
+															<div className={styles.expandedOrder}>
+																<span>
+																	{expandedOrder.item?.title} -
+																	{" R"}
+																	{expandedOrder.item?.price}
+																</span>
+																<div>
+																	<Image
+																		src={
+																			expandedOrder.item
+																				?.image || ""
+																		}
+																		alt={
+																			expandedOrder.item
+																				?.title || ""
+																		}
+																		height={200}
+																		width={200}
+																	/>
 																</div>
 															</div>
 														)}
