@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
 	ColumnDef,
 	SortingState,
@@ -24,17 +25,18 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-import supabase from "@/lib/db";
 import { toast } from "sonner";
-import styles from "./items.module.css";
+
 import { DeleteIcon, Edit, PlusCircle } from "lucide-react";
 import AddNewItemForm from "@/components/dashboard/AddNewItemForm/page";
-import { AddItemData } from "@/lib/dbFunctions";
 import Illustration from "@/components/Illustration";
+import styles from "./items.module.css";
+import { logger } from "@sentry/nextjs";
+import { iAuction, iAuctionItem } from "@/lib/types";
+import { AddItemData } from "@/lib/dbFunctions";
 
 const ItemsPage: React.FC = () => {
-	const [items, setItems] = useState<AddItemData[]>([]);
+	const [items, setItems] = useState<iAuctionItem[]>([]);
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -42,11 +44,12 @@ const ItemsPage: React.FC = () => {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [isEditMode, setIsEditMode] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [auctions, setAuctions] = useState<iAuction[]>([]);
 	const [formData, setFormData] = useState<AddItemData>({
 		id: "",
 		title: "",
 		description: "",
-		price: "",
+		price: "0",
 		category: "",
 		condition: "new",
 		imageFile: null,
@@ -54,23 +57,92 @@ const ItemsPage: React.FC = () => {
 	});
 
 	// Fetch items
+	const fetchItems = async () => {
+		setIsLoading(true);
+		try {
+			const [itemsRes, auctionsRes] = await Promise.all([
+				axios.get("/api/items"),
+				axios.get("/api/auctions"),
+			]);
+
+			setItems(itemsRes.data.items || []);
+			setAuctions(auctionsRes.data || []);
+		} catch (e: any) {
+			toast.error("Failed to fetch items.");
+			console.error("(fetchItems):\n", e);
+			logger.error("[fetchItems] Error fetching items:", { error: e });
+		}
+		setIsLoading(false);
+	};
+
 	useEffect(() => {
-		const fetchItems = async () => {
-			setIsLoading(true);
-			const { data, error } = await supabase.from("items").select("*");
-			if (error) {
-				toast.error("Failed to fetch items.");
-				setIsLoading(false);
-				return;
-			}
-			setItems(data || []);
-			setIsLoading(false);
-		};
 		fetchItems();
 	}, []);
 
+	// Handle delete item
+	const handleDelete = async (id: string) => {
+		if (!confirm("Delete this item?")) return;
+		setIsLoading(true);
+		try {
+			await axios.delete("/api/items", { data: { id } });
+			toast.success("Item deleted!");
+			fetchItems();
+		} catch (e: any) {
+			toast.error(e?.response?.data?.error || "Failed to delete item.");
+		}
+		setIsLoading(false);
+	};
+
+	// Handle edit item
+	const handleEdit = async (item: any) => {
+		setFormData(item);
+		setIsEditMode(true);
+		setIsDialogOpen(true);
+	};
+
+	// Handle add new item
+	const handleAddNew = () => {
+		setFormData({
+			id: "",
+			title: "",
+			description: "",
+			price: "",
+			category: "",
+			condition: "new",
+			imageFile: null,
+			auctionId: "",
+		});
+		setIsEditMode(false);
+		setIsDialogOpen(true);
+	};
+
+	// Create or update item
+	const handleSubmit = async ({ e, data }: { e: React.FormEvent; data: AddItemData }) => {
+		e.preventDefault();
+		setIsLoading(true);
+
+		console.log("Submitting form with data:", data);
+
+		try {
+			if (isEditMode) {
+				await axios.put("/api/items", { item: data });
+				toast.success("Item updated!");
+			} else {
+				await axios.post("/api/items", { item: data });
+				toast.success("Item created!");
+			}
+
+			setFormData(data);
+			setIsDialogOpen(false);
+			fetchItems();
+		} catch (e: any) {
+			toast.error(e?.response?.data?.error || "Failed to save item.");
+		}
+		setIsLoading(false);
+	};
+
 	// Define columns for DataTable
-	const columns: ColumnDef<AddItemData>[] = [
+	const columns: ColumnDef<any>[] = [
 		{
 			accessorKey: "title",
 			header: "Title",
@@ -95,79 +167,18 @@ const ItemsPage: React.FC = () => {
 		{
 			id: "actions",
 			header: "Actions",
-			cell: ({ row }) => (
+			cell: ({ row }: any) => (
 				<div className="flex gap-2">
 					<Button variant="outline" onClick={() => handleEdit(row.original)}>
 						<Edit className="mr-2" />
 					</Button>
-					<Button
-						variant="destructive"
-						onClick={() => handleDelete(row.original.id || "")}>
+					<Button variant="destructive" onClick={() => handleDelete(row.original.id)}>
 						<DeleteIcon className="mr-2" />
 					</Button>
 				</div>
 			),
 		},
 	];
-
-	// Handle delete item
-	const handleDelete = async (id: string) => {
-		const { error } = await supabase.from("items").delete().eq("id", id);
-		if (error) {
-			toast.error("Failed to delete item.");
-			return;
-		}
-		toast.success("Item deleted successfully!");
-		setItems((prev) => prev.filter((item) => item.id !== id));
-	};
-
-	// Handle edit item
-	const handleEdit = async (item: AddItemData) => {
-		setFormData({
-			id: item.id,
-			title: item.title,
-			description: item.description,
-			price: item.price,
-			category: item.category,
-			condition: item.condition,
-			imageFile: item.imageFile || null,
-			auctionId: item.auctionId || "",
-		});
-		setIsEditMode(true);
-		setIsDialogOpen(true);
-	};
-
-	// Handle add new item
-	const handleAddNew = () => {
-		setFormData({
-			id: "",
-			title: "",
-			description: "",
-			price: "",
-			category: "",
-			condition: "new",
-			imageFile: null,
-			auctionId: "",
-		});
-		setIsEditMode(false);
-		setIsDialogOpen(true);
-	};
-
-	// Handle form submission
-	const handleSubmit = (response: { success: boolean; error: string | undefined }) => {
-		if (response.error || response.success) {
-			toast.error(response.error);
-			return;
-		}
-
-		if (isEditMode) {
-			setItems((prev) => prev.map((item) => (item.id === formData.id ? formData : item)));
-			toast.success("Item updated successfully!");
-		} else {
-			setItems((prev) => [...prev, formData]);
-			toast.success("Item added successfully!");
-		}
-	};
 
 	// Initialize table
 	const table = useReactTable({
@@ -274,18 +285,11 @@ const ItemsPage: React.FC = () => {
 					</DialogHeader>
 
 					<AddNewItemForm
-						item={{
-							id: formData.id,
-							title: formData.title,
-							description: formData.description,
-							price: formData.price,
-							category: formData.category,
-							condition: formData.condition,
-							imageFile: formData.imageFile,
-							auctionId: formData.auctionId,
-						}}
+						item={formData}
 						onSubmit={handleSubmit}
 						buttonText={isEditMode ? "Edit Item" : "Add New Item"}
+						auctions={auctions}
+						isSubmitting={isLoading}
 					/>
 				</DialogContent>
 			</Dialog>

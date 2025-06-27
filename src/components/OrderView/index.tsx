@@ -80,7 +80,9 @@ const OrderView: React.FC<iOrderViewProps> = ({ group, fetchOrders, admin = fals
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="flex flex-col gap-2.5">
-				<DialogTitle>Order Details - {group.order_id}</DialogTitle>
+				<DialogTitle>
+					<CopyElement content={group.order_id} />
+				</DialogTitle>
 				{selectedOrderGroup && (
 					<div className="space-y-4 w-full max-w-[100%] max-h-[80vh]  block">
 						<div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">

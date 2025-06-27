@@ -4,20 +4,27 @@ import styles from "./add-items.module.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
 import { FaSpinner } from "react-icons/fa";
 import Container from "@/components/common/container";
-import { AddItemData, addItemToDatabase } from "@/lib/dbFunctions";
+import { AddItemData } from "@/lib/dbFunctions";
+import { iAuction } from "@/lib/types";
 
 interface AddNewItemFormProps {
 	item: AddItemData;
-	onSubmit: (response: { success: boolean; error: string | undefined }) => void;
+	onSubmit: ({ e, data }: { e: React.FormEvent; data: AddItemData }) => Promise<void>;
 	buttonText: string;
+	auctions: iAuction[];
+	isSubmitting: boolean;
 }
 
-const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonText }) => {
+const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
+	item,
+	buttonText,
+	auctions,
+	isSubmitting,
+	onSubmit,
+}) => {
 	const [formData, setFormData] = useState<AddItemData>(item);
-	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
 		if (item) {
@@ -25,39 +32,23 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonT
 		}
 	}, [item]);
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+	const handleChange = (
+		e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0] || null;
+		console.log("Selected file:", file);
 		setFormData((prev) => ({ ...prev, imageFile: file }));
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsSubmitting(true);
-
-		const result = await addItemToDatabase(formData);
-
-		if (result.success) {
-			toast.success("Item added successfully!");
-		} else {
-			toast.error(result.error || "Unexpected error occurred.");
-		}
-
-		setIsSubmitting(false);
-		onSubmit({
-			success: result.success,
-			error: result.error,
-		});
 	};
 
 	return (
 		<Container padded={false}>
 			<div className={styles.container}>
-				<form onSubmit={handleSubmit} className={styles.form}>
+				<form onSubmit={(e) => onSubmit({ e, data: formData })} className={styles.form}>
 					<Input
 						name="title"
 						placeholder="Item Title"
@@ -94,14 +85,14 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({ item, onSubmit, buttonT
 						onChange={handleChange}
 						required
 					/>
-					<Input
-						name="auctionId"
-						type="number"
-						placeholder="Auction ID"
-						value={formData.auctionId}
-						onChange={handleChange}
-						required
-					/>
+					<select name="auctionId" value={formData.auctionId} onChange={handleChange}>
+						<option value="">Select Auction</option>
+						{auctions.map((auction) => (
+							<option key={auction.id} value={auction.id}>
+								{auction.name}
+							</option>
+						))}
+					</select>
 					<div className={styles.radioGroup}>
 						<label>
 							<Input
