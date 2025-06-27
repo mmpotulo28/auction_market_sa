@@ -236,6 +236,7 @@ export const typeBg = {
 export interface iGroupedOrder {
 	order_id: string;
 	payment_id: string;
+	user_id: string;
 	user_name: string;
 	user_email: string;
 	created_at: string;

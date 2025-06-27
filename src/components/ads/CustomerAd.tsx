@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import styles from "./CustomerAd.module.css";
+import { Separator } from "../ui/separator";
 
 export type AdVariant = "banner" | "card-small" | "card-big";
 
@@ -145,29 +146,33 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 				</div>
 			)}
 			{adVariant === "banner" && (
-				<div className={styles.adBanner}>
-					<Image
-						src={slide.imageUrl}
-						alt={slide.title}
-						width={120}
-						height={80}
-						className={styles.adBannerImage}
-					/>
-					<div className={styles.adBannerContent}>
-						<div className={styles.adBannerTitle}>{slide.title}</div>
-						<div className={styles.adBannerDescription}>{slide.description}</div>
-						<a href={slide.linkUrl} className={styles.adBannerCta}>
-							{slide.cta}
-						</a>
+				<>
+					<Separator className="my-3" />
+					<div className={styles.adBanner}>
+						<Image
+							src={slide.imageUrl}
+							alt={slide.title}
+							width={120}
+							height={80}
+							className={styles.adBannerImage}
+						/>
+						<div className={styles.adBannerContent}>
+							<div className={styles.adBannerTitle}>{slide.title}</div>
+							<div className={styles.adBannerDescription}>{slide.description}</div>
+							<a href={slide.linkUrl} className={styles.adBannerCta}>
+								{slide.cta}
+							</a>
+						</div>
+						<Image
+							src={slide.imageUrl}
+							alt={slide.title}
+							width={120}
+							height={80}
+							className={styles.adBannerImage}
+						/>
 					</div>
-					<Image
-						src={slide.imageUrl}
-						alt={slide.title}
-						width={120}
-						height={80}
-						className={styles.adBannerImage}
-					/>
-				</div>
+					<Separator className="my-3" />
+				</>
 			)}
 			<div className={styles.adDots}>
 				{slides.map((_, idx) => (

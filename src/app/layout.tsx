@@ -37,7 +37,19 @@ export default function RootLayout({
 			<body className={`antialiased`}>
 				<Script src="//code.tidio.co/ohxu3aax2hizek3hbmbg9m3ivxwffjts.js" async />
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-					<ClerkProvider>
+					<ClerkProvider
+						appearance={{
+							layout: {
+								socialButtonsPlacement: "top",
+								socialButtonsVariant: "auto",
+								logoPlacement: "none",
+								shimmer: true,
+							},
+							captcha: {
+								theme: "auto",
+								size: "flexible",
+							},
+						}}>
 						<WebSocketProvider>
 							<Header />
 							<main className="w-full h-full min-h-full">{children}</main>

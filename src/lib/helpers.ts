@@ -166,10 +166,11 @@ export const sendNotification = async (
 	}
 };
 
-export function statusColor(status: iOrderStatus) {
+export function statusColor(status: iOrderStatus | "COMPLETE") {
 	switch (status) {
 		case iOrderStatus.Completed:
 		case iOrderStatus.Pending:
+		case "COMPLETE":
 			return "bg-green-100 text-green-700";
 		case iOrderStatus.Cancelled:
 		case iOrderStatus.Failed:
@@ -195,6 +196,7 @@ export const groupOrdersByOrderId = (orders: iOrder[]): iGroupedOrder[] => {
 				order_status: order.order_status,
 				orders: [],
 				payment_id: order.payment_id || "",
+				user_id: order.user_id || "",
 			};
 		}
 		acc[orderId].orders.push(order);
@@ -222,3 +224,34 @@ export const groupOrdersByOrderId = (orders: iOrder[]): iGroupedOrder[] => {
 
 	return Object.values(grouped);
 };
+
+interface iFetchOrdersResponse {
+	orders: iOrder[];
+	groupedOrders: iGroupedOrder[];
+	error: string | null;
+}
+
+export async function fetchOrders({
+	page,
+	pageSize = 15,
+}: {
+	page: number;
+	pageSize?: number;
+}): Promise<iFetchOrdersResponse> {
+	try {
+		const res = await axios.get(`/api/admin/orders?page=${page}&pageSize=${pageSize}`);
+		if (res.data && Array.isArray(res.data.orders)) {
+			// Group orders by order_id
+			const grouped = groupOrdersByOrderId(res.data.orders);
+
+			return { orders: res.data.orders, groupedOrders: grouped, error: null };
+		} else {
+			return { orders: [], groupedOrders: [], error: "Invalid response from server." };
+		}
+	} catch (e: any) {
+		let msg = "Failed to fetch orders.";
+		if (e?.response?.data?.error) msg = e.response.data.error;
+		else if (e?.message) msg = e.message;
+		return { orders: [], groupedOrders: [], error: msg };
+	}
+}

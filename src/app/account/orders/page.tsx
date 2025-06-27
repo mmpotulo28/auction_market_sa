@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
 	Table,
@@ -10,12 +10,10 @@ import {
 	TableCell,
 } from "@/components/ui/table";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, RotateCcw } from "lucide-react";
-import { iGroupedOrder, iOrder } from "@/lib/types";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertCircle, RotateCcw } from "lucide-react";
+import { iGroupedOrder } from "@/lib/types";
 import Container from "@/components/common/container";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
 import Illustration from "@/components/Illustration";
 import {
 	Pagination,
@@ -27,63 +25,42 @@ import {
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { groupOrdersByOrderId, statusColor } from "@/lib/helpers";
+import { fetchOrders, statusColor } from "@/lib/helpers";
 import CopyElement from "@/components/CopyElement";
+import CustomerAd from "@/components/ads/CustomerAd";
+import OrderView from "@/components/OrderView";
 
 export default function UserOrdersPage() {
-	const [orders, setOrders] = useState<iOrder[]>([]);
+	const [groupedOrders, setGroupedOrders] = useState<iGroupedOrder[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [selectedOrder, setSelectedOrder] = useState<iGroupedOrder | null>(null);
 	const [page, setPage] = useState(1);
-	const [pageSize] = useState(10);
-	const [total, setTotal] = useState(0);
+	const [pageSize] = useState(15);
 
-	const fetchOrders = async () => {
+	const fetchData = useCallback(async () => {
 		setLoading(true);
-		setError(null);
-		try {
-			const res = await axios.get<{
-				orders: iOrder[];
-				total: number;
-				error?: string;
-			}>(`/api/orders/user?page=${page}&pageSize=${pageSize}`);
-			const data = res.data;
-			if (data.orders) {
-				setOrders(data.orders);
-				setTotal(data.total || 0);
-			} else setError(data.error || "No orders found.");
-		} catch (e: unknown) {
-			if (axios.isAxiosError(e)) {
-				setError(e.response?.data?.error || e.message);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-		} finally {
-			setLoading(false);
+		const { groupedOrders, error } = await fetchOrders({ page, pageSize });
+		if (error) {
+			setError(error);
+		} else {
+			setGroupedOrders(groupedOrders);
 		}
-	};
 
-	useEffect(() => {
-		fetchOrders();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		setLoading(false);
 	}, [page, pageSize]);
 
-	// Group orders by order_id
-	const groupedOrders: iGroupedOrder[] = groupOrdersByOrderId(orders);
+	useEffect(() => {
+		fetchData();
+	}, [fetchData, page, pageSize]);
 
-	const totalPages = Math.max(1, Math.ceil(total / pageSize));
+	const totalPages = Math.max(1, Math.ceil(groupedOrders.length / pageSize));
 
 	return (
 		<Container>
 			<div className="max-w-full w-full mx-auto py-10 px-4">
 				<div className="flex items-center justify-between mb-6">
 					<h1 className="text-3xl font-bold mb-6">My Orders</h1>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={fetchOrders}
-						title="Refetch orders">
+					<Button variant="ghost" size="icon" onClick={fetchData} title="Refetch orders">
 						<RotateCcw className="w-5 h-5" />
 					</Button>
 				</div>
@@ -145,81 +122,7 @@ export default function UserOrdersPage() {
 											</Badge>
 										</TableCell>
 										<TableCell>
-											<Dialog>
-												<DialogTrigger asChild>
-													<button
-														type="button"
-														className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-foreground border border-gray-200 hover:bg-gray-100 transition"
-														onClick={() => setSelectedOrder(group)}
-														title="View Order">
-														<Eye className="w-4 h-4" />
-														<span className="sr-only">View</span>
-													</button>
-												</DialogTrigger>
-												{selectedOrder &&
-													selectedOrder.order_id === group.order_id && (
-														<DialogContent>
-															<DialogTitle>
-																Order #{selectedOrder.order_id}
-															</DialogTitle>
-															<div className="mb-2">
-																<b>User:</b>{" "}
-																{selectedOrder.user_name}
-																<br />
-																<b>Date:</b>{" "}
-																{selectedOrder.created_at
-																	? new Date(
-																			selectedOrder.created_at,
-																	  ).toLocaleString()
-																	: "-"}
-																<br />
-																<b>Status:</b>{" "}
-																<Badge
-																	className={statusColor(
-																		group.order_status,
-																	)}>
-																	{selectedOrder.order_status}
-																</Badge>
-															</div>
-															<Table>
-																<TableHeader>
-																	<TableRow>
-																		<TableHead>
-																			Item Name
-																		</TableHead>
-																		<TableHead>
-																			Description
-																		</TableHead>
-																		<TableHead>Price</TableHead>
-																	</TableRow>
-																</TableHeader>
-																<TableBody>
-																	{selectedOrder.orders.map(
-																		(item) => (
-																			<TableRow
-																				key={item.item_id}>
-																				<TableCell>
-																					{item.item_name}
-																				</TableCell>
-																				<TableCell>
-																					{item.meta
-																						?.item_description ||
-																						"-"}
-																				</TableCell>
-																				<TableCell>
-																					R{" "}
-																					{Number(
-																						item.price,
-																					).toFixed(2)}
-																				</TableCell>
-																			</TableRow>
-																		),
-																	)}
-																</TableBody>
-															</Table>
-														</DialogContent>
-													)}
-											</Dialog>
+											<OrderView fetchOrders={fetchData} group={group} />
 										</TableCell>
 									</TableRow>
 								))
@@ -275,6 +178,7 @@ export default function UserOrdersPage() {
 						</PaginationContent>
 					</Pagination>
 				</Card>
+				<CustomerAd variant="banner" />
 			</div>
 		</Container>
 	);
