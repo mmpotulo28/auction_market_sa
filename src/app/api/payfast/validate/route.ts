@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
 import { ensureTransactionsTable } from "@/lib/payfast";
+import { logger } from "@sentry/nextjs";
 
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url);
@@ -29,6 +30,7 @@ export async function GET(req: Request) {
 	const { data, error } = await query.single();
 
 	if (error) {
+		logger.error("Supabase error:", { error });
 		return NextResponse.json({ error: error.message }, { status: 404 });
 	}
 

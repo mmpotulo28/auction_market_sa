@@ -1,5 +1,5 @@
 import axios from "axios";
-import { iAuction } from "./types";
+import { iAuction, iGroupedOrder, iOrder, iOrderStatus } from "./types";
 
 /**
  * Converts a given string into a URL-friendly format.
@@ -56,7 +56,7 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 		setIsLoading?.(true);
 
 		const cookieName = "auction_cache";
-		const cacheDuration = 5 * 60 * 1000; // 5 minutes in ms
+		const cacheDuration = 1 * 60 * 1000; // 1 minute in ms
 
 		// Only cache on client side
 		if (typeof window !== "undefined") {
@@ -78,10 +78,12 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 					console.error("Failed to parse auction cache:", error);
 					return [];
 				}
+
 				return [];
 			})();
 
-			if (cached) {
+			if (cached && cached.length > 0) {
+				console.log("auctions (cache):", cached);
 				onLoad?.(cached);
 				setIsLoading?.(false);
 				return cached;
@@ -163,3 +165,93 @@ export const sendNotification = async (
 		return { success: false, error: errorMsg };
 	}
 };
+
+export function statusColor(status: iOrderStatus | "COMPLETE") {
+	switch (status) {
+		case iOrderStatus.Completed:
+		case iOrderStatus.Pending:
+		case "COMPLETE":
+			return "bg-green-100 text-green-700";
+		case iOrderStatus.Cancelled:
+		case iOrderStatus.Failed:
+			return "bg-red-100 text-red-700";
+		case iOrderStatus.Unpaid:
+		default:
+			return "bg-yellow-100 text-yellow-700";
+	}
+}
+
+// Function to group orders by order_id
+export const groupOrdersByOrderId = (orders: iOrder[]): iGroupedOrder[] => {
+	const grouped = orders.reduce((acc, order) => {
+		const orderId = order.order_id;
+		if (!acc[orderId]) {
+			acc[orderId] = {
+				order_id: orderId,
+				user_name: `${order.user_first_name || ""} ${order.user_last_name || ""}`.trim(),
+				user_email: order.user_email || "",
+				created_at: order.created_at,
+				items_count: 0,
+				total_amount: 0,
+				order_status: order.order_status,
+				orders: [],
+				payment_id: order.payment_id || "",
+				user_id: order.user_id || "",
+			};
+		}
+		acc[orderId].orders.push(order);
+		acc[orderId].items_count = acc[orderId].orders.length;
+		acc[orderId].total_amount += order.price || 0;
+
+		// Use the latest status or highest priority status
+		const statusPriority = {
+			[iOrderStatus.Failed]: 6,
+			[iOrderStatus.Cancelled]: 5,
+			[iOrderStatus.Unpaid]: 4,
+			[iOrderStatus.Pending]: 3,
+			[iOrderStatus.Processing]: 2,
+			[iOrderStatus.Completed]: 1,
+			[iOrderStatus.Refunded]: 7,
+			[iOrderStatus.Expired]: 8,
+		};
+
+		if (statusPriority[order.order_status] > statusPriority[acc[orderId].order_status]) {
+			acc[orderId].order_status = order.order_status;
+		}
+
+		return acc;
+	}, {} as Record<string, iGroupedOrder>);
+
+	return Object.values(grouped);
+};
+
+interface iFetchOrdersResponse {
+	orders: iOrder[];
+	groupedOrders: iGroupedOrder[];
+	error: string | null;
+}
+
+export async function fetchOrders({
+	page,
+	pageSize = 15,
+}: {
+	page: number;
+	pageSize?: number;
+}): Promise<iFetchOrdersResponse> {
+	try {
+		const res = await axios.get(`/api/admin/orders?page=${page}&pageSize=${pageSize}`);
+		if (res.data && Array.isArray(res.data.orders)) {
+			// Group orders by order_id
+			const grouped = groupOrdersByOrderId(res.data.orders);
+
+			return { orders: res.data.orders, groupedOrders: grouped, error: null };
+		} else {
+			return { orders: [], groupedOrders: [], error: "Invalid response from server." };
+		}
+	} catch (e: any) {
+		let msg = "Failed to fetch orders.";
+		if (e?.response?.data?.error) msg = e.response.data.error;
+		else if (e?.message) msg = e.message;
+		return { orders: [], groupedOrders: [], error: msg };
+	}
+}

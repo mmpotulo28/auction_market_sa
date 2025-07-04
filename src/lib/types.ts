@@ -205,6 +205,7 @@ export interface iOrder {
 	user_first_name?: string;
 	user_last_name?: string;
 	meta?: any;
+	item?: iAuctionItem;
 }
 
 export interface iOrderApiResponse {
@@ -232,3 +233,16 @@ export const typeBg = {
 	success: "bg-green-50 dark:bg-green-900/20",
 	default: "bg-muted",
 };
+
+export interface iGroupedOrder {
+	order_id: string;
+	payment_id: string;
+	user_id: string;
+	user_name: string;
+	user_email: string;
+	created_at: string;
+	items_count: number;
+	total_amount: number;
+	order_status: iOrderStatus;
+	orders: iOrder[];
+}

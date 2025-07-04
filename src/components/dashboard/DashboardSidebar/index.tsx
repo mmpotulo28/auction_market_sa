@@ -14,6 +14,7 @@ import {
 import styles from "./dashboard-sidebar.module.css";
 import { Home, Settings, Box, Gavel, ReceiptText, Bell } from "lucide-react";
 import Link from "next/link";
+import { BiEnvelope } from "react-icons/bi";
 
 const DashboardSidebar: React.FC = () => {
 	// Menu items.
@@ -52,6 +53,11 @@ const DashboardSidebar: React.FC = () => {
 			title: "Notifications",
 			url: "/secure/a/notifications",
 			icon: Bell,
+		},
+		{
+			title: "Emails",
+			url: "/secure/a/emails",
+			icon: BiEnvelope,
 		},
 		{
 			title: "Settings",

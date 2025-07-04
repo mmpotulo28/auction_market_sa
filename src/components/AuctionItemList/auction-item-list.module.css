@@ -185,9 +185,9 @@
 
 .auctionHeader {
 	position: fixed;
-	bottom: 20%;
+	bottom: 5%;
 	right: 0;
-	transform: translate(0%, 20%);
+	transform: translate(0%, 5%);
 	z-index: 10;
 	background-color: var(--color-background);
 	padding: 0;

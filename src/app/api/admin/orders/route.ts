@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/db";
-import { iOrder, iOrderApiResponse } from "@/lib/types";
+import supabase, { supabaseAdmin } from "@/lib/db";
+import { iAuctionItem, iOrder, iOrderApiResponse } from "@/lib/types";
+import { logger } from "@sentry/nextjs";
 
 // Optionally add authentication/authorization here
 
@@ -18,8 +19,27 @@ export async function GET(req: NextRequest) {
 			.order("id", { ascending: false })
 			.range(from, to);
 
+		// fetch items and bind them with an order
+		const { data: items, error: itemsError } = await supabase
+			.from("items")
+			.select("*")
+			.in("id", data?.map((order: iOrder) => order.item_id) ?? []);
+
+		if (itemsError) {
+			console.error("Error fetching items:", itemsError);
+			logger.error("Error fetching items:", { error: itemsError, data });
+			return NextResponse.json({ error: itemsError.message } as iOrderApiResponse, {
+				status: 500,
+			});
+		}
+
+		data?.forEach((order: iOrder) => {
+			order.item = items.find((item: iAuctionItem) => item.id == order.item_id);
+		});
+
 		if (error) {
 			console.error("Error fetching orders:", error);
+			logger.error("Error fetching orders:", { error, data });
 			return NextResponse.json({ error: error.message } as iOrderApiResponse, {
 				status: 500,
 			});
@@ -31,6 +51,7 @@ export async function GET(req: NextRequest) {
 		} as iOrderApiResponse);
 	} catch (err: any) {
 		console.error("Unexpected error fetching orders:", err);
+		logger.error("Unexpected error fetching orders:", { err });
 		return NextResponse.json(
 			{ error: err?.message || "Unexpected error fetching orders." } as iOrderApiResponse,
 			{ status: 500 },

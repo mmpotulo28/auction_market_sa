@@ -49,7 +49,7 @@ const Footer = () => {
 					<div>
 						<h4 className={styles.heading}>Contact</h4>
 						<ul className={styles.list}>
-							<li>Email: support@actionmarket.sa</li>
+							<li>Email: support@auctionmarket.tech</li>
 							<li>Phone: +1 234 567 890</li>
 							<li>
 								<Link href="/support/contact" className={styles.link}>

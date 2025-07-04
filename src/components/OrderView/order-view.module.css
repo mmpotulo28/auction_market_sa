@@ -1,0 +1,13 @@
+.expandedOrder {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--color-accent);
+	align-items: center;
+	margin: auto;
+}
+
+.expandedOrder span {
+	color: white;
+	font-weight: bold;
+	padding: 5px;
+}

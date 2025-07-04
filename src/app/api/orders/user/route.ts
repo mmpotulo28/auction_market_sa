@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { getAuth } from "@clerk/nextjs/server";
 import { iOrder } from "@/lib/types";
+import { logger } from "@sentry/nextjs";
 
 export async function GET(req: NextRequest) {
 	try {
@@ -24,11 +25,12 @@ export async function GET(req: NextRequest) {
 			.range(from, to);
 
 		if (error) {
+			logger.error("[GET /api/orders/user] Supabase error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
 		return NextResponse.json({ orders: data as iOrder[], total: count });
 	} catch (err: any) {
-		console.error("Unexpected error:", err);
+		logger.error("[GET /api/orders/user] Exception:", { err });
 		return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 	}
 }

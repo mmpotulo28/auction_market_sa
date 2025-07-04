@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/db";
+import { logger } from "@sentry/nextjs";
 
 // GET: Fetch all ads
 export async function GET() {
+	logger.info("Fetching all ads");
 	try {
 		const { data, error } = await supabaseAdmin
 			.from("ads")
 			.select("*")
 			.order("created_at", { ascending: false });
 		if (error) {
-			console.error("Ads GET error:", error);
+			logger.error("Ads GET error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
 		return NextResponse.json({ ads: data });
 	} catch (error: any) {
-		console.error("Ads GET unexpected error:", error);
+		logger.error("Ads GET unexpected error:", { error });
 		return NextResponse.json(
 			{ error: error?.message || "Internal server error" },
 			{ status: 500 },
@@ -24,6 +26,7 @@ export async function GET() {
 
 // POST: Create a new ad
 export async function POST(req: NextRequest) {
+	logger.info("creating new ad", { body: req.body });
 	try {
 		const body = await req.json();
 		const { variant, title, description, imageUrl, linkUrl, cta } = body;
@@ -34,12 +37,12 @@ export async function POST(req: NextRequest) {
 			.from("ads")
 			.insert([{ variant, title, description, imageUrl, linkUrl, cta }]);
 		if (error) {
-			console.error("Ads POST error:", error);
+			logger.error("Ads POST error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
 		return NextResponse.json({ success: true });
 	} catch (error: any) {
-		console.error("Ads POST unexpected error:", error);
+		logger.error("Ads POST unexpected error:", { error });
 		return NextResponse.json(
 			{ error: error?.message || "Internal server error" },
 			{ status: 500 },
@@ -57,12 +60,12 @@ export async function DELETE(req: NextRequest) {
 		}
 		const { error } = await supabaseAdmin.from("ads").delete().eq("id", id);
 		if (error) {
-			console.error("Ads DELETE error:", error);
+			logger.error("Ads DELETE error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}
 		return NextResponse.json({ success: true });
 	} catch (error: any) {
-		console.error("Ads DELETE unexpected error:", error);
+		logger.error("Ads DELETE unexpected error:", { error });
 		return NextResponse.json(
 			{ error: error?.message || "Internal server error" },
 			{ status: 500 },

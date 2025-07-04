@@ -2,9 +2,9 @@
 import { NextResponse } from "next/server";
 import supabase from "@/lib/db";
 import { iAuction } from "@/lib/types";
+import { logger } from "@sentry/nextjs";
 
 export async function GET() {
-	console.log("fetching apis");
 	try {
 		const { data, error } = await supabase
 			.from("auctions")
@@ -12,13 +12,15 @@ export async function GET() {
 			.order("id", { ascending: false });
 
 		if (error) {
-			console.error("[GET /api/auctions] Supabase error:", error.message);
+			logger.error("[GET /api/auctions] Supabase error:", { error });
 			throw new Error(`Failed to fetch auctions: ${error.message}`);
 		}
 
+		logger.info("[GET /api/auctions] Fetched auctions successfully:", { data });
+
 		return NextResponse.json(data, { status: 200 });
 	} catch (error) {
-		console.error("[GET /api/auctions] Exception:", error);
+		logger.error("[GET /api/auctions] Exception:", { error });
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : "Unknown error" },
 			{ status: 500 },
@@ -41,7 +43,7 @@ export async function POST(req: Request) {
 		} = body;
 
 		if (!name || !items_count || !start_time || !duration || !re_open_count || !created_by) {
-			console.warn("[POST /api/auctions] Missing required fields:", body);
+			logger.error("[POST /api/auctions] Missing required fields:", { body });
 			return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
 		}
 
@@ -59,13 +61,13 @@ export async function POST(req: Request) {
 		const { data, error } = await supabase.from("auctions").insert([insertPayload]).select();
 
 		if (error) {
-			console.error("[POST /api/auctions] Supabase error:", error.message);
+			logger.error("[POST /api/auctions] Supabase error:", { error });
 			throw new Error(`Failed to add auction: ${error.message}`);
 		}
 
 		return NextResponse.json(data, { status: 201 });
 	} catch (error) {
-		console.error("[POST /api/auctions] Exception:", error);
+		logger.error("[POST /api/auctions] Exception:", { error });
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : "Unknown error" },
 			{ status: 500 },
@@ -79,20 +81,20 @@ export async function DELETE(req: Request) {
 		const id = searchParams.get("id");
 
 		if (!id) {
-			console.warn("[DELETE /api/auctions] Missing auction ID in query params.");
+			logger.warn("[DELETE /api/auctions] Missing auction ID in query params.");
 			return NextResponse.json({ error: "Missing auction ID." }, { status: 400 });
 		}
 
 		const { error } = await supabase.from("auctions").delete().eq("id", id);
 
 		if (error) {
-			console.error("[DELETE /api/auctions] Supabase error:", error.message);
+			logger.error("[DELETE /api/auctions] Supabase error:", { error });
 			throw new Error(`Failed to delete auction: ${error.message}`);
 		}
 
 		return NextResponse.json({ message: "Auction deleted successfully." }, { status: 200 });
 	} catch (error) {
-		console.error("[DELETE /api/auctions] Exception:", error);
+		logger.error("[DELETE /api/auctions] Exception:", { error });
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : "Unknown error" },
 			{ status: 500 },
@@ -114,8 +116,6 @@ export async function PUT(req: Request) {
 			created_by,
 		} = body;
 
-		console.log("body", body);
-
 		const missingFields: (keyof iAuction)[] = [];
 		if (!id) missingFields.push("id");
 		if (!name) missingFields.push("name");
@@ -126,11 +126,11 @@ export async function PUT(req: Request) {
 		if (!created_by) missingFields.push("created_by");
 
 		if (missingFields.length > 0) {
-			console.warn(
+			logger.warn(
 				`[PUT /api/auctions] Missing required fields: ${missingFields.join(
 					", ",
 				)}. Payload:`,
-				body,
+				{ body },
 			);
 			return NextResponse.json(
 				{ error: `Missing required fields: ${missingFields.join(", ")}.` },
@@ -153,13 +153,13 @@ export async function PUT(req: Request) {
 			.select();
 
 		if (error) {
-			console.error("[PUT /api/auctions] Supabase error:", error.message);
+			logger.error("[PUT /api/auctions] Supabase error:", { error });
 			throw new Error(`Failed to update auction: ${error.message}`);
 		}
 
 		return NextResponse.json(data, { status: 200 });
 	} catch (error) {
-		console.error("[PUT /api/auctions] Exception:", error);
+		logger.error("[PUT /api/auctions] Exception:", { error });
 		return NextResponse.json(
 			{ error: error instanceof Error ? error.message : "Unknown error" },
 			{ status: 500 },

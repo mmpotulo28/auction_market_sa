@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Eye, RotateCcw } from "lucide-react";
-import { iTransaction } from "@/lib/types";
+import { iOrderStatus, iTransaction } from "@/lib/types";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import Receipt from "@/components/Reciept";
 import Container from "@/components/common/container";
@@ -28,6 +28,8 @@ import {
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import Illustration from "@/components/Illustration";
+import CustomerAd from "@/components/ads/CustomerAd";
+import { statusColor } from "@/lib/helpers";
 
 export default function UserTransactionsPage() {
 	const [transactions, setTransactions] = useState<iTransaction[]>([]);
@@ -73,7 +75,7 @@ export default function UserTransactionsPage() {
 
 	return (
 		<Container>
-			<div className="max-w-full mx-auto py-10 px-4">
+			<div className="max-w-full w-full mx-auto py-10 px-4">
 				<div className="flex items-center justify-between mb-6">
 					<h1 className="text-3xl font-bold mb-6">My Transactions</h1>
 					<Button
@@ -128,7 +130,12 @@ export default function UserTransactionsPage() {
 										</TableCell>
 										<TableCell>{t.m_payment_id || t.pf_payment_id}</TableCell>
 										<TableCell>
-											<Badge>{t.payment_status}</Badge>
+											<Badge
+												className={statusColor(
+													t.payment_status as unknown as iOrderStatus,
+												)}>
+												{t.payment_status}
+											</Badge>
 										</TableCell>
 										<TableCell>{t.item_name}</TableCell>
 										<TableCell>
@@ -227,6 +234,8 @@ export default function UserTransactionsPage() {
 						</PaginationContent>
 					</Pagination>
 				</Card>
+
+				<CustomerAd variant="banner" />
 			</div>
 		</Container>
 	);
