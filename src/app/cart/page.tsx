@@ -75,7 +75,7 @@ export default function CartPage() {
 			if (wonItems.length > 0) {
 				setIsLoading(true);
 				const firstItem = wonItems[0];
-				const auctionName = firstItem.auction.name || "";
+				const auctionName = firstItem.auction?.name || undefined;
 				if (auctionName) {
 					const auctionData = await fetchAuctionByName(auctionName);
 					setAuction(auctionData || null);
@@ -99,7 +99,7 @@ export default function CartPage() {
 						}
 					} else {
 						// fallback: just use 20min
-						setCheckoutWindowClosed(false);
+						setCheckoutWindowClosed(true);
 						setSecondsLeft(TWENTY_MINUTES);
 						setExpired(false);
 					}
@@ -113,9 +113,9 @@ export default function CartPage() {
 				setIsLoading(false);
 			} else {
 				setAuction(null);
-				setCheckoutWindowClosed(false);
-				setSecondsLeft(TWENTY_MINUTES);
-				setExpired(false);
+				setCheckoutWindowClosed(true);
+				setSecondsLeft(0);
+				setExpired(true);
 			}
 		};
 		updateTimer();
