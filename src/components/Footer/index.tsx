@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import styles from "./footer.module.css";
+import ShareApp from "./ShareApp";
 
 const Footer = () => {
 	return (
@@ -15,6 +16,7 @@ const Footer = () => {
 							Action Market SA is a real-time auction marketplace for buying and
 							selling items.
 						</p>
+						<ShareApp />
 					</div>
 					<div>
 						<h4 className={styles.heading}>Quick Links</h4>
@@ -35,12 +37,12 @@ const Footer = () => {
 								</Link>
 							</li>
 							<li>
-								<Link href="/policy/privacy" className={styles.link}>
+								<Link href="/support/privacy" className={styles.link}>
 									Privacy Policy
 								</Link>
 							</li>
 							<li>
-								<Link href="/policy/terms" className={styles.link}>
+								<Link href="/support/terms" className={styles.link}>
 									Terms of Service
 								</Link>
 							</li>
@@ -50,7 +52,7 @@ const Footer = () => {
 						<h4 className={styles.heading}>Contact</h4>
 						<ul className={styles.list}>
 							<li>Email: support@auctionmarket.tech</li>
-							<li>Phone: +1 234 567 890</li>
+							<li>Phone: +27 79 653 0453</li>
 							<li>
 								<Link href="/support/contact" className={styles.link}>
 									Contact Us
@@ -59,6 +61,7 @@ const Footer = () => {
 						</ul>
 					</div>
 				</div>
+
 				<div className={styles.copy}>
 					&copy; {new Date().getFullYear()} Action Market SA. All rights reserved.
 				</div>

@@ -10,6 +10,7 @@ import {
 import { HelpCircle, MessageSquare, Star, Users } from "lucide-react";
 import CustomerAd from "@/components/ads/CustomerAd";
 import Link from "next/link";
+import ShareApp from "@/components/Footer/ShareApp";
 
 const faqs = [
 	{
@@ -109,6 +110,9 @@ export default function HelpCenterPage() {
 								</Link>
 							</li>
 						</ul>
+					</Card>
+					<Card className="p-6 bg-gradient-to-br from-accent/10 to-muted/30 border-0 shadow-lg">
+						<ShareApp />
 					</Card>
 				</div>
 			</div>

@@ -24,6 +24,7 @@ import { iAuctionItem } from "@/lib/types";
 import Illustration from "@/components/Illustration";
 import CustomerAd from "@/components/ads/CustomerAd";
 import { Separator } from "@/components/ui/separator";
+import ShareApp from "@/components/Footer/ShareApp";
 
 const TWENTY_MINUTES = 20 * 60; // seconds
 
@@ -310,6 +311,7 @@ export default function CartPage() {
 			)}
 
 			<Separator className="my-3" />
+			<ShareApp />
 			<CustomerAd variant="banner" />
 			<Separator className="my-3" />
 		</Container>

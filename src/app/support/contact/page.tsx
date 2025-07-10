@@ -12,6 +12,7 @@ import axios from "axios";
 import { contactFormTemplate, contactFormUserConfirmationTemplate } from "@/lib/email_templates";
 import * as Sentry from "@sentry/nextjs";
 import { useUser } from "@clerk/nextjs";
+import ShareApp from "@/components/Footer/ShareApp";
 
 export default function ContactPage() {
 	const { user } = useUser();
@@ -156,7 +157,7 @@ export default function ContactPage() {
 								<Mail size={18} /> support@auctionmarket.tech
 							</div>
 							<div className="flex items-center gap-2">
-								<Phone size={18} /> +1 234 567 890
+								<Phone size={18} /> +27 79 653 0453
 							</div>
 						</div>
 						<div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -192,6 +193,9 @@ export default function ContactPage() {
 							<li>Understanding bidding rules</li>
 							<li>Payment and withdrawal options</li>
 						</ul>
+					</Card>
+					<Card className="p-6 bg-gradient-to-br from-accent/10 to-muted/30 border-0 shadow-lg">
+						<ShareApp />
 					</Card>
 				</div>
 			</div>
