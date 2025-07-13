@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import Container from "../common/container";
 import { TimerContainer } from "../CountdownTimer";
 import LockUp from "../common/lockup";
+import AuctionClosed from "./AuctionClosed";
 
 interface AuctionItemListProps {
 	itemsPerPage?: number;
@@ -41,24 +42,6 @@ interface iBid {
 	itemId: string;
 	timestamp: string;
 }
-
-const AuctionClosed: React.FC<{ ownedCount: number }> = ({ ownedCount }) => {
-	const router = useRouter();
-	return (
-		<Container>
-			<Card className={`${styles.contentHeader} ${typeBorder.error} ${typeBg.error} p-8`}>
-				<h2 className="text-2xl font-bold">Auction Closed</h2>
-				<p>
-					You have <span className="font-semibold">{ownedCount}</span> item
-					{ownedCount !== 1 && "s"} in your cart.
-				</p>
-				<Button variant="default" onClick={() => router.push("/cart")}>
-					Go to Cart
-				</Button>
-			</Card>
-		</Container>
-	);
-};
 
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, auction }) => {
 	const { user } = useUser();

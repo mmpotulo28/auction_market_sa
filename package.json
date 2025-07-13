@@ -23,7 +23,7 @@
     "@radix-ui/react-toggle": "^1.1.6",
     "@radix-ui/react-toggle-group": "^1.1.7",
     "@radix-ui/react-tooltip": "^1.2.4",
-    "@sentry/nextjs": "^9.30.0",
+    "@sentry/nextjs": "^9.36.0",
     "@supabase/supabase-js": "^2.49.4",
     "@tanstack/react-table": "^8.21.3",
     "auction_market_sa": "file:",

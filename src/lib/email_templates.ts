@@ -245,7 +245,7 @@ export function contactFormUserConfirmationTemplate({
 					Visit Help Center
 				</a>
 				<div class="support-box">
-					Need urgent help? Email us at <a href="mailto:support@auctionmarket.tech">support@auctionmarket.tech</a> or call +1 234 567 890.<br/>
+					Need urgent help? Email us at <a href="mailto:support@auctionmarket.tech">support@auctionmarket.tech</a> or call +27 79 653 0453.<br/>
 					You can also join our <a href="https://auctionmarket.tech/community">community forum</a> for peer support and updates.
 				</div>
 			</div>
