@@ -10,7 +10,7 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
-	border-radius: 1rem;
+	border-radius: var(--radius-md);
 	box-shadow: 0 4px 24px 0 rgba(1, 75, 139, 0.1);
 	background: linear-gradient(135deg, #e0f2fe 60%, #bae6fd 100%);
 	border: 1px solid #bfdbfe;
@@ -68,7 +68,7 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: space-evenly;
-	border-radius: 0.75rem;
+	border-radius: var(--radius-md);
 	box-shadow: 0 2px 8px 0 rgba(1, 75, 139, 0.1);
 	background: linear-gradient(135deg, #e0f2fe 60%, #bae6fd 100%);
 	border: 1px solid #bfdbfe;
@@ -130,18 +130,18 @@
 	display: flex;
 	align-items: stretch;
 	justify-content: space-between;
-	border-radius: 0.75rem;
+	border-radius: var(--radius-md);
 	box-shadow: 0 2px 8px 0 rgba(1, 75, 139, 0.1);
 	background: linear-gradient(90deg, #e0f2fe 60%, #bae6fd 100%);
 	border: 1px solid #bfdbfe;
 	overflow: hidden;
-	transition: box-shadow 0.2s, border 0.2s;
 	max-width: 100%;
 	min-width: 100%;
-	border-radius: var(--radius-sm);
 	padding: 0;
 	position: relative;
 	min-height: 250px;
+	transition: all 0.2s ease-in-out;
+	background-color: red;
 }
 .adBanner:hover {
 	box-shadow: 0 6px 16px 0 rgba(1, 75, 139, 0.13);

@@ -30,8 +30,6 @@ export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = t
 		items = auctionItems;
 	}
 
-	console.log(items);
-
 	React.useEffect(() => {
 		if (!api) {
 			return;
