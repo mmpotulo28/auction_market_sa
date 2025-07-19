@@ -121,8 +121,6 @@ const ItemsPage: React.FC = () => {
 		e.preventDefault();
 		setIsLoading(true);
 
-		console.log("Submitting form with data:", data);
-
 		try {
 			if (isEditMode) {
 				await axios.put("/api/items", { item: data });

@@ -123,7 +123,6 @@ export const fetchAuctionByName = async (name: string): Promise<iAuction | undef
 
 		// Use a for loop for early exit on match (more efficient than .find for large arrays)
 		for (const auction of auctions) {
-			console.log(normalizedTarget, stringToUrl(auction.name));
 			if (stringToUrl(auction.name) === normalizedTarget) {
 				return auction;
 			}

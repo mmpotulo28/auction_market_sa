@@ -75,7 +75,6 @@ export default function NotificationsPage() {
 				},
 			);
 			if (data.success) {
-				console.log(data);
 				setNotifications((prev) =>
 					prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
 				);

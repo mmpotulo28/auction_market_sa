@@ -9,7 +9,6 @@ export async function GET() {
 		logger.info("[api/items] Fetching items...");
 		const { data, error } = await supabase.from("items").select("*");
 		if (error) throw error;
-		console.log("fetchItems:", data);
 		return NextResponse.json({ items: data ?? [] }, { status: 200 });
 	} catch (error) {
 		logger.error("[api/items] Error fetching items:", { error });
@@ -43,8 +42,6 @@ export async function POST(req: Request) {
 			imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`;
 		}
 
-		// Insert item into the database
-		console.log(item);
 		const { error: insertError } = await supabase.from("items").insert([
 			{
 				title: item.title,

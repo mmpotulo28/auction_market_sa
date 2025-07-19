@@ -108,8 +108,6 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 	const slide = slides[current];
 	const adVariant = variant || slide.variant || "card-big";
 
-	console.log(slide.title, current, slides);
-
 	return (
 		<Carousel
 			className={cn(styles.adRoot, className)}
