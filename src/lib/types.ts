@@ -263,3 +263,14 @@ export interface iNotification {
 	created_at?: string;
 	user_id?: string;
 }
+
+export interface iCart {
+	id: string;
+	user_id: string;
+	items: iAuctionItem[];
+	total_amount: number;
+	items_count: number;
+	status: "OPEN" | "PAID" | "CLOSED";
+	created_at: string;
+	updated_at: string;
+}
