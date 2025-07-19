@@ -17,14 +17,20 @@ import { useWebSocket } from "@/context/WebSocketProvider";
 import Illustration from "../Illustration";
 
 interface iCarouselDApiSlider {
-	items?: iAuctionItem[];
+	items?: iAuctionItem[] | iAuctionItem;
 	controls?: boolean;
 }
 
-export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = true }) => {
+export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = true, items }) => {
 	const [api, setApi] = React.useState<CarouselApi>();
 	const [current, setCurrent] = React.useState(0);
-	const { items, isLoading } = useWebSocket();
+	const { items: auctionItems, isLoading } = useWebSocket();
+
+	if (items === undefined) {
+		items = auctionItems;
+	}
+
+	console.log(items);
 
 	React.useEffect(() => {
 		if (!api) {
@@ -54,21 +60,39 @@ export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = t
 				]}>
 				<CarouselContent>
 					{isLoading && <Illustration type="loading" className="m-auto" />}
-					{items?.slice(0, 10)?.map((item, index) => (
-						<CarouselItem key={index}>
-							<Card>
-								<CardContent className="flex aspect-square items-center justify-center p-0">
-									<Image
-										src={item.image}
-										alt={item.title}
-										width={250}
-										height={250}
-										className="rounded-md"
-									/>
-								</CardContent>
-							</Card>
-						</CarouselItem>
-					))}
+					{Array.isArray(items) &&
+						items?.slice(0, 10)?.map((item, index) => (
+							<CarouselItem key={index}>
+								<Card>
+									<CardContent className="flex aspect-square items-center justify-center p-0">
+										<Image
+											src={item.image[0]}
+											alt={item.title}
+											width={250}
+											height={250}
+											className="rounded-md"
+										/>
+									</CardContent>
+								</Card>
+							</CarouselItem>
+						))}
+
+					{!Array.isArray(items) &&
+						items?.image.slice(0, 10)?.map((image, index) => (
+							<CarouselItem key={index}>
+								<Card>
+									<CardContent className="flex aspect-square items-center justify-center p-0">
+										<Image
+											src={image}
+											alt={image}
+											width={250}
+											height={250}
+											className="rounded-md"
+										/>
+									</CardContent>
+								</Card>
+							</CarouselItem>
+						))}
 				</CarouselContent>
 				{controls && (
 					<>
@@ -78,7 +102,8 @@ export const CarouselDApiSlider: React.FC<iCarouselDApiSlider> = ({ controls = t
 				)}
 			</Carousel>
 			<div className="py-2 text-center text-sm text-muted-foreground">
-				{current} of {items?.slice(0, 10)?.length}
+				{current} of{" "}
+				{Array.isArray(items) ? items?.slice(0, 10)?.length : items?.image?.length}
 			</div>
 		</div>
 	);

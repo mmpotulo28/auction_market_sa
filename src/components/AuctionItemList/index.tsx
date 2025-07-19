@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useMemo, useCallback, useEffect } from "react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
 	Pagination,
@@ -10,12 +10,7 @@ import {
 	PaginationNext,
 	PaginationLink,
 } from "@/components/ui/pagination";
-import Image from "next/image";
 import styles from "./auction-item-list.module.css";
-import { BiMinus, BiPlus } from "react-icons/bi";
-import { Badge } from "../ui/badge";
-import { FaSpinner, FaUserCheck } from "react-icons/fa";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import AuctionSidebar from "./sidebar";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { toast } from "sonner";
@@ -25,11 +20,12 @@ import { AlertCircle } from "lucide-react";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { useUser } from "@clerk/nextjs";
 import { iAuction, iSize, typeBg, typeBorder } from "@/lib/types";
-import { Dialog, DialogContent, DialogTitle } from "../ui/dialog";
 import Container from "../common/container";
 import { TimerContainer } from "../CountdownTimer";
 import LockUp from "../common/lockup";
 import AuctionClosed from "./AuctionClosed";
+import ItemCard from "./ItemCard";
+import UserBids from "./UserBids";
 
 interface AuctionItemListProps {
 	itemsPerPage?: number;
@@ -294,143 +290,29 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 						</Card>
 
 						{/* User Bid History Dialog */}
-						<Dialog open={showBidHistory} onOpenChange={setShowBidHistory}>
-							<DialogContent>
-								<DialogTitle>Your Bid History</DialogTitle>
-								{userBids.length === 0 ? (
-									<p className="text-muted-foreground">
-										You have not placed any bids yet.
-									</p>
-								) : (
-									<ul className="divide-y">
-										{userBids.map((bid) => (
-											<li key={bid.itemId} className="py-2">
-												<div className="flex flex-col sm:flex-row sm:items-center gap-2">
-													<span className="font-semibold">
-														{bid.item?.title}
-													</span>
-													<span className="text-sm text-muted-foreground">
-														Bid: R {Number(bid.amount).toFixed(2)}
-													</span>
-													<span className="text-xs text-muted-foreground">
-														{bid.timestamp &&
-															new Date(
-																bid.timestamp,
-															).toLocaleString()}
-													</span>
-												</div>
-											</li>
-										))}
-									</ul>
-								)}
-							</DialogContent>
-						</Dialog>
+						<UserBids
+							userBids={userBids}
+							showBidHistory={showBidHistory}
+							setShowBidHistory={setShowBidHistory}
+						/>
 
 						{/* items grid */}
 						<div className={styles.grid}>
-							{paginatedItems.map((item) => {
-								const highestBid = highestBids[item.id];
-								const currentBid =
-									proposedBids.find((bid) => bid.itemId === item.id)?.amount ||
-									highestBid?.amount ||
-									0;
-								const isOwner = highestBid?.userId === user?.id;
-
-								return (
-									<Card key={item.id} className={styles.card}>
-										{isOwner && (
-											<div className={styles.userIcon}>
-												<TooltipProvider>
-													<Tooltip>
-														<TooltipTrigger>
-															<FaUserCheck title="Your Bid" />
-														</TooltipTrigger>
-														<TooltipContent>
-															<p>
-																Your are the current owner of this
-																item
-															</p>
-														</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)}
-										<CardHeader className="px-4">
-											<CardTitle>
-												<h3 className={styles.title}>{item.title}</h3>
-
-												<div className={styles.tags}>
-													<Badge variant={"destructive"}>
-														Highest Bid: R{" "}
-														{Number(
-															highestBid?.amount || item.price,
-														)?.toFixed(2)}
-													</Badge>
-													<Badge variant="secondary">
-														{item.condition.toUpperCase()}
-													</Badge>
-												</div>
-											</CardTitle>
-										</CardHeader>
-										<CardContent className="px-4">
-											<div className={styles.imageContainer}>
-												<Image
-													src={item.image}
-													alt={item.title}
-													width={200}
-													height={200}
-												/>
-											</div>
-											<p className={styles.description}>{item.description}</p>
-										</CardContent>
-										<CardFooter className={`${styles.footer} px-4`}>
-											<Button
-												variant="outline"
-												onClick={() => adjustBid(item.id, -10)}
-												disabled={
-													currentBid <=
-														(highestBid?.amount || item.price) ||
-													auctionClosed ||
-													auctionNotStarted
-												}>
-												{isLoading ? (
-													<FaSpinner className="spin" />
-												) : (
-													<BiMinus />
-												)}
-											</Button>
-											<Button
-												variant="default"
-												onClick={() => submitBid(item.id)}
-												disabled={
-													currentBid <=
-														(highestBid?.amount || item.price) ||
-													pendingBids.includes(item.id) ||
-													auctionClosed ||
-													auctionNotStarted
-												}>
-												{currentBid > (highestBid?.amount || item.price) &&
-													!pendingBids.includes(item.id) &&
-													"Submit"}{" "}
-												R {Number(currentBid)?.toFixed(2)}
-												{(pendingBids.includes(item.id) || isLoading) && (
-													<FaSpinner className="spin" />
-												)}
-											</Button>
-											<Button
-												variant="outline"
-												onClick={() => adjustBid(item.id, 10)}
-												disabled={auctionClosed || auctionNotStarted}>
-												{isLoading ? (
-													<FaSpinner className="spin" />
-												) : (
-													<BiPlus />
-												)}
-											</Button>
-										</CardFooter>
-									</Card>
-								);
-							})}
+							{paginatedItems.map((item) => (
+								<ItemCard
+									key={item.id}
+									highestBids={highestBids}
+									item={item}
+									proposedBids={proposedBids}
+									user={user}
+									adjustBid={adjustBid}
+									submitBid={submitBid}
+									pendingBids={pendingBids}
+									isLoading={isLoading}
+									auctionClosed={auctionClosed}
+									auctionNotStarted={auctionNotStarted}
+								/>
+							))}
 						</div>
 
 						<div className={styles.pagination}>

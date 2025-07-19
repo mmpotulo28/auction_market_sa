@@ -14,6 +14,13 @@ export enum iSize {
 	Large = "lg",
 }
 
+export enum iAuctionLabel {
+	Hot = "hot",
+	Sale = "sale",
+	OpeningSoon = "openingSoon",
+	Demo = "demo",
+}
+
 export type SizeType = keyof typeof iSize;
 
 export interface iLockUpProps {
@@ -145,7 +152,7 @@ export interface iAuctionItem {
 	title: string;
 	description: string;
 	price: number;
-	image: string;
+	image: string[]; // changed from string to string[]
 	category: string;
 	condition: iCondition;
 	auction: iAuction;
@@ -162,6 +169,7 @@ export interface iAuction {
 	date_created: string;
 	items_count: number;
 	re_open_count: number;
+	label?: iAuctionLabel;
 }
 
 export interface iBid {
@@ -245,4 +253,13 @@ export interface iGroupedOrder {
 	total_amount: number;
 	order_status: iOrderStatus;
 	orders: iOrder[];
+}
+
+export interface iNotification {
+	id: string;
+	message: string;
+	type: string;
+	read: boolean;
+	created_at?: string;
+	user_id?: string;
 }
