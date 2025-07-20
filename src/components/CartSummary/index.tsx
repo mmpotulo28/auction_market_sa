@@ -3,36 +3,21 @@ import Image from "next/image";
 import { useState } from "react";
 import styles from "./CartSummary.module.css";
 import clsx from "clsx";
-import { HeartIcon, MinusIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { HeartIcon } from "lucide-react";
 
 interface CartSummaryProps {
 	cart: iCart;
 }
 
 export default function CartSummary({ cart }: CartSummaryProps) {
-	const [quantities, setQuantities] = useState<Record<string, number>>(
-		cart.items.reduce((acc, item) => ({ ...acc, [item.id]: 1 }), {}),
-	);
 	const [favorites, setFavorites] = useState<Record<string, boolean>>({});
-
-	const updateQuantity = (itemId: string, newQuantity: number) => {
-		if (newQuantity < 1) return;
-		setQuantities((prev) => ({ ...prev, [itemId]: newQuantity }));
-		// TODO: Update cart in backend/state management
-		console.log(`Update item ${itemId} to quantity ${newQuantity}`);
-	};
-
-	const removeItem = (itemId: string) => {
-		// TODO: Implement item removal logic
-		console.log(`Remove item ${itemId}`);
-	};
 
 	const toggleFavorite = (itemId: string) => {
 		setFavorites((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
 	};
 
 	const calculateItemTotal = (itemId: string, price: number) => {
-		return price * (quantities[itemId] || 1);
+		return price * 1;
 	};
 
 	return (
@@ -50,7 +35,7 @@ export default function CartSummary({ cart }: CartSummaryProps) {
 
 			<div className={styles.items}>
 				{cart.items.map((item, index) => {
-					const itemQuantity = quantities[item.id] || 1;
+					const itemQuantity = 1;
 					const itemTotal = calculateItemTotal(item.id, item.price);
 
 					return (
@@ -121,63 +106,6 @@ export default function CartSummary({ cart }: CartSummaryProps) {
 											alignItems: "center",
 											justifyContent: "space-between",
 										}}>
-										<div
-											style={{
-												display: "flex",
-												alignItems: "center",
-												gap: 16,
-											}}>
-											{/* Quantity Controls */}
-											<div className={styles.quantityControls}>
-												<button
-													aria-disabled={true}
-													onClick={() =>
-														updateQuantity(
-															item.id,
-															Math.max(1, itemQuantity - 1),
-														)
-													}
-													className={styles.quantityBtn}
-													disabled={true}
-													title="Decrease quantity">
-													<MinusIcon
-														style={{
-															height: 16,
-															width: 16,
-															color: "#4b6a8b",
-														}}
-													/>
-												</button>
-												<span className={styles.quantityValue}>
-													{itemQuantity}
-												</span>
-												<button
-													aria-disabled={true}
-													disabled={true}
-													onClick={() =>
-														updateQuantity(item.id, itemQuantity + 1)
-													}
-													className={styles.quantityBtn}
-													title="Increase quantity">
-													<PlusIcon
-														style={{
-															height: 16,
-															width: 16,
-															color: "#4b6a8b",
-														}}
-													/>
-												</button>
-											</div>
-
-											{/* Remove Button */}
-											<button
-												onClick={() => removeItem(item.id)}
-												className={styles.removeBtn}
-												title="Remove item">
-												<TrashIcon style={{ height: 16, width: 16 }} />
-											</button>
-										</div>
-
 										{/* Price */}
 										<div className={styles.itemPrice}>
 											<p className={styles.itemPriceValue}>
@@ -189,18 +117,22 @@ export default function CartSummary({ cart }: CartSummaryProps) {
 												</p>
 											)}
 										</div>
-									</div>
 
-									{/* Item Status/Tags */}
-									<div className={styles.itemTags}>
-										<span className={clsx(styles.tag, styles.tagInStock)}>
-											✓ In Stock
-										</span>
-										{index === 0 && (
-											<span className={clsx(styles.tag, styles.tagShipping)}>
-												🚚 Free Shipping
+										{/* Item Status/Tags */}
+										<div className={styles.itemTags}>
+											<span className={clsx(styles.tag, styles.tagInStock)}>
+												✓ In Stock
 											</span>
-										)}
+											{index === 0 && (
+												<span
+													className={clsx(
+														styles.tag,
+														styles.tagShipping,
+													)}>
+													🚚 Free Shipping
+												</span>
+											)}
+										</div>
 									</div>
 								</div>
 							</div>

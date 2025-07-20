@@ -4,7 +4,7 @@ import { useUser, useAuth } from "@clerk/nextjs";
 import Container from "@/components/common/container";
 import { Card } from "@/components/ui/card";
 import { useWebSocket } from "@/context/WebSocketProvider";
-import { iCart } from "@/lib/types";
+import { iCart, iVariant } from "@/lib/types";
 import Illustration from "@/components/Illustration";
 import CustomerAd from "@/components/ads/CustomerAd";
 import { Separator } from "@/components/ui/separator";
@@ -14,6 +14,7 @@ import CartSummary from "@/components/CartSummary";
 import Actions from "@/components/common/Actions";
 import axios from "axios";
 import { FaOpencart } from "react-icons/fa";
+import LockUp from "@/components/common/lockup";
 
 export default function CartPage() {
 	const { user } = useUser();
@@ -80,15 +81,19 @@ export default function CartPage() {
 			{isLoading && <Illustration type="loading" className="mx-auto my-5" />}
 			{cart && (
 				<>
-					<Actions
-						actions={[
-							{
-								label: "Checkout",
-								click: () => handleCheckout(),
-								iconEnd: <FaOpencart />,
-							},
-						]}
-					/>
+					<div className="m-full flex justify-between flex-wrap mb-3">
+						<LockUp overline="Congratulations" title="Ready to claim your Items?" />
+						<Actions
+							actions={[
+								{
+									label: "Pay For Items",
+									click: () => handleCheckout(),
+									iconEnd: <FaOpencart />,
+									variant: iVariant.Secondary,
+								},
+							]}
+						/>
+					</div>
 					<CartSummary cart={cart} />
 				</>
 			)}
