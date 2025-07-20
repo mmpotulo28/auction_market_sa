@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import Container from "@/components/common/container";
 import { Card } from "@/components/ui/card";
 import { useWebSocket } from "@/context/WebSocketProvider";
@@ -13,12 +13,15 @@ import { Smile } from "lucide-react";
 import CartSummary from "@/components/CartSummary";
 import Actions from "@/components/common/Actions";
 import axios from "axios";
+import { FaOpencart } from "react-icons/fa";
 
 export default function CartPage() {
 	const { user } = useUser();
+	const auth = useAuth();
 	const { items, highestBids } = useWebSocket();
 	const [cart, setCart] = useState<iCart>();
 	const [isLoading, setIsLoading] = useState(false);
+	const [access_token, setAccessToken] = useState<string | null>();
 
 	// Compute won items from websocket context
 	useEffect(() => {
@@ -56,11 +59,23 @@ export default function CartPage() {
 		fetchWonItems();
 	}, [items, highestBids, user]);
 
+	useEffect(() => {
+		async function getToken() {
+			const token = await auth.getToken();
+			setAccessToken(token);
+		}
+
+		getToken();
+	}, [auth]);
+
 	const handleCheckout = () => {
 		console.log("Checkout clicked");
 		// Redirect to payment page "https://payment.auctionsmarket.tech/payment"
 		if (typeof window !== "undefined") {
-			window.open("https://payment.auctionmarket.tech/payment", "_blank");
+			window.open(
+				`https://payment.auctionmarket.tech/payment?token=${access_token}`,
+				"_blank",
+			);
 		} else {
 			axios.post("/api/checkout", cart).then(
 				(response) => {
@@ -84,6 +99,7 @@ export default function CartPage() {
 							{
 								label: "Checkout",
 								click: () => handleCheckout(),
+								iconEnd: <FaOpencart />,
 							},
 						]}
 					/>
