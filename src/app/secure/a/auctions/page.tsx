@@ -60,7 +60,6 @@ const AuctionsPage: React.FC = () => {
 			try {
 				setIsLoading(true);
 				const response = await axios.get("/api/auctions");
-				console.log(response);
 				setAuctions(response.data);
 			} catch (err) {
 				setError(err instanceof Error ? err.message : "Failed to fetch auctions");

@@ -17,8 +17,6 @@ export async function ensureTransactionsTable() {
 			} else {
 				console.error("Failed to ensure transactions table exists. Error:", error.message);
 			}
-		} else {
-			console.log("Transactions table exists.");
 		}
 	} catch (err) {
 		console.error(
@@ -32,7 +30,6 @@ export async function ensureTransactionsTable() {
 export async function storeTransaction(tx: iTransaction) {
 	await ensureTransactionsTable();
 	try {
-		console.log("Storing transaction:", tx);
 		const { data, error } = await supabase.from("transactions").insert([tx]);
 		if (error) throw error;
 		console.log("Transaction stored successfully:", data);

@@ -11,6 +11,7 @@ import { stringToUrl, fetchAuctions } from "@/lib/helpers";
 import { TimerContainer } from "../CountdownTimer";
 import { toast } from "sonner";
 import Illustration from "../Illustration";
+import AuctionLabel from "./AuctionLabel";
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
@@ -61,8 +62,10 @@ const UpcomingAuctions: React.FC = () => {
 				)}
 				{filteredAuctions?.map((auction, index: number) => (
 					<div key={index} className={styles.card}>
+						{/* label top right */}
+						{auction.label && <AuctionLabel type={auction.label} />}
 						<div className={styles.cardHeader}>
-							<LockUp title={auction.name} theme={iTheme.Dark} />
+							<LockUp title={auction.name} theme={iTheme.Light} />
 						</div>
 						<div className={styles.cardContent}>
 							<p className={styles.itemsCount}>

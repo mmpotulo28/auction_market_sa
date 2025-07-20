@@ -171,7 +171,7 @@ const OrderView: React.FC<iOrderViewProps> = ({ group, fetchOrders, admin = fals
 																	<Image
 																		src={
 																			expandedOrder.item
-																				?.image || ""
+																				?.image[0] || ""
 																		}
 																		alt={
 																			expandedOrder.item

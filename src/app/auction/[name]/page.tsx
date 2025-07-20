@@ -4,7 +4,6 @@ import CustomerAd from "@/components/ads/CustomerAd";
 import AuctionItemList from "@/components/AuctionItemList";
 import { fetchAuctionByName } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
-import { Separator } from "@/components/ui/separator";
 import Container from "@/components/common/container";
 import React from "react";
 
@@ -39,9 +38,7 @@ const AuctionPage = ({ params }: AuctionPageProps) => {
 				<>
 					<AuctionItemList auction={auction} itemsPerPage={10} />
 					<Container>
-						<Separator className="my-3" />
 						<CustomerAd variant="banner" />
-						<Separator className="my-3" />
 					</Container>
 				</>
 			)}

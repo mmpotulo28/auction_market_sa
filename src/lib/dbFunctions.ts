@@ -31,9 +31,6 @@ export async function addItemToDatabase(
 
 			imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`;
 		}
-
-		// Insert item into the database
-		console.log(formData);
 		const { error: insertError } = await supabase.from("items").insert([
 			{
 				title: formData.title, // Matches character varying(255)

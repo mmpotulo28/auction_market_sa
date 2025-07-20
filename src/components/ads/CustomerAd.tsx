@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import styles from "./CustomerAd.module.css";
-import { Separator } from "../ui/separator";
+import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "../ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 export type AdVariant = "banner" | "card-small" | "card-big";
 
@@ -67,7 +68,22 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 	variant = "card-big",
 }) => {
 	const [slides, setSlides] = useState<AdSlide[]>(fallbackSlides);
-	const [current, setCurrent] = useState(0);
+	const [api, setApi] = React.useState<CarouselApi>();
+	const [current, setCurrent] = React.useState(0);
+
+	useEffect(() => {
+		if (!api) {
+			return;
+		}
+
+		api.on("select", () => {
+			setCurrent(api.selectedScrollSnap());
+		});
+
+		api.on("init", () => {
+			api.scrollTo(0);
+		});
+	}, [api]);
 
 	useEffect(() => {
 		let isMounted = true;
@@ -89,18 +105,22 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 		};
 	}, [apiUrl]);
 
-	useEffect(() => {
-		const timer = setInterval(() => {
-			setCurrent((prev) => (prev + 1) % slides.length);
-		}, 6000);
-		return () => clearInterval(timer);
-	}, [slides]);
-
 	const slide = slides[current];
 	const adVariant = variant || slide.variant || "card-big";
 
 	return (
-		<div className={cn(styles.adRoot, className)}>
+		<Carousel
+			className={cn(styles.adRoot, className)}
+			setApi={setApi}
+			opts={{
+				loop: false,
+				align: "center",
+			}}
+			plugins={[
+				Autoplay({
+					delay: 4000,
+				}),
+			]}>
 			{adVariant === "card-big" && (
 				<div className={styles.adCardBig}>
 					<Image
@@ -146,33 +166,35 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 				</div>
 			)}
 			{adVariant === "banner" && (
-				<>
-					<Separator className="my-3" />
-					<div className={styles.adBanner}>
-						<Image
-							src={slide.imageUrl}
-							alt={slide.title}
-							width={120}
-							height={80}
-							className={styles.adBannerImage}
-						/>
-						<div className={styles.adBannerContent}>
-							<div className={styles.adBannerTitle}>{slide.title}</div>
-							<div className={styles.adBannerDescription}>{slide.description}</div>
-							<a href={slide.linkUrl} className={styles.adBannerCta}>
-								{slide.cta}
-							</a>
-						</div>
-						<Image
-							src={slide.imageUrl}
-							alt={slide.title}
-							width={120}
-							height={80}
-							className={styles.adBannerImage}
-						/>
-					</div>
-					<Separator className="my-3" />
-				</>
+				<CarouselContent className={"w-full max-w-md min-w-full rounded-md"}>
+					{slides.map((slide, index) => (
+						<CarouselItem key={index} className={styles.adBanner}>
+							<Image
+								src={slide.imageUrl}
+								alt={slide.title}
+								width={120}
+								height={80}
+								className={styles.adBannerImage}
+							/>
+							<div className={styles.adBannerContent}>
+								<div className={styles.adBannerTitle}>{slide.title}</div>
+								<div className={styles.adBannerDescription}>
+									{slide.description}
+								</div>
+								<a href={slide.linkUrl} className={styles.adBannerCta}>
+									{slide.cta}
+								</a>
+							</div>
+							<Image
+								src={slide.imageUrl}
+								alt={slide.title}
+								width={120}
+								height={80}
+								className={styles.adBannerImage}
+							/>
+						</CarouselItem>
+					))}
+				</CarouselContent>
 			)}
 			<div className={styles.adDots}>
 				{slides.map((_, idx) => (
@@ -185,7 +207,7 @@ export const CustomerAd: React.FC<CustomerAdProps> = ({
 					/>
 				))}
 			</div>
-		</div>
+		</Carousel>
 	);
 };
 
