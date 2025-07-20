@@ -16,7 +16,7 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { CrossIcon } from "lucide-react";
 import { FaBars } from "react-icons/fa";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { ModeToggle } from "../ToggleTheme";
 
 const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(
@@ -46,6 +46,7 @@ ListItem.displayName = "ListItem";
 
 const Header = () => {
 	const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+	const { user } = useUser();
 
 	return (
 		<header className={`${styles.header}`}>
@@ -69,9 +70,9 @@ const Header = () => {
 						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuLink
-								href="/#features"
+								href="/#auctions"
 								className={navigationMenuTriggerStyle()}>
-								Features
+								Auctions
 							</NavigationMenuLink>
 						</NavigationMenuItem>
 						<NavigationMenuItem>
@@ -123,6 +124,15 @@ const Header = () => {
 								Cart
 							</NavigationMenuLink>
 						</NavigationMenuItem>
+						{!user && (
+							<NavigationMenuItem className={styles.navItem}>
+								<NavigationMenuLink
+									href="/#auctions"
+									className={navigationMenuTriggerStyle()}>
+									Sign In
+								</NavigationMenuLink>
+							</NavigationMenuItem>
+						)}
 					</NavigationMenuList>
 				</NavigationMenu>
 			</nav>

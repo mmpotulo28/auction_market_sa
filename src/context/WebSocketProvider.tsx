@@ -5,9 +5,10 @@ import supabase from "@/lib/db";
 import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { logger } from "@sentry/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 interface WebSocketContextProps {
-	placeBid: (itemId: string, amount: number, userId: string) => Promise<void>;
+	placeBid: (itemId: string, itemName: string, amount: number, userId: string) => Promise<void>;
 	highestBids: Record<string, iBid>;
 	bids: iBid[];
 	getAllBids: () => Promise<void>;
@@ -15,6 +16,7 @@ interface WebSocketContextProps {
 	isLoading: boolean;
 	error: string[];
 	categories: string[];
+	userWins?: iAuctionItem[];
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -26,6 +28,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [error, setError] = useState<string[]>([]);
 	const [categories, setCategories] = useState<string[]>([]);
 	const [bids, setBids] = useState<iBid[]>([]);
+	const [userWins, setUserWins] = useState<iAuctionItem[]>();
+	const { user } = useUser();
 
 	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
@@ -46,6 +50,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					items?.reduce<Record<string, iBid>>((acc, item) => {
 						acc[item.id] = {
 							itemId: item.id,
+							itemName: item.title,
 							amount: item.price,
 							userId: "system",
 							timestamp: new Date().toISOString(),
@@ -119,7 +124,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 								previousBid.userId !== bid.userId &&
 								bid.amount > previousBid.amount
 							) {
-								toast.info(`You lost the bid for item "${bid.itemId}"`);
+								toast.info(`You lost item: "${bid.itemName}"`);
 							}
 							return { ...prev, [bid.itemId]: bid };
 						});
@@ -137,6 +142,24 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		};
 	}, []);
 
+	// calculate user wins
+	useEffect(() => {
+		const w = items
+			.map((item) => {
+				if (highestBids[item.id].userId === user?.id) {
+					return {
+						...item,
+						price: highestBids[item.id].amount,
+					};
+				}
+			})
+			.filter((item) => item !== undefined);
+
+		logger.info("user wins", { w });
+
+		setUserWins(w as iAuctionItem[]);
+	}, [items, highestBids, user]);
+
 	const getAllBids = useCallback(async () => {
 		try {
 			const { data, error } = await supabase.from("bids").select("*");
@@ -147,24 +170,28 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		}
 	}, []);
 
-	const placeBid = useCallback(async (itemId: string, amount: number, userId: string) => {
-		try {
-			const { error } = await supabase.from("bids").insert([
-				{
-					itemId,
-					amount,
-					userId,
-					timestamp: new Date().toISOString(),
-				},
-			]);
+	const placeBid = useCallback(
+		async (itemId: string, itemName: string, amount: number, userId: string) => {
+			try {
+				const { error } = await supabase.from("bids").insert([
+					{
+						itemId,
+						itemName,
+						amount,
+						userId,
+						timestamp: new Date().toISOString(),
+					},
+				]);
 
-			if (error) {
-				logger.error("Error placing bid:", { error });
+				if (error) {
+					logger.error("Error placing bid:", { error });
+				}
+			} catch (err) {
+				logger.error("Unexpected error placing bid:", { err });
 			}
-		} catch (err) {
-			logger.error("Unexpected error placing bid:", { err });
-		}
-	}, []);
+		},
+		[],
+	);
 
 	return (
 		<WebSocketContext.Provider
@@ -177,6 +204,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				categories,
 				getAllBids,
 				bids,
+				userWins,
 			}}>
 			{children}
 		</WebSocketContext.Provider>

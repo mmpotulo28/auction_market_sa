@@ -158,7 +158,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 	);
 
 	const submitBid = useCallback(
-		async (itemId: string) => {
+		async (itemId: string, itemName: string) => {
 			if (!user) {
 				toast("Login first to submit your bid", {
 					description: "Please log in to place a bid.",
@@ -173,7 +173,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 			const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
 
 			setPendingBids((prev) => [...prev, itemId]);
-			await placeBid(itemId, currentBid, user.id);
+			await placeBid(itemId, itemName, currentBid, user.id);
 
 			const highestBid = highestBids[itemId];
 			if (highestBid?.userId === user.id) {
@@ -190,7 +190,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 
 	const ownedCount = useMemo(() => {
 		if (!user) return 0;
-		return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
+		return Object.values(highestBids).filter((bid: iBid) => bid.userId === user.id).length;
 	}, [highestBids, user]);
 
 	if (!auction) {

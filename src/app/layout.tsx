@@ -52,7 +52,7 @@ export default function RootLayout({
 						}}>
 						<WebSocketProvider>
 							<Header />
-							<main className="w-full h-full min-h-full">{children}</main>
+							<main className="w-full h-full min-h-full mt-20">{children}</main>
 							<Toaster
 								position="top-right"
 								closeButton

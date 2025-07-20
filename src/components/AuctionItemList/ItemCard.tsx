@@ -6,8 +6,23 @@ import { Button } from "../ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 import { Badge } from "../ui/badge";
+import React from "react";
+import { iAuctionItem } from "@/lib/types";
 
-const ItemCard = ({
+interface iItemCardProps {
+	item: iAuctionItem;
+	highestBids: any;
+	proposedBids: any;
+	user: any;
+	adjustBid: any;
+	submitBid: any;
+	pendingBids: any;
+	isLoading: any;
+	auctionClosed: any;
+	auctionNotStarted: any;
+}
+
+const ItemCard: React.FC<iItemCardProps> = ({
 	item,
 	highestBids,
 	proposedBids,
@@ -71,7 +86,7 @@ const ItemCard = ({
 				</Button>
 				<Button
 					variant="default"
-					onClick={() => submitBid(item.id)}
+					onClick={() => submitBid(item.id, item.title)}
 					disabled={
 						currentBid <= (highestBid?.amount || item.price) ||
 						pendingBids.includes(item.id) ||
