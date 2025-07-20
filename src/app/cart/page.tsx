@@ -12,7 +12,6 @@ import ShareApp from "@/components/Footer/ShareApp";
 import { Smile } from "lucide-react";
 import CartSummary from "@/components/CartSummary";
 import Actions from "@/components/common/Actions";
-import axios from "axios";
 import { FaOpencart } from "react-icons/fa";
 import LockUp from "@/components/common/lockup";
 
@@ -23,6 +22,7 @@ export default function CartPage() {
 	const [cart, setCart] = useState<iCart>();
 	const [isLoading, setIsLoading] = useState(true);
 	const [access_token, setAccessToken] = useState<string | null>();
+	const [checkingOut, setCheckingOut] = useState(false);
 
 	// Compute won items from websocket context
 	useEffect(() => {
@@ -58,22 +58,16 @@ export default function CartPage() {
 	}, [auth]);
 
 	const handleCheckout = () => {
-		if (typeof window !== "undefined") {
-			window.open(
-				`https://payment.auctionmarket.tech/payment?token=${access_token}`,
-				"_blank",
-			);
-		} else {
-			axios.post("/api/checkout", cart).then(
-				(response) => {
-					console.log(response.data);
-					window.location.href = response.data.url;
-				},
-				(error) => {
-					console.log(error);
-				},
-			);
-		}
+		setCheckingOut(true);
+		setTimeout(() => {
+			if (typeof window !== "undefined") {
+				setCheckingOut(false);
+				window.open(
+					`https://payment.auctionmarket.tech/payment?token=${access_token}`,
+					"_blank",
+				);
+			}
+		}, 1000);
 	};
 
 	return (
@@ -86,7 +80,7 @@ export default function CartPage() {
 						<Actions
 							actions={[
 								{
-									label: "Pay For Items",
+									label: checkingOut ? "please wait..." : "Pay For Items",
 									click: () => handleCheckout(),
 									iconEnd: <FaOpencart />,
 									variant: iVariant.Secondary,
