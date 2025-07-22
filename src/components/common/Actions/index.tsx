@@ -1,7 +1,7 @@
 "use client";
 import React, { JSX } from "react";
 import styles from "./actions.module.css";
-import { iButtonProps } from "@/lib/types";
+import { iButtonProps, iVariant } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
 export interface iActionProps {
@@ -24,16 +24,49 @@ const Actions: React.FC<iActionProps> = ({
 	fullWidth = false,
 	className = "",
 }: iActionProps): JSX.Element => {
+	function getVariant(variant?: iVariant) {
+		let ButtonVariant:
+			| "default"
+			| "secondary"
+			| "ghost"
+			| "link"
+			| "destructive"
+			| "outline"
+			| null = "default";
+
+		switch (variant) {
+			case iVariant.Primary:
+				ButtonVariant = "default";
+				break;
+			case iVariant.Secondary:
+				ButtonVariant = "outline";
+				break;
+			case iVariant.Tertiary:
+				ButtonVariant = "ghost";
+				break;
+			case iVariant.Quaternary:
+				ButtonVariant = "destructive";
+				break;
+			default:
+				ButtonVariant = "default";
+				break;
+		}
+
+		return ButtonVariant;
+	}
+
 	return (
 		<div className={`${className} ${styles.actions} ${fullWidth ? styles.fullWidth : ""}`}>
 			{actions?.map((action) =>
 				action.hide ? null : (
 					<Button
-						variant={"default"}
+						className={styles.button}
+						variant={getVariant(action.variant)}
 						key={`${action.key}-${action.label}`}
 						onClick={action.click ? action.click : undefined}>
 						{action.iconStart && action.iconStart}
 						{action.label}
+						{action.iconEnd && action.iconEnd}
 					</Button>
 				),
 			)}

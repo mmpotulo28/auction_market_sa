@@ -3,6 +3,7 @@
 	min-width: 100%;
 	margin: 0 auto;
 	transition: all 0.2s;
+	max-width: 100%;
 }
 
 /* Big Card */
@@ -20,6 +21,7 @@
 	text-decoration: none;
 	height: 500px;
 	position: relative;
+	max-width: 100%;
 }
 .adCardBig:hover {
 	box-shadow: 0 8px 32px 0 rgba(1, 75, 139, 0.18);
@@ -76,6 +78,7 @@
 	transition: box-shadow 0.2s, border 0.2s;
 	width: 256px;
 	height: 200px;
+	max-width: 100%;
 	text-decoration: none;
 	position: relative;
 }
@@ -228,6 +231,16 @@
 		padding: 0;
 		min-width: 0;
 	}
+
+	.adBanner,
+	.adCardBig,
+	.adCardSmall {
+		max-width: 85% !important;
+		min-width: 80% !important;
+		margin: 0;
+		padding: 0;
+	}
+
 	.adBannerImage {
 		width: 100%;
 		max-width: 100%;

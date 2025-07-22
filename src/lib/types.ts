@@ -176,6 +176,7 @@ export interface iBid {
 	amount: number;
 	userId: string;
 	itemId: string;
+	itemName: string;
 	timestamp: string;
 }
 

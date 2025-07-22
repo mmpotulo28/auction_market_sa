@@ -46,6 +46,7 @@
 		place-items: initial;
 		max-width: 100%;
 		margin: 0;
+		position: relative;
 	}
 
 	.authForm,

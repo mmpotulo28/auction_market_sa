@@ -79,13 +79,15 @@ const OrderView: React.FC<iOrderViewProps> = ({ group, fetchOrders, admin = fals
 					<Eye className="w-4 h-4 mr-1" />
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="flex flex-col gap-2.5">
+			<DialogContent className="flex flex-col gap-2.5 flex-wrap max-w-[90vw] max-h-full scroll-auto">
 				<DialogTitle>
-					<CopyElement content={group.order_id} />
+					<div className="flex gap-2">
+						<strong>Order ID:</strong> <CopyElement content={group.order_id} />
+					</div>
 				</DialogTitle>
 				{selectedOrderGroup && (
-					<div className="space-y-4 w-full max-w-[100%] max-h-[80vh]  block">
-						<div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+					<div className="space-y-4 w-full max-w-[90vw] max-h-[80vh] block">
+						<div className="grid lg:grid-cols-2 md:grid-cols-2 gap-4 p-4 bg-muted rounded-lg sm:grid-cols-1">
 							<div>
 								<strong>Order ID:</strong>{" "}
 								<CopyElement content={selectedOrderGroup.order_id} />
