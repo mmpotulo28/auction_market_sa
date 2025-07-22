@@ -12,6 +12,7 @@ import { TimerContainer } from "../CountdownTimer";
 import { toast } from "sonner";
 import Illustration from "../Illustration";
 import AuctionLabel from "./AuctionLabel";
+import { logger } from "@sentry/core";
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
@@ -24,12 +25,12 @@ const UpcomingAuctions: React.FC = () => {
 		fetchAuctions({
 			setIsLoading,
 			onLoad: (data: iAuction[]) => {
-				toast.success("Fetched auctions successfully");
 				console.log("auctions:", data);
 				setAuctions(data);
 			},
 			onError: (error: string) => {
 				toast.error(`Failed to fetch auction: ${error}`);
+				logger.error("Failed to fetch auction:", error);
 				setError(error);
 			},
 		});
