@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import {
 	Table,
@@ -26,52 +26,19 @@ import {
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
 import Illustration from "@/components/Illustration";
 import CustomerAd from "@/components/ads/CustomerAd";
 import { statusColor } from "@/lib/helpers";
+import { useAccountContext } from "@/context/AccountContext";
 
 export default function UserTransactionsPage() {
-	const [transactions, setTransactions] = useState<iTransaction[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const { transactions, fetchTransactions, errorTransactions, loadingTransactions } =
+		useAccountContext();
 	const [selectedTransaction, setSelectedTransaction] = useState<iTransaction | null>(null);
 	const receiptRef = useRef<HTMLDivElement | null>(null);
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(10);
-	const [total, setTotal] = useState(0);
-
-	const fetchTransactions = async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const res = await axios.get<{
-				transactions: iTransaction[];
-				total: number;
-				error?: string;
-			}>(`/api/transactions/user?page=${page}&pageSize=${pageSize}`);
-			const data = res.data;
-			if (data.transactions) {
-				setTransactions(data.transactions);
-				setTotal(data.total || 0);
-			} else setError(data.error || "No transactions found.");
-		} catch (e: unknown) {
-			if (axios.isAxiosError(e)) {
-				setError(e.response?.data?.error || e.message);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchTransactions();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [page, pageSize]);
-
-	const totalPages = Math.ceil(total / pageSize);
+	const totalPages = Math.ceil(transactions.length / pageSize);
 
 	return (
 		<Container>
@@ -86,11 +53,11 @@ export default function UserTransactionsPage() {
 						<RotateCcw className="w-5 h-5" />
 					</Button>
 				</div>
-				{error && (
+				{errorTransactions && (
 					<Alert variant="destructive" className="mb-6">
 						<AlertCircle className="h-4 w-4" />
 						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error}</AlertDescription>
+						<AlertDescription>{errorTransactions}</AlertDescription>
 					</Alert>
 				)}
 				<Card className="overflow-x-auto p-0">
@@ -108,7 +75,7 @@ export default function UserTransactionsPage() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{loading ? (
+							{loadingTransactions ? (
 								<TableRow>
 									<TableCell colSpan={8} className="text-center">
 										<Illustration type="loading" className="m-auto" />

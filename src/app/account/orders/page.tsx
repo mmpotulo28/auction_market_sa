@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
 	Table,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/table";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, RotateCcw } from "lucide-react";
-import { iGroupedOrder } from "@/lib/types";
 import Container from "@/components/common/container";
 import { Button } from "@/components/ui/button";
 import Illustration from "@/components/Illustration";
@@ -25,33 +24,17 @@ import {
 	PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { fetchOrders, statusColor } from "@/lib/helpers";
+import { statusColor } from "@/lib/helpers";
 import CopyElement from "@/components/CopyElement";
 import CustomerAd from "@/components/ads/CustomerAd";
 import OrderView from "@/components/OrderView";
+import { useAccountContext } from "@/context/AccountContext";
 
 export default function UserOrdersPage() {
-	const [groupedOrders, setGroupedOrders] = useState<iGroupedOrder[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const { orders: groupedOrders, fetchOrders, errorOrders, loadingOrders } = useAccountContext();
+
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(15);
-
-	const fetchData = useCallback(async () => {
-		setLoading(true);
-		const { groupedOrders, error } = await fetchOrders({ page, pageSize });
-		if (error) {
-			setError(error);
-		} else {
-			setGroupedOrders(groupedOrders);
-		}
-
-		setLoading(false);
-	}, [page, pageSize]);
-
-	useEffect(() => {
-		fetchData();
-	}, [fetchData, page, pageSize]);
 
 	const totalPages = Math.max(1, Math.ceil(groupedOrders.length / pageSize));
 
@@ -60,15 +43,19 @@ export default function UserOrdersPage() {
 			<div className="max-w-full w-full mx-auto py-10 px-4">
 				<div className="flex items-center justify-between mb-6">
 					<h1 className="text-3xl font-bold mb-6">My Orders</h1>
-					<Button variant="ghost" size="icon" onClick={fetchData} title="Refetch orders">
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={fetchOrders}
+						title="Refetch orders">
 						<RotateCcw className="w-5 h-5" />
 					</Button>
 				</div>
-				{error && (
+				{errorOrders && (
 					<Alert variant="destructive" className="mb-6">
 						<AlertCircle className="h-4 w-4" />
 						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error}</AlertDescription>
+						<AlertDescription>{errorOrders}</AlertDescription>
 					</Alert>
 				)}
 				<Card className="overflow-x-auto p-5">
@@ -86,7 +73,7 @@ export default function UserOrdersPage() {
 							</TableRow>
 						</TableHeader>
 						<TableBody>
-							{loading ? (
+							{loadingOrders ? (
 								<TableRow>
 									<TableCell colSpan={6} className="text-center">
 										<Illustration type="loading" className="m-auto" />
@@ -122,7 +109,7 @@ export default function UserOrdersPage() {
 											</Badge>
 										</TableCell>
 										<TableCell>
-											<OrderView fetchOrders={fetchData} group={group} />
+											<OrderView fetchOrders={fetchOrders} group={group} />
 										</TableCell>
 									</TableRow>
 								))
