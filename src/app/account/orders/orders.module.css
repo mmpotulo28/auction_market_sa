@@ -37,6 +37,7 @@
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 	gap: 1rem;
+	transition: all 0.3s ease-in-out;
 }
 
 .statCard {
@@ -408,7 +409,6 @@
 @media (max-width: 768px) {
 	.container {
 		padding: 1rem;
-		background: #f8fafc;
 	}
 
 	.header {
@@ -430,25 +430,12 @@
 	}
 
 	.statsCards {
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(auto-fit, 1fr);
 		gap: 0.75rem;
 	}
 
 	.statCard {
 		padding: 1rem;
-		background: white;
-		backdrop-filter: none;
-		border: 1px solid #e2e8f0;
-	}
-
-	.ordersSection {
-		background: white;
-		backdrop-filter: none;
-		border: 1px solid #e2e8f0;
-	}
-
-	.ordersHeader {
-		padding: 1rem 1.5rem;
 	}
 
 	.ordersContainer {
@@ -498,7 +485,7 @@
 
 @media (max-width: 640px) {
 	.statsCards {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(auto-fit, 1fr);
 	}
 
 	.statCard {

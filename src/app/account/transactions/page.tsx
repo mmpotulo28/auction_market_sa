@@ -45,7 +45,7 @@ export default function UserTransactionsPage() {
 		<div className={styles.container}>
 			<div className={styles.content}>
 				<div className={styles.ordersHeader}>
-					<h2 className={styles.ordersTitle}>Order History</h2>
+					<h2 className={styles.ordersTitle}>Receipts & Transactions</h2>
 				</div>
 				{/* Top Bar */}
 				<div className={styles.topBar}>
