@@ -1,5 +1,13 @@
-import axios from "axios";
-import { iAuction, iGroupedOrder, iOrder, iOrderStatus } from "./types";
+import axios, { isAxiosError } from "axios";
+import {
+	iAuction,
+	iGroupedOrder,
+	iNotification,
+	iOrder,
+	iOrderStatus,
+	iTransaction,
+} from "./types";
+import { logger } from "@sentry/nextjs";
 
 /**
  * Converts a given string into a URL-friendly format.
@@ -243,14 +251,70 @@ export async function fetchOrders({
 			// Group orders by order_id
 			const grouped = groupOrdersByOrderId(res.data.orders);
 
+			logger.info("Fetched orders:", res.data.orders.length);
+			logger.info("Grouped orders:", { length: grouped.length });
+
 			return { orders: res.data.orders, groupedOrders: grouped, error: null };
 		} else {
 			return { orders: [], groupedOrders: [], error: "Invalid response from server." };
 		}
 	} catch (e: any) {
+		logger.error("Error fetching orders:", e);
 		let msg = "Failed to fetch orders.";
 		if (e?.response?.data?.error) msg = e.response.data.error;
 		else if (e?.message) msg = e.message;
 		return { orders: [], groupedOrders: [], error: msg };
+	}
+}
+
+export async function fetchTransactions({
+	page,
+	pageSize = 15,
+}: {
+	page: number;
+	pageSize?: number;
+}): Promise<{ transactions: iTransaction[]; error: string | null }> {
+	try {
+		const res = await axios.get(`/api/admin/transactions?page=${page}&pageSize=${pageSize}`);
+		if (res.data && Array.isArray(res.data.transactions)) {
+			logger.info("Fetched transactions:", res.data.transactions.length);
+			return { transactions: res.data.transactions, error: null };
+		} else {
+			return { transactions: [], error: "Invalid response from server." };
+		}
+	} catch (e: any) {
+		logger.error("Error fetching transactions:", e);
+		let msg = "Failed to fetch transactions.";
+		if (e?.response?.data?.error) msg = e.response.data.error;
+		else if (e?.message) msg = e.message;
+		return { transactions: [], error: msg };
+	}
+}
+
+// fetch notifications
+export async function fetchNotifications(): Promise<{
+	notifications: iNotification[];
+	error?: string;
+}> {
+	try {
+		const res = await axios.get<{ notifications: iNotification[]; error?: string }>(
+			"/api/admin/notifications",
+		);
+
+		const data = res.data;
+		if (data.notifications) {
+			return { notifications: data.notifications };
+		} else {
+			return { notifications: [], error: "No notifications found." };
+		}
+	} catch (e: unknown) {
+		if (isAxiosError(e)) {
+			return { notifications: [], error: e.response?.data?.error || e.message };
+		} else {
+			return {
+				notifications: [],
+				error: "An unexpected error occurred while fetching notifications.",
+			};
+		}
 	}
 }

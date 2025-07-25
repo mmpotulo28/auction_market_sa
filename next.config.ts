@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
 				hostname: "udsbdddfarrckxeiupiv.supabase.co",
 				pathname: "/storage/v1/object/public/**", // Match the specific path pattern
 			},
+			{
+				protocol: "https",
+				hostname: "img.clerk.com",
+				pathname: "/**",
+			},
 		],
 	},
 	webpack(config) {

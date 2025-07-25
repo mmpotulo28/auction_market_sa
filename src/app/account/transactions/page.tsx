@@ -1,199 +1,219 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { Card } from "@/components/ui/card";
-import {
-	Table,
-	TableHeader,
-	TableBody,
-	TableRow,
-	TableHead,
-	TableCell,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Eye, RotateCcw } from "lucide-react";
-import { iOrderStatus, iTransaction } from "@/lib/types";
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import Receipt from "@/components/Reciept";
-import Container from "@/components/common/container";
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationLink,
-	PaginationPrevious,
-	PaginationNext,
-	PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
-import axios from "axios";
-import Illustration from "@/components/Illustration";
+import { useRef, useState } from "react";
+import { AlertCircle, RotateCcw, Package } from "lucide-react";
+import CopyElement from "@/components/CopyElement";
 import CustomerAd from "@/components/ads/CustomerAd";
-import { statusColor } from "@/lib/helpers";
+import { useAccountContext } from "@/context/AccountContext";
+import Illustration from "@/components/Illustration";
+import styles from "../orders/orders.module.css";
+import Receipt from "@/components/Reciept";
+import { Dialog, DialogContent, DialogTrigger } from "@radix-ui/react-dialog";
 
 export default function UserTransactionsPage() {
-	const [transactions, setTransactions] = useState<iTransaction[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [selectedTransaction, setSelectedTransaction] = useState<iTransaction | null>(null);
-	const receiptRef = useRef<HTMLDivElement | null>(null);
-	const [page, setPage] = useState(1);
-	const [pageSize] = useState(10);
-	const [total, setTotal] = useState(0);
+	const { transactions, fetchTransactions, errorTransactions, loadingTransactions } =
+		useAccountContext();
+	const ticketRef = useRef(null);
 
-	const fetchTransactions = async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const res = await axios.get<{
-				transactions: iTransaction[];
-				total: number;
-				error?: string;
-			}>(`/api/transactions/user?page=${page}&pageSize=${pageSize}`);
-			const data = res.data;
-			if (data.transactions) {
-				setTransactions(data.transactions);
-				setTotal(data.total || 0);
-			} else setError(data.error || "No transactions found.");
-		} catch (e: unknown) {
-			if (axios.isAxiosError(e)) {
-				setError(e.response?.data?.error || e.message);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-		} finally {
-			setLoading(false);
+	const [page, setPage] = useState(1);
+	const [pageSize] = useState(15);
+
+	const totalPages = Math.max(1, Math.ceil(transactions.length / pageSize));
+	const paginatedTransactions = transactions.slice((page - 1) * pageSize, page * pageSize);
+
+	// Calculate stats
+	const totalOrders = transactions.length;
+	const completedOrders = transactions.filter((txn) => txn.payment_status === "COMPLETE").length;
+	const cancelledOrders = transactions.filter((txn) => txn.payment_status === "CANCELLED").length;
+	const totalItems = transactions.length;
+
+	const getStatusBadgeClass = (status: string) => {
+		switch (status.toLowerCase()) {
+			case "completed":
+				return styles.statusCompleted;
+			case "pending":
+				return styles.statusPending;
+			case "cancelled":
+				return styles.statusCancelled;
+			case "processing":
+				return styles.statusProcessing;
+			default:
+				return styles.statusPending;
 		}
 	};
 
-	useEffect(() => {
-		fetchTransactions();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [page, pageSize]);
-
-	const totalPages = Math.ceil(total / pageSize);
-
 	return (
-		<Container>
-			<div className="max-w-full w-full mx-auto py-10 px-4">
-				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-3xl font-bold mb-6">My Transactions</h1>
-					<Button
-						variant="ghost"
-						size="icon"
-						onClick={fetchTransactions}
-						title="Refetch transactions">
-						<RotateCcw className="w-5 h-5" />
-					</Button>
+		<div className={styles.container}>
+			<div className={styles.content}>
+				<div className={styles.ordersHeader}>
+					<h2 className={styles.ordersTitle}>Receipts & Transactions</h2>
 				</div>
-				{error && (
-					<Alert variant="destructive" className="mb-6">
-						<AlertCircle className="h-4 w-4" />
-						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error}</AlertDescription>
-					</Alert>
+				{/* Top Bar */}
+				<div className={styles.topBar}>
+					{/* Stats Cards */}
+					<div className={styles.statsCards}>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingTransactions ? "?" : totalOrders}
+							</h3>
+							<p className={styles.statLabel}>Total Orders</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingTransactions ? "?" : completedOrders}
+							</h3>
+							<p className={styles.statLabel}>Completed</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingTransactions ? "?" : cancelledOrders}
+							</h3>
+							<p className={styles.statLabel}>Cancelled</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingTransactions ? "?" : totalItems}
+							</h3>
+							<p className={styles.statLabel}>Total Items</p>
+						</div>
+					</div>
+
+					{/* Refresh Button */}
+					<button
+						className={styles.refreshBtn}
+						onClick={fetchTransactions}
+						title="Refresh orders">
+						<RotateCcw size={20} />
+					</button>
+				</div>
+
+				{/* Error Alert */}
+				{errorTransactions && (
+					<div className={styles.errorAlert}>
+						<AlertCircle size={20} className={styles.errorIcon} />
+						<div className={styles.errorContent}>
+							<h4>Error</h4>
+							<p>{errorTransactions}</p>
+						</div>
+					</div>
 				)}
-				<Card className="overflow-x-auto p-0">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Date</TableHead>
-								<TableHead>Ref</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Item</TableHead>
-								<TableHead>Net</TableHead>
-								<TableHead>Fee</TableHead>
-								<TableHead>Total</TableHead>
-								<TableHead>Receipt</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{loading ? (
-								<TableRow>
-									<TableCell colSpan={8} className="text-center">
-										<Illustration type="loading" className="m-auto" />
-									</TableCell>
-								</TableRow>
-							) : transactions.length === 0 ? (
-								<TableRow>
-									<TableCell colSpan={8} className="text-center">
-										No transactions found.
-									</TableCell>
-								</TableRow>
-							) : (
-								transactions.map((t) => (
-									<TableRow key={t.pf_payment_id}>
-										<TableCell>
-											{t.created_at
-												? new Date(t.created_at).toLocaleString()
-												: "-"}
-										</TableCell>
-										<TableCell>{t.m_payment_id || t.pf_payment_id}</TableCell>
-										<TableCell>
-											<Badge
-												className={statusColor(
-													t.payment_status as unknown as iOrderStatus,
-												)}>
-												{t.payment_status}
-											</Badge>
-										</TableCell>
-										<TableCell>{t.item_name}</TableCell>
-										<TableCell>
-											{t.amount_net !== undefined
-												? `R ${Number(t.amount_net).toFixed(2)}`
-												: ""}
-										</TableCell>
-										<TableCell>
-											{t.amount_fee !== undefined
-												? `R ${Math.abs(Number(t.amount_fee)).toFixed(2)}`
-												: ""}
-										</TableCell>
-										<TableCell>
-											{t.amount_gross !== undefined
-												? `R ${Number(t.amount_gross).toFixed(2)}`
-												: ""}
-										</TableCell>
-										<TableCell>
-											<Dialog>
-												<DialogTrigger asChild>
-													<button
-														type="button"
-														className="flex items-center gap-1 px-2 py-1 rounded bg-muted text-foreground border border-gray-200 hover:bg-gray-100 transition"
-														onClick={() => setSelectedTransaction(t)}
-														title="Preview Receipt">
-														<Eye className="w-4 h-4" />
-														<span className="sr-only">Preview</span>
-													</button>
-												</DialogTrigger>
-												{selectedTransaction &&
-													selectedTransaction.pf_payment_id ===
-														t.pf_payment_id && (
-														<DialogContent>
-															<DialogTitle>
-																Transaction Receipt
-															</DialogTitle>
-															<Receipt
-																transaction={selectedTransaction}
-																receiptRef={receiptRef}
-															/>
-														</DialogContent>
-													)}
-											</Dialog>
-										</TableCell>
-									</TableRow>
-								))
-							)}
-						</TableBody>
-					</Table>
-					<Pagination className="mt-4">
-						<PaginationContent>
-							<PaginationItem>
-								<PaginationPrevious
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
-									aria-disabled={page === 1}
-									className={page === 1 ? "pointer-events-none opacity-50" : ""}
-								/>
-							</PaginationItem>
+
+				{/* Orders List */}
+				<div className={styles.ordersSection}>
+					<div className={styles.ordersContainer}>
+						{loadingTransactions ? (
+							<div className={styles.loadingState}>
+								<Illustration type="loading" className="m-auto" />
+								<p>Loading your orders...</p>
+							</div>
+						) : transactions.length === 0 ? (
+							<div className={styles.emptyState}>
+								<Package size={64} className={styles.emptyIcon} />
+								<h3 className={styles.emptyTitle}>No Orders Found</h3>
+								<p className={styles.emptyDescription}>
+									You haven&apos;t placed any orders yet. Start shopping to see
+									your orders here.
+								</p>
+							</div>
+						) : (
+							<div className={styles.ordersList}>
+								{paginatedTransactions.map((txn) => (
+									<div key={txn.m_payment_id} className={styles.orderCard}>
+										<div className={styles.orderCardHeader}>
+											<div className={styles.orderInfo}>
+												<div className={styles.orderNumber}>
+													<span className={styles.orderLabel}>
+														Payment #
+													</span>
+													<CopyElement truncate content={txn.item_name} />
+												</div>
+												<div className={styles.orderDate}>
+													{txn.created_at
+														? new Date(
+																txn.created_at,
+														  ).toLocaleDateString("en-US", {
+																year: "numeric",
+																month: "short",
+																day: "numeric",
+														  })
+														: "-"}
+												</div>
+											</div>
+											<div className={styles.orderActions}>
+												<span
+													className={`${
+														styles.statusBadge
+													} ${getStatusBadgeClass(txn.payment_status)}`}>
+													{txn.payment_status}
+												</span>
+												<Dialog>
+													<DialogTrigger>open in new</DialogTrigger>
+													<DialogContent>
+														<Receipt
+															receiptRef={ticketRef}
+															transaction={txn}
+														/>
+													</DialogContent>
+												</Dialog>
+											</div>
+										</div>
+
+										<div className={styles.orderCardBody}>
+											<div className={styles.orderDetails}>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Customer
+													</span>
+													<span className={styles.detailValue}>
+														{txn.name_first} {txn.name_last}
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Email
+													</span>
+													<span className={styles.detailValue}>
+														<CopyElement
+															content={txn.email_address || ""}
+														/>
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Price
+													</span>
+													<span className={styles.detailValue}>
+														R{Number(txn.amount_gross)?.toFixed(2)}
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>Item</span>
+													<div className={styles.detailValue}>
+														<CopyElement
+															truncate
+															content={txn.m_payment_id || ""}
+														/>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+
+					{/* Pagination */}
+					{totalPages > 1 && (
+						<div className={styles.pagination}>
+							<button
+								className={`${styles.paginationBtn} ${
+									page === 1 ? styles.disabled : ""
+								}`}
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								disabled={page === 1}>
+								Previous
+							</button>
+
 							{[...Array(totalPages)].map((_, idx) => {
 								const pageNum = idx + 1;
 								if (
@@ -202,41 +222,44 @@ export default function UserTransactionsPage() {
 									(pageNum >= page - 1 && pageNum <= page + 1)
 								) {
 									return (
-										<PaginationItem key={pageNum}>
-											<PaginationLink
-												onClick={() => setPage(pageNum)}
-												isActive={page === pageNum}>
-												{pageNum}
-											</PaginationLink>
-										</PaginationItem>
+										<button
+											key={pageNum}
+											className={`${styles.paginationBtn} ${
+												page === pageNum ? styles.active : ""
+											}`}
+											onClick={() => setPage(pageNum)}>
+											{pageNum}
+										</button>
 									);
 								} else if (
 									(pageNum === page - 2 && page > 3) ||
 									(pageNum === page + 2 && page < totalPages - 2)
 								) {
 									return (
-										<PaginationItem key={pageNum + "-ellipsis"}>
-											<PaginationEllipsis />
-										</PaginationItem>
+										<span
+											key={pageNum + "-ellipsis"}
+											className={styles.paginationEllipsis}>
+											...
+										</span>
 									);
 								}
 								return null;
 							})}
-							<PaginationItem>
-								<PaginationNext
-									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-									aria-disabled={page === totalPages}
-									className={
-										page === totalPages ? "pointer-events-none opacity-50" : ""
-									}
-								/>
-							</PaginationItem>
-						</PaginationContent>
-					</Pagination>
-				</Card>
+
+							<button
+								className={`${styles.paginationBtn} ${
+									page === totalPages ? styles.disabled : ""
+								}`}
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								disabled={page === totalPages}>
+								Next
+							</button>
+						</div>
+					)}
+				</div>
 
 				<CustomerAd variant="banner" />
 			</div>
-		</Container>
+		</div>
 	);
 }

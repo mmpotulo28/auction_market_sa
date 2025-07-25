@@ -1,12 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Bell, Info, AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import Container from "@/components/common/container";
-import axios from "axios";
 import Illustration from "@/components/Illustration";
 import { Switch } from "@/components/ui/switch";
 import { CustomerAd } from "@/components/ads/CustomerAd";
@@ -14,16 +13,7 @@ import styles from "./notifications.module.css";
 import { CarouselDApiSlider } from "@/components/TopBanner/slider";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { typeBg, typeBorder } from "@/lib/types";
-
-// Add type for notification
-interface Notification {
-	id: string;
-	message: string;
-	type: string;
-	read: boolean;
-	created_at?: string;
-	user_id?: string;
-}
+import { useAccountContext } from "@/context/AccountContext";
 
 const typeIcon = {
 	info: <Info className="text-blue-500" />,
@@ -34,63 +24,15 @@ const typeIcon = {
 };
 
 export default function NotificationsPage() {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const {
+		notifications,
+		readNotification: markAsRead,
+		errorNotifications,
+		loadingNotifications,
+		fetchNotifications,
+	} = useAccountContext();
 	const [showOld, setShowOld] = useState(false);
 	const { items } = useWebSocket();
-
-	const fetchNotifications = async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const res = await axios.get<{ notifications: Notification[]; error?: string }>(
-				"/api/account/notifications",
-			);
-			const data = res.data;
-			if (data.notifications) setNotifications(data.notifications);
-			else setError(data.error || "No notifications found.");
-		} catch (e: unknown) {
-			if (axios.isAxiosError(e)) {
-				setError(e.response?.data?.error || e.message);
-			} else {
-				setError("An unexpected error occurred.");
-			}
-		} finally {
-			setLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchNotifications();
-	}, []);
-
-	const markAsRead = async (id: string) => {
-		try {
-			setLoading(true);
-			const { data } = await axios.patch<{ success: boolean; error?: string }>(
-				"/api/account/notifications",
-				{
-					id,
-				},
-			);
-			if (data.success) {
-				setNotifications((prev) =>
-					prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-				);
-			} else {
-				setError(data.error || "Failed to mark notification as read.");
-			}
-		} catch (e: unknown) {
-			if (axios.isAxiosError(e)) {
-				setError(e.response?.data?.error || e.message);
-			} else {
-				setError("Failed to mark notification as read.");
-			}
-		} finally {
-			setLoading(false);
-		}
-	};
 
 	// Filter notifications based on switch
 	const now = Date.now();
@@ -122,23 +64,23 @@ export default function NotificationsPage() {
 								<Button
 									variant="ghost"
 									size="icon"
-									onClick={fetchNotifications}
+									onClick={() => fetchNotifications()}
 									title="Refetch notifications"
 									className={styles.notificationsRefreshBtn}>
 									<RotateCcw className="w-5 h-5" />
 								</Button>
 							</div>
 						</div>
-						{error && (
+						{errorNotifications && (
 							<Alert variant="destructive" className={styles.notificationsAlert}>
 								<AlertCircle className="h-4 w-4" />
 								<AlertTitle>Error</AlertTitle>
-								<AlertDescription>{error}</AlertDescription>
+								<AlertDescription>{errorNotifications}</AlertDescription>
 							</Alert>
 						)}
 						<Card className={styles.notificationsCard}>
 							<ul className={styles.notificationsList}>
-								{loading ? (
+								{loadingNotifications ? (
 									<Illustration
 										type="loading"
 										className={styles.notificationsLoading}

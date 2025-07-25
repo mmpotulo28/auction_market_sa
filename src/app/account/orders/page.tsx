@@ -1,143 +1,213 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import {
-	Table,
-	TableHeader,
-	TableBody,
-	TableRow,
-	TableHead,
-	TableCell,
-} from "@/components/ui/table";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, RotateCcw } from "lucide-react";
-import { iGroupedOrder } from "@/lib/types";
-import Container from "@/components/common/container";
-import { Button } from "@/components/ui/button";
-import Illustration from "@/components/Illustration";
-import {
-	Pagination,
-	PaginationContent,
-	PaginationItem,
-	PaginationLink,
-	PaginationPrevious,
-	PaginationNext,
-	PaginationEllipsis,
-} from "@/components/ui/pagination";
-import { Badge } from "@/components/ui/badge";
-import { fetchOrders, statusColor } from "@/lib/helpers";
+import { useState } from "react";
+import { AlertCircle, RotateCcw, Package } from "lucide-react";
 import CopyElement from "@/components/CopyElement";
 import CustomerAd from "@/components/ads/CustomerAd";
 import OrderView from "@/components/OrderView";
+import { useAccountContext } from "@/context/AccountContext";
+import Illustration from "@/components/Illustration";
+import styles from "./orders.module.css";
+import { iOrderStatus } from "@/lib/types";
 
 export default function UserOrdersPage() {
-	const [groupedOrders, setGroupedOrders] = useState<iGroupedOrder[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const { orders: groupedOrders, fetchOrders, errorOrders, loadingOrders } = useAccountContext();
+
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(15);
 
-	const fetchData = useCallback(async () => {
-		setLoading(true);
-		const { groupedOrders, error } = await fetchOrders({ page, pageSize });
-		if (error) {
-			setError(error);
-		} else {
-			setGroupedOrders(groupedOrders);
-		}
-
-		setLoading(false);
-	}, [page, pageSize]);
-
-	useEffect(() => {
-		fetchData();
-	}, [fetchData, page, pageSize]);
-
 	const totalPages = Math.max(1, Math.ceil(groupedOrders.length / pageSize));
+	const paginatedOrders = groupedOrders.slice((page - 1) * pageSize, page * pageSize);
+
+	// Calculate stats
+	const totalOrders = groupedOrders.length;
+	const completedOrders = groupedOrders.filter(
+		(order) => order.order_status === iOrderStatus.Completed,
+	).length;
+	const pendingOrders = groupedOrders.filter(
+		(order) => order.order_status === iOrderStatus.Pending,
+	).length;
+	const totalItems = groupedOrders.reduce((sum, order) => sum + order.orders.length, 0);
+
+	const getStatusBadgeClass = (status: string) => {
+		switch (status.toLowerCase()) {
+			case "completed":
+				return styles.statusCompleted;
+			case "pending":
+				return styles.statusPending;
+			case "cancelled":
+				return styles.statusCancelled;
+			case "processing":
+				return styles.statusProcessing;
+			default:
+				return styles.statusPending;
+		}
+	};
 
 	return (
-		<Container>
-			<div className="max-w-full w-full mx-auto py-10 px-4">
-				<div className="flex items-center justify-between mb-6">
-					<h1 className="text-3xl font-bold mb-6">My Orders</h1>
-					<Button variant="ghost" size="icon" onClick={fetchData} title="Refetch orders">
-						<RotateCcw className="w-5 h-5" />
-					</Button>
+		<div className={styles.container}>
+			<div className={styles.content}>
+				<div className={styles.ordersHeader}>
+					<h2 className={styles.ordersTitle}>Order History</h2>
 				</div>
-				{error && (
-					<Alert variant="destructive" className="mb-6">
-						<AlertCircle className="h-4 w-4" />
-						<AlertTitle>Error</AlertTitle>
-						<AlertDescription>{error}</AlertDescription>
-					</Alert>
+				{/* Top Bar */}
+				<div className={styles.topBar}>
+					{/* Stats Cards */}
+					<div className={styles.statsCards}>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingOrders ? "?" : totalOrders}
+							</h3>
+							<p className={styles.statLabel}>Total Orders</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingOrders ? "?" : completedOrders}
+							</h3>
+							<p className={styles.statLabel}>Completed</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingOrders ? "?" : pendingOrders}
+							</h3>
+							<p className={styles.statLabel}>Pending</p>
+						</div>
+						<div className={styles.statCard}>
+							<h3 className={styles.statNumber}>
+								{loadingOrders ? "?" : totalItems}
+							</h3>
+							<p className={styles.statLabel}>Total Items</p>
+						</div>
+					</div>
+
+					{/* Refresh Button */}
+					<button
+						className={styles.refreshBtn}
+						onClick={fetchOrders}
+						title="Refresh orders">
+						<RotateCcw size={20} />
+					</button>
+				</div>
+
+				{/* Error Alert */}
+				{errorOrders && (
+					<div className={styles.errorAlert}>
+						<AlertCircle size={20} className={styles.errorIcon} />
+						<div className={styles.errorContent}>
+							<h4>Error</h4>
+							<p>{errorOrders}</p>
+						</div>
+					</div>
 				)}
-				<Card className="overflow-x-auto p-5">
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Order Number</TableHead>
-								<TableHead>Payment Ref</TableHead>
-								<TableHead>User Name</TableHead>
-								<TableHead>User Email</TableHead>
-								<TableHead>Order Date</TableHead>
-								<TableHead>Items</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>View</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{loading ? (
-								<TableRow>
-									<TableCell colSpan={6} className="text-center">
-										<Illustration type="loading" className="m-auto" />
-									</TableCell>
-								</TableRow>
-							) : groupedOrders.length === 0 ? (
-								<TableRow>
-									<TableCell colSpan={6} className="text-center">
-										No orders found.
-									</TableCell>
-								</TableRow>
-							) : (
-								groupedOrders.map((group) => (
-									<TableRow key={group.order_id}>
-										<TableCell>
-											{" "}
-											<CopyElement content={group.order_id} />
-										</TableCell>
-										<TableCell>
-											<CopyElement content={group.payment_id} />
-										</TableCell>
-										<TableCell>{group.user_name}</TableCell>
-										<TableCell>{group.user_email}</TableCell>
-										<TableCell>
-											{group.created_at
-												? new Date(group.created_at).toLocaleString()
-												: "-"}
-										</TableCell>
-										<TableCell>{group.orders.length}</TableCell>
-										<TableCell>
-											<Badge className={statusColor(group.order_status)}>
-												{group.order_status}
-											</Badge>
-										</TableCell>
-										<TableCell>
-											<OrderView fetchOrders={fetchData} group={group} />
-										</TableCell>
-									</TableRow>
-								))
-							)}
-						</TableBody>
-					</Table>
-					<Pagination className="mt-4">
-						<PaginationContent>
-							<PaginationItem>
-								<PaginationPrevious
-									onClick={() => setPage((p) => Math.max(1, p - 1))}
-									aria-disabled={page === 1}
-									className={page === 1 ? "pointer-events-none opacity-50" : ""}
-								/>
-							</PaginationItem>
+
+				{/* Orders List */}
+				<div className={styles.ordersSection}>
+					<div className={styles.ordersContainer}>
+						{loadingOrders ? (
+							<div className={styles.loadingState}>
+								<Illustration type="loading" className="m-auto" />
+								<p>Loading your orders...</p>
+							</div>
+						) : groupedOrders.length === 0 ? (
+							<div className={styles.emptyState}>
+								<Package size={64} className={styles.emptyIcon} />
+								<h3 className={styles.emptyTitle}>No Orders Found</h3>
+								<p className={styles.emptyDescription}>
+									You haven&apos;t placed any orders yet. Start shopping to see
+									your orders here.
+								</p>
+							</div>
+						) : (
+							<div className={styles.ordersList}>
+								{paginatedOrders.map((group) => (
+									<div key={group.order_id} className={styles.orderCard}>
+										<div className={styles.orderCardHeader}>
+											<div className={styles.orderInfo}>
+												<div className={styles.orderNumber}>
+													<span className={styles.orderLabel}>
+														Order #
+													</span>
+													<CopyElement content={group.order_id} />
+												</div>
+												<div className={styles.orderDate}>
+													{group.created_at
+														? new Date(
+																group.created_at,
+														  ).toLocaleDateString("en-US", {
+																year: "numeric",
+																month: "short",
+																day: "numeric",
+														  })
+														: "-"}
+												</div>
+											</div>
+											<div className={styles.orderActions}>
+												<span
+													className={`${
+														styles.statusBadge
+													} ${getStatusBadgeClass(group.order_status)}`}>
+													{group.order_status}
+												</span>
+												<OrderView
+													fetchOrders={fetchOrders}
+													group={group}
+												/>
+											</div>
+										</div>
+
+										<div className={styles.orderCardBody}>
+											<div className={styles.orderDetails}>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Customer
+													</span>
+													<span className={styles.detailValue}>
+														{group.user_name}
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Email
+													</span>
+													<span className={styles.detailValue}>
+														<CopyElement content={group.user_email} />
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Items
+													</span>
+													<span className={styles.detailValue}>
+														{group.orders.length} items
+													</span>
+												</div>
+												<div className={styles.orderDetail}>
+													<span className={styles.detailLabel}>
+														Payment Ref
+													</span>
+													<div className={styles.detailValue}>
+														<CopyElement content={group.payment_id} />
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+
+					{/* Pagination */}
+					{totalPages > 1 && (
+						<div className={styles.pagination}>
+							<button
+								className={`${styles.paginationBtn} ${
+									page === 1 ? styles.disabled : ""
+								}`}
+								onClick={() => setPage((p) => Math.max(1, p - 1))}
+								disabled={page === 1}>
+								Previous
+							</button>
+
 							{[...Array(totalPages)].map((_, idx) => {
 								const pageNum = idx + 1;
 								if (
@@ -146,40 +216,44 @@ export default function UserOrdersPage() {
 									(pageNum >= page - 1 && pageNum <= page + 1)
 								) {
 									return (
-										<PaginationItem key={pageNum}>
-											<PaginationLink
-												onClick={() => setPage(pageNum)}
-												isActive={page === pageNum}>
-												{pageNum}
-											</PaginationLink>
-										</PaginationItem>
+										<button
+											key={pageNum}
+											className={`${styles.paginationBtn} ${
+												page === pageNum ? styles.active : ""
+											}`}
+											onClick={() => setPage(pageNum)}>
+											{pageNum}
+										</button>
 									);
 								} else if (
 									(pageNum === page - 2 && page > 3) ||
 									(pageNum === page + 2 && page < totalPages - 2)
 								) {
 									return (
-										<PaginationItem key={pageNum + "-ellipsis"}>
-											<PaginationEllipsis />
-										</PaginationItem>
+										<span
+											key={pageNum + "-ellipsis"}
+											className={styles.paginationEllipsis}>
+											...
+										</span>
 									);
 								}
 								return null;
 							})}
-							<PaginationItem>
-								<PaginationNext
-									onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-									aria-disabled={page === totalPages}
-									className={
-										page === totalPages ? "pointer-events-none opacity-50" : ""
-									}
-								/>
-							</PaginationItem>
-						</PaginationContent>
-					</Pagination>
-				</Card>
+
+							<button
+								className={`${styles.paginationBtn} ${
+									page === totalPages ? styles.disabled : ""
+								}`}
+								onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+								disabled={page === totalPages}>
+								Next
+							</button>
+						</div>
+					)}
+				</div>
+
 				<CustomerAd variant="banner" />
 			</div>
-		</Container>
+		</div>
 	);
 }
