@@ -5,7 +5,7 @@ export interface AddItemData {
 	title: string;
 	description: string;
 	price: string;
-	imageFile: File | null;
+	imageFiles: File[] | null;
 	category: string;
 	condition: string;
 	auctionId: string;
@@ -15,19 +15,44 @@ export async function addItemToDatabase(
 	formData: AddItemData,
 ): Promise<{ success: boolean; error?: string }> {
 	try {
-		let imageUrl = "";
+		const imageUrls: string[] = [];
 
-		// Upload image to Supabase storage
-		if (formData.imageFile) {
-			const { data, error: uploadError } = await supabaseAdmin.storage
-				.from("amsa-public")
-				.upload(`images/${Date.now()}-${formData.imageFile.name}`, formData.imageFile);
+		// Upload images to Supabase storage
+		if (formData.imageFiles && Array.isArray(formData.imageFiles)) {
+			for (const imageFile of formData.imageFiles) {
+				const { data, error: uploadError } = await supabaseAdmin.storage
+					.from("amsa-public")
+					.upload(`images/${Date.now()}-${imageFile.name}`, imageFile);
 
-			if (uploadError) {
-				throw new Error(
-					`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
+				if (uploadError) {
+					throw new Error(
+						`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
+					);
+				}
+
+				imageUrls.push(
+					`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`,
 				);
 			}
+		}
+
+		const { error: insertError } = await supabase.from("items").insert([
+			{
+				title: formData.title,
+				description: formData.description,
+				price: parseFloat(formData.price).toFixed(2),
+				image: imageUrls,
+				category: formData.category,
+				condition: formData.condition,
+				auction_id: parseInt(formData.auctionId, 10),
+			},
+		]);
+
+		if (uploadError) {
+			throw new Error(
+				`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
+			);
+		}
 
 			imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`;
 		}

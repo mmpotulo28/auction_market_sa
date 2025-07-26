@@ -52,9 +52,10 @@ const ItemsPage: React.FC = () => {
 		price: "0",
 		category: "",
 		condition: "new",
-		imageFile: null,
+		imageFiles: [], // changed from imageFile to imageFiles
 		auctionId: "",
 	});
+	const [uploadStatus, setUploadStatus] = useState<string>("");
 
 	// Fetch items
 	const fetchItems = async () => {
@@ -109,34 +110,54 @@ const ItemsPage: React.FC = () => {
 			price: "",
 			category: "",
 			condition: "new",
-			imageFile: null,
+			imageFiles: [],
 			auctionId: "",
 		});
 		setIsEditMode(false);
 		setIsDialogOpen(true);
+		setUploadStatus("");
 	};
 
 	// Create or update item
-	const handleSubmit = async ({ e, data }: { e: React.FormEvent; data: AddItemData }) => {
+	const handleSubmit = async ({ e, data }: { e: React.FormEvent; data: FormData }) => {
 		e.preventDefault();
 		setIsLoading(true);
+		setUploadStatus("Uploading images...");
 
 		try {
+			const form = data;
+
+			let response;
 			if (isEditMode) {
-				await axios.put("/api/items", { item: data });
+				setUploadStatus("Updating item...");
+				response = await axios.put("/api/items", form, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
 				toast.success("Item updated!");
 			} else {
-				await axios.post("/api/items", { item: data });
-				toast.success("Item created!");
+				setUploadStatus("Uploading images...");
+				response = await axios.post("/api/items", form, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+				setUploadStatus("Creating item...");
+				if (response.data.success) {
+					setUploadStatus("Item created successfully!");
+					toast.success("Item created!");
+				} else {
+					setUploadStatus("Error creating item.");
+					toast.error(response.data.error || "Failed to create item.");
+				}
 			}
-
-			setFormData(data);
+			setFormData({ ...formData, id: response.data.id || formData.id });
+			setIsEditMode(false);
 			setIsDialogOpen(false);
 			fetchItems();
 		} catch (e: any) {
+			setUploadStatus("Error occurred, deleting uploaded images...");
 			toast.error(e?.response?.data?.error || "Failed to save item.");
 		}
 		setIsLoading(false);
+		setTimeout(() => setUploadStatus(""), 2000);
 	};
 
 	// Define columns for DataTable
@@ -281,13 +302,16 @@ const ItemsPage: React.FC = () => {
 					<DialogHeader>
 						<DialogTitle>{isEditMode ? "Edit Item" : "Add New Item"}</DialogTitle>
 					</DialogHeader>
-
+					{uploadStatus && (
+						<div className="mb-2 text-sm text-blue-600">{uploadStatus}</div>
+					)}
 					<AddNewItemForm
 						item={formData}
 						onSubmit={handleSubmit}
 						buttonText={isEditMode ? "Edit Item" : "Add New Item"}
 						auctions={auctions}
 						isSubmitting={isLoading}
+						// Pass uploadStatus if needed
 					/>
 				</DialogContent>
 			</Dialog>

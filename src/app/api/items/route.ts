@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase, { supabaseAdmin } from "@/lib/db";
 import { logger } from "@sentry/nextjs";
-import { AddItemData } from "@/lib/dbFunctions";
 
 // GET: Fetch all items
 export async function GET() {
@@ -20,50 +19,86 @@ export async function GET() {
 // POST: Create a new item
 export async function POST(req: Request) {
 	try {
-		let imageUrl = "";
+		const formData = await req.formData();
+		const title = (formData.get("title") as string) || "";
+		const description = (formData.get("description") as string) || "";
+		const priceRaw = formData.get("price");
+		const price = typeof priceRaw === "string" && priceRaw !== "" ? priceRaw : "0";
+		const category = (formData.get("category") as string) || "";
+		const condition = (formData.get("condition") as string) || "";
+		const auctionIdRaw = formData.get("auctionId");
+		const auctionId =
+			typeof auctionIdRaw === "string" && auctionIdRaw !== "" && !isNaN(Number(auctionIdRaw))
+				? parseInt(auctionIdRaw, 10)
+				: null;
+		const imageFiles = formData.getAll("imageFiles") as File[];
 
-		const body = await req.json();
+		// Validate required fields
+		if (!title || !description || !category || !condition || !auctionId) {
+			console.log("[api/items] Missing required fields", formData);
+			return NextResponse.json(
+				{ success: false, error: "Missing required fields." },
+				{ status: 400 },
+			);
+		}
 
-		console.log("[api/items] Creating item:", body);
-		const { item }: { item: AddItemData } = body;
+		const imageUrls: string[] = [];
+		const uploadedImagePaths: string[] = [];
 
-		// Upload image to Supabase storage
-		if (item.imageFile) {
-			const { data, error: uploadError } = await supabaseAdmin.storage
-				.from("amsa-public")
-				.upload(`images/${Date.now()}-${item.imageFile.name}`, item.imageFile);
+		if (imageFiles && imageFiles.length > 0) {
+			const uploadResults = await Promise.all(
+				imageFiles.map(async (imageFile: File, idx: number) => {
+					const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 1e6)}-${idx}`;
+					const fileName = `images/${uniqueSuffix}-${imageFile.name}`;
+					const { data, error: uploadError } = await supabaseAdmin.storage
+						.from("amsa-public")
+						.upload(fileName, imageFile);
 
-			if (uploadError) {
-				throw new Error(
-					`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
-				);
+					if (uploadError) {
+						throw new Error(
+							`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
+						);
+					}
+
+					return {
+						url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`,
+						path: data.path,
+					};
+				}),
+			);
+
+			for (const result of uploadResults) {
+				imageUrls.push(result.url);
+				uploadedImagePaths.push(result.path);
 			}
-
-			imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`;
 		}
 
 		const { error: insertError } = await supabase.from("items").insert([
 			{
-				title: item.title,
-				description: item.description,
-				price: parseFloat(item.price).toFixed(2),
-				image: imageUrl,
-				category: item.category,
-				condition: item.condition,
-				auction_id: parseInt(item.auctionId, 10),
+				title,
+				description,
+				price: parseFloat(price).toFixed(2),
+				image: imageUrls,
+				category,
+				condition,
+				auction_id: auctionId,
 			},
 		]);
 
 		if (insertError) {
-			// Delete image from storage if insertion fails
-			if (imageUrl) {
+			if (uploadedImagePaths.length > 0) {
 				const { error: deleteError } = await supabase.storage
 					.from("amsa-public")
-					.remove([`images/${Date.now()}-${item.imageFile?.name}`]);
+					.remove(uploadedImagePaths);
 
 				if (deleteError) {
 					console.error(
-						`Failed to delete image from storage after insert error: ${deleteError.message}`,
+						`Failed to delete images from storage after insert error: ${deleteError.message}`,
+					);
+				} else {
+					console.log(
+						"Images deleted successfully after insert error.",
+						uploadedImagePaths,
 					);
 				}
 			}
