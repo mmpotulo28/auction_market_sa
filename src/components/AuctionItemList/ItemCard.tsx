@@ -67,12 +67,14 @@ const ItemCard: React.FC<iItemCardProps> = ({
 					</div>
 				</CardTitle>
 			</CardHeader>
+
 			<CardContent className="px-4">
 				<div className={styles.imageContainer}>
 					<CarouselDApiSlider items={item} />
 				</div>
 				<p className={styles.description}>{item.description}</p>
 			</CardContent>
+
 			<CardFooter className={`${styles.footer} px-4`}>
 				<Button
 					variant="outline"

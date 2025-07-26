@@ -97,6 +97,7 @@
 	padding: 10px 0;
 	position: relative;
 	max-height: 500px;
+	max-width: 350px;
 }
 
 .title {
@@ -115,7 +116,7 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background-color: var(--color-muted);
+	background-color: white;
 	padding: 0px;
 	border-radius: var(--radius-sm);
 	max-height: 300px;
