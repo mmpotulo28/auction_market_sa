@@ -11,7 +11,7 @@ import { iAuction } from "@/lib/types";
 
 interface AddNewItemFormProps {
 	item: AddItemData;
-	onSubmit: ({ e, data }: { e: React.FormEvent; data: AddItemData }) => Promise<void>;
+	onSubmit: ({ e, data }: { e: React.FormEvent; data: FormData }) => Promise<void>;
 	buttonText: string;
 	auctions: iAuction[];
 	isSubmitting: boolean;
@@ -22,13 +22,19 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 	buttonText,
 	auctions,
 	isSubmitting,
-	onSubmit,
+	onSubmit: submit,
 }) => {
-	const [formData, setFormData] = useState<AddItemData>(item);
+	const [formData, setFormData] = useState<AddItemData>({
+		...item,
+		imageFiles: item.imageFiles || [],
+	});
 
 	useEffect(() => {
 		if (item) {
-			setFormData(item);
+			setFormData((prev) => ({
+				...item,
+				imageFiles: item.imageFiles ?? prev.imageFiles ?? [],
+			}));
 		}
 	}, [item]);
 
@@ -40,15 +46,29 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 	};
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0] || null;
-		console.log("Selected file:", file);
-		setFormData((prev) => ({ ...prev, imageFile: file }));
+		const files = e.target.files ? Array.from(e.target.files) : [];
+		setFormData((prev) => ({ ...prev, imageFiles: files }));
 	};
 
 	return (
 		<Container padded={false}>
 			<div className={styles.container}>
-				<form onSubmit={(e) => onSubmit({ e, data: formData })} className={styles.form}>
+				<form
+					onSubmit={async (e) => {
+						e.preventDefault();
+						const form = new FormData();
+						form.append("title", formData.title);
+						form.append("description", formData.description);
+						form.append("price", formData.price);
+						form.append("category", formData.category);
+						form.append("condition", formData.condition);
+						form.append("auctionId", formData.auctionId);
+						formData?.imageFiles?.forEach((file) => {
+							form.append("imageFiles", file, file.name);
+						});
+						await submit({ e, data: form });
+					}}
+					className={styles.form}>
 					<Input
 						name="title"
 						placeholder="Item Title"
@@ -72,11 +92,12 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 						required
 					/>
 					<Input
-						name="imageFile"
+						name="imageFiles"
 						type="file"
+						multiple
 						accept="image/*"
 						onChange={handleFileChange}
-						required={!item?.imageFile}
+						required={!item?.imageFiles?.length}
 					/>
 					<Input
 						name="category"
