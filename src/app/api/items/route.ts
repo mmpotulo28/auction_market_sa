@@ -124,14 +124,86 @@ export async function POST(req: Request) {
 // PUT: Update an item
 export async function PUT(req: NextRequest) {
 	try {
-		const body = await req.json();
-		const { id, ...fields } = body;
+		const contentType = req.headers.get("content-type") || "";
+		let id: string | number | undefined;
+		let fields: any = {};
+		let imageFiles: File[] = [];
+		const uploadedImagePaths: string[] = [];
+		const imageUrls: string[] = [];
+
+		if (contentType.includes("multipart/form-data")) {
+			const formData = await req.formData();
+			id = formData.get("id") as string;
+			fields.title = (formData.get("title") as string) || "";
+			fields.description = (formData.get("description") as string) || "";
+			fields.price = (formData.get("price") as string) || "0";
+			fields.category = (formData.get("category") as string) || "";
+			fields.condition = (formData.get("condition") as string) || "";
+			fields.auction_id = formData.get("auctionId") || null;
+			imageFiles = formData.getAll("imageFiles") as File[];
+
+			// Only upload new images if provided
+			const imageFilesProvided =
+				imageFiles && imageFiles.length > 0 && imageFiles[0].size > 0;
+
+			if (imageFilesProvided) {
+				const uploadResults = await Promise.all(
+					imageFiles.map(async (imageFile: File, idx: number) => {
+						const uniqueSuffix = `${Date.now()}-${Math.floor(
+							Math.random() * 1e6,
+						)}-${idx}`;
+						const fileName = `images/${uniqueSuffix}-${imageFile.name}`;
+						const { data, error: uploadError } = await supabaseAdmin.storage
+							.from("amsa-public")
+							.upload(fileName, imageFile);
+
+						if (uploadError) {
+							throw new Error(
+								`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
+							);
+						}
+
+						return {
+							url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`,
+							path: data.path,
+						};
+					}),
+				);
+
+				for (const result of uploadResults) {
+					imageUrls.push(result.url);
+					uploadedImagePaths.push(result.path);
+				}
+				fields.image = imageUrls;
+			}
+
+			// If no new images, don't update the image field
+		} else {
+			const body = await req.json();
+			id = body.id;
+			fields = { ...body };
+			delete fields.id;
+		}
+
 		if (!id) {
 			return NextResponse.json({ error: "Missing item id" }, { status: 400 });
 		}
+
 		const { data, error } = await supabase.from("items").update(fields).eq("id", id).select();
 
 		if (error) {
+			// Clean up uploaded images if update fails
+			if (uploadedImagePaths.length > 0) {
+				const { error: deleteError } = await supabase.storage
+					.from("amsa-public")
+					.remove(uploadedImagePaths);
+
+				if (deleteError) {
+					console.error(
+						`Failed to delete images from storage after update error: ${deleteError.message}`,
+					);
+				}
+			}
 			logger.error("[PUT /api/items] Supabase error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}

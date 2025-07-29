@@ -31,7 +31,10 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 
 	useEffect(() => {
 		if (item) {
-			setFormData(item);
+			setFormData((prev) => ({
+				...item,
+				imageFiles: item.imageFiles ?? prev.imageFiles ?? [],
+			}));
 		}
 	}, [item]);
 
