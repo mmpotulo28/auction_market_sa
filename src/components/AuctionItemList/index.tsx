@@ -60,6 +60,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ itemsPerPage = 10, au
 	const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
 
 	useEffect(() => {
+		if(categories.length > 0) {
+			setSelectedCategories(categories);
+		}
+	}, [categories]);
+
+	useEffect(() => {
 		if (auction) {
 			const auctionStart = new Date(auction.start_time).getTime();
 			const auctionEnd = auctionStart + (auction.duration || 0) * 60 * 1000;
