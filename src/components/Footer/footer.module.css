@@ -1,6 +1,6 @@
 .footer {
-	background-color: var(--color-muted);
-	color: var(--color-muted-foreground);
+	background-color: var(--color-card);
+	color: var(--color-foreground);
 	padding: 20px 0;
 }
 
