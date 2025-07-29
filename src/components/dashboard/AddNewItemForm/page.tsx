@@ -52,7 +52,7 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 
 	return (
 		<Container padded={false}>
-			<div className={styles.container}>
+			<div className={styles.formWrapper}>
 				<form
 					onSubmit={async (e) => {
 						e.preventDefault();
@@ -68,53 +68,86 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 						});
 						await submit({ e, data: form });
 					}}
-					className={styles.form}>
-					<Input
-						name="title"
-						placeholder="Item Title"
-						value={formData.title}
-						onChange={handleChange}
-						required
-					/>
-					<Textarea
-						name="description"
-						placeholder="Item Description"
-						value={formData.description}
-						onChange={handleChange}
-						required
-					/>
-					<Input
-						name="price"
-						type="number"
-						placeholder="Price"
-						value={formData.price}
-						onChange={handleChange}
-						required
-					/>
-					<Input
-						name="imageFiles"
-						type="file"
-						multiple
-						accept="image/*"
-						onChange={handleFileChange}
-						required={!item?.imageFiles?.length}
-					/>
-					<Input
-						name="category"
-						placeholder="Category"
-						value={formData.category}
-						onChange={handleChange}
-						required
-					/>
-					<select name="auctionId" value={formData.auctionId} onChange={handleChange}>
-						<option value="">Select Auction</option>
-						{auctions.map((auction) => (
-							<option key={auction.id} value={auction.id}>
-								{auction.name}
-							</option>
-						))}
-					</select>
-					<div className={styles.radioGroup}>
+					className={`${styles.formGrid} ${isSubmitting ? styles.slideOut : styles.slideIn}`}
+					autoComplete="off"
+				>
+					<div className={styles.gridItem}>
+						<Input
+							name="title"
+							placeholder="Item Title"
+							value={formData.title}
+							onChange={handleChange}
+							required
+							className={styles.input}
+						/>
+					</div>
+					<div className={styles.gridItem}>
+						<Textarea
+							name="description"
+							placeholder="Item Description"
+							value={formData.description}
+							onChange={handleChange}
+							required
+							className={styles.textarea}
+						/>
+					</div>
+					<div className={styles.gridItem}>
+						<Input
+							name="price"
+							type="number"
+							placeholder="Price"
+							value={formData.price}
+							onChange={handleChange}
+							required
+							className={styles.input}
+						/>
+					</div>
+					<div className={styles.gridItem}>
+						<Input
+							name="imageFiles"
+							type="file"
+							multiple
+							accept="image/*"
+							onChange={handleFileChange}
+							required={!item?.imageFiles?.length}
+							className={styles.input}
+						/>
+						{formData.imageFiles && formData.imageFiles.length > 0 && (
+							<div className={styles.fileList}>
+								{formData.imageFiles.map((file, idx) => (
+									<span key={idx} className={styles.fileBadge}>
+										{file.name}
+									</span>
+								))}
+							</div>
+						)}
+					</div>
+					<div className={styles.gridItem}>
+						<Input
+							name="category"
+							placeholder="Category"
+							value={formData.category}
+							onChange={handleChange}
+							required
+							className={styles.input}
+						/>
+					</div>
+					<div className={styles.gridItem}>
+						<select
+							name="auctionId"
+							value={formData.auctionId}
+							onChange={handleChange}
+							className={`${styles.input} ${styles.select}`}
+						>
+							<option value="">Select Auction</option>
+							{auctions.map((auction) => (
+								<option key={auction.id} value={auction.id}>
+									{auction.name}
+								</option>
+							))}
+						</select>
+					</div>
+					<div className={`${styles.gridItem} ${styles.radioGroup}`}>
 						<label>
 							<Input
 								type="radio"
@@ -138,15 +171,21 @@ const AddNewItemForm: React.FC<AddNewItemFormProps> = ({
 							Used
 						</label>
 					</div>
-					<Button type="submit" disabled={isSubmitting}>
-						{isSubmitting ? (
-							<>
-								<FaSpinner className="spin" /> Submitting...
-							</>
-						) : (
-							buttonText
-						)}
-					</Button>
+					<div className={styles.gridItemFull}>
+						<Button
+							type="submit"
+							disabled={isSubmitting}
+							className={styles.submitBtn}
+						>
+							{isSubmitting ? (
+								<>
+									<FaSpinner className={styles.spinner} /> Submitting...
+								</>
+							) : (
+								buttonText
+							)}
+						</Button>
+					</div>
 				</form>
 			</div>
 		</Container>

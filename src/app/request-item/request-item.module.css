@@ -1,0 +1,271 @@
+.pageContainer {
+	min-height: 100vh;
+	background: linear-gradient(120deg, var(--color-background) 60%, var(--color-foreground) 100%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-start;
+	padding: 2rem 1rem;
+}
+
+.hero {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 2rem;
+}
+.heroIcon {
+	font-size: 3.5rem;
+	color: #6366f1;
+	margin-bottom: 0.5rem;
+}
+.heroTitle {
+	font-size: 2.2rem;
+	font-weight: 800;
+	color: var(--color-foreground);
+	margin-bottom: 0.2rem;
+	letter-spacing: -0.5px;
+	text-align: center;
+}
+.heroSubtitle {
+	color: var(--color-accent);
+	font-size: 1.1rem;
+	margin-bottom: 0.5rem;
+	text-align: center;
+}
+
+.card {
+	background: var(--color-card);
+	border-radius: 1.5rem;
+	box-shadow: 0 8px 32px 0 var(--color-accent);
+	padding: 2.5rem 2rem 2rem 2rem;
+	max-width: 80%;
+	width: 100%;
+	margin: 0 auto;
+	animation: fadeInCard 0.7s cubic-bezier(.4,2,.6,1);
+	position: relative;
+	overflow: hidden;
+}
+
+@keyframes fadeInCard {
+	0% { opacity: 0; transform: scale(0.97) translateY(30px);}
+	100% { opacity: 1; transform: scale(1) translateY(0);}
+}
+
+.slideIn {
+	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+@keyframes slideInForm {
+	0% { opacity: 0; transform: translateX(60px);}
+	100% { opacity: 1; transform: translateX(0);}
+}
+
+.formGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1.2rem 1.5rem;
+}
+
+.formHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+	margin-bottom: 1.5rem;
+	grid-column: 1 / -1;
+}
+
+.fullWidth {
+	grid-column: 1 / -1;
+}
+
+.formSlideIn {
+	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+
+.auctionSlideIn {
+	animation: auctionSlideIn 0.5s cubic-bezier(.4,2,.6,1) both;
+}
+@keyframes auctionSlideIn {
+	0% { opacity: 0; transform: translateY(30px);}
+	100% { opacity: 1; transform: translateY(0);}
+}
+
+.cardTitle {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: var(--color-foreground);
+	margin-bottom: 1.2rem;
+	text-align: center;
+}
+
+.auctionList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+.auctionItem {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: linear-gradient(90deg, var(--color-muted) 60%, var(--color-card) 100%);
+	border-radius: 1rem;
+	padding: 1rem 1.2rem;
+	cursor: pointer;
+	transition: box-shadow 0.18s, background 0.18s, color 0.18s;
+}
+.auctionItem:hover {
+	background: linear-gradient(90deg, var(--color-accent) 60%, var(--color-accent-foreground) 100%);
+	color: var(--color-accent-foreground);
+	box-shadow: 0 4px 16px var(--color-accent);
+}
+.auctionName {
+	font-weight: 600;
+	font-size: 1.1rem;
+	color: var(--color-foreground);
+}
+.auctionDesc {
+	display: block;
+	font-size: 0.97rem;
+	color: var(--color-muted-foreground);
+}
+.auctionDate {
+	font-size: 0.98rem;
+	color: var(--color-accent);
+	font-weight: 500;
+}
+
+
+.fieldGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+.label {
+	font-size: 0.98rem;
+	font-weight: 500;
+	color: var(--color-muted-foreground);
+	margin-bottom: 0.1rem;
+}
+.input, .textarea, .select {
+	border-radius: 0.8rem;
+	border: 1.5px solid var(--color-muted);
+	padding: 0.7rem 1rem;
+	font-size: 1rem;
+	background: var(--color-background);
+	color: var(--color-foreground);
+	transition: border 0.2s, box-shadow 0.2s;
+	outline: none;
+}
+.input:focus, .textarea:focus, .select:focus {
+	border: 1.5px solid var(--color-accent);
+	box-shadow: 0 0 0 2px var(--color-accent)33;
+}
+.textarea {
+	resize: vertical;
+	min-height: 70px;
+}
+.fileList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.3rem;
+}
+.fileBadge {
+	background: var(--color-accent);
+	color: #fff;
+	font-size: 10px;
+	padding: 0.2rem 0.8rem;
+	border-radius: 10px; text-wrap: nowrap;
+ word-break: keep-all;
+ word-wrap: normal;
+ overflow: auto;
+
+ &::-webkit-scrollbar {
+  display: none;
+ }
+}
+.submitBtn {
+	margin-top: 0.5rem;
+	width: 100%;
+	padding: 0.9rem 0;
+	border: none;
+	border-radius: 1rem;
+	background: var(--color-accent);
+	color: #fff;
+	font-size: 1.1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s, box-shadow 0.2s;
+
+}
+.submitBtn:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+.submitBtn:hover:not(:disabled) {
+	background: linear-gradient(90deg, var(--color-accent) 60%, var(--color-primary) 100%);
+	box-shadow: 0 4px 16px 0 var(--color-accent)26;
+}
+.submitMsg {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	margin-top: 0.7rem;
+	font-size: 1rem;
+	font-weight: 500;
+}
+.successMsg {
+	color: #22c55e;
+}
+.errorMsg {
+	color: #ef4444;
+}
+.empty {
+	text-align: center;
+	color: var(--color-muted-foreground);
+	font-size: 1.1rem;
+	margin: 2rem 0;
+}
+.backBtn {
+	background: none;
+	border: none;
+	color: var(--color-accent);
+	font-weight: 600;
+	font-size: 1rem;
+	cursor: pointer;
+	margin-bottom: 0.5rem;
+	align-self: flex-start;
+	transition: color 0.18s;
+}
+.backBtn:hover {
+	color: var(--color-foreground);
+}
+@media (max-width: 600px) {
+	.pageContainer {
+		padding: 0.5rem;
+	}
+	.card {
+		padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+		max-width: 98vw;
+		border-radius: 1rem;
+	}
+	.heroTitle {
+		font-size: 1.3rem;
+	}
+	.form {
+		gap: 0.7rem;
+	}
+	.input, .textarea, .select {
+		font-size: 0.97rem;
+		padding: 0.6rem 0.7rem;
+	}
+	.submitBtn {
+		padding: 0.7rem 0;
+		font-size: 1rem;
+	}
+}

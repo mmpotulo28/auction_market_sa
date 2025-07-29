@@ -1,0 +1,122 @@
+.container {
+	padding: 2rem;
+	max-width: 1100px;
+	margin: 0 auto;
+}
+.title {
+	font-size: 2rem;
+	font-weight: bold;
+}
+.email {
+	font-size: 0.95rem;
+	color: #64748b;
+}
+.userId {
+	font-size: 0.92rem;
+	color: #a3a3a3;
+}
+.chip {
+	display: inline-block;
+	padding: 0.25em 0.8em;
+	font-size: 0.95em;
+	border-radius: 1em;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	margin-top: 0.2em;
+}
+.chipNew {
+	background: linear-gradient(90deg, #4ade80 60%, #22d3ee 100%);
+	color: #065f46;
+}
+.chipUsed {
+	background: linear-gradient(90deg, #fbbf24 60%, #f87171 100%);
+	color: #92400e;
+}
+.dialogContent {
+	background: linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%);
+	border-radius: 1.5rem;
+	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+	padding: 2.5rem 2rem 2rem 2rem;
+	max-width: 480px;
+	width: 100%;
+}
+.detailsModern {
+	display: flex;
+	flex-direction: column;
+	gap: 1.2rem;
+}
+.detailsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 1rem;
+}
+.detailsTitle {
+	font-size: 1.3rem;
+	font-weight: 700;
+	color: #22223b;
+}
+.detailsAuction {
+	font-size: 1rem;
+	color: #6366f1;
+	font-weight: 500;
+}
+.detailsMeta {
+	display: flex;
+	justify-content: space-between;
+	gap: 1.5rem;
+	font-size: 0.98rem;
+	color: #374151;
+}
+.detailsDesc {
+	background: #f1f5f9;
+	border-radius: 0.8rem;
+	padding: 1rem;
+	font-size: 1rem;
+	color: #22223b;
+}
+.imagesModern {
+	margin-top: 0.5rem;
+}
+.imageGridModern {
+	display: flex;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+	margin-top: 0.5rem;
+}
+.imageModern {
+	width: 90px;
+	height: 90px;
+	object-fit: cover;
+	border-radius: 0.7rem;
+	border: 1px solid #e5e7eb;
+	transition: box-shadow 0.2s, transform 0.2s;
+	box-shadow: 0 2px 8px #6366f1aa;
+	background: #fff;
+}
+.imageModern:hover {
+	box-shadow: 0 4px 16px #6366f1cc;
+	transform: scale(1.06);
+}
+
+@media (max-width: 600px) {
+	.container {
+		padding: 0.5rem;
+	}
+	.dialogContent {
+		padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+		max-width: 98vw;
+		border-radius: 1rem;
+	}
+	.detailsTitle {
+		font-size: 1.05rem;
+	}
+	.detailsDesc {
+		font-size: 0.97rem;
+		padding: 0.7rem;
+	}
+	.imageModern {
+		width: 60px;
+		height: 60px;
+	}
+}

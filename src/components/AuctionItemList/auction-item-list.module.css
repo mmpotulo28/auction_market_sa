@@ -190,3 +190,18 @@
 		flex-wrap: wrap;
 	}
 }
+
+.sidebarLink {
+	display: block;
+	padding: 0.5rem 0.75rem;
+	color: #374151;
+	border-radius: 0.5rem;
+	font-weight: 500;
+	transition: background 0.15s, color 0.15s;
+	text-decoration: none;
+}
+
+.sidebarLink:hover {
+	background: #f1f5f9;
+	color: #2563eb;
+}

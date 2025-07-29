@@ -70,9 +70,9 @@ const Header = () => {
 						</NavigationMenuItem>
 						<NavigationMenuItem>
 							<NavigationMenuLink
-								href="/#auctions"
+								href="/request-item"
 								className={navigationMenuTriggerStyle()}>
-								Auctions
+								Request Items
 							</NavigationMenuLink>
 						</NavigationMenuItem>
 						<NavigationMenuItem>

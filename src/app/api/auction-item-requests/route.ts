@@ -1,8 +1,14 @@
+import {  getAuth } from "@clerk/nextjs/server"; // Clerk authentication
 import { NextRequest, NextResponse } from "next/server";
 import supabase, { supabaseAdmin } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
 	try {
+		  const { userId } = getAuth(req);
+  if (!userId) {
+   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
 		const formData = await req.formData();
 		const auctionName = formData.get("auctionName") as string;
 		const itemName = formData.get("itemName") as string;
@@ -73,6 +79,26 @@ export async function POST(req: NextRequest) {
 		}
 
 		return NextResponse.json({ success: true });
+	} catch (err) {
+		return NextResponse.json(
+			{ error: err instanceof Error ? err.message : "Unexpected error" },
+			{ status: 500 }
+		);
+	}
+}
+
+export async function GET() {
+	try {
+		const { data, error } = await supabase
+			.from("auction_item_requests")
+			.select("*")
+			.order("created_at", { ascending: false });
+
+		if (error) {
+			return NextResponse.json({ error: error.message }, { status: 500 });
+		}
+
+		return NextResponse.json({ items: data || [] });
 	} catch (err) {
 		return NextResponse.json(
 			{ error: err instanceof Error ? err.message : "Unexpected error" },
