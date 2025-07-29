@@ -1,158 +1,248 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
 import styles from "./header.module.css";
-import { cn } from "@/lib/utils";
+import { useUser, UserButton, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 import {
-	NavigationMenu,
-	NavigationMenuContent,
-	NavigationMenuItem,
-	NavigationMenuLink,
-	NavigationMenuList,
-	NavigationMenuTrigger,
-	navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
-import Image from "next/image";
-import { Button } from "../ui/button";
-import { CrossIcon } from "lucide-react";
-import { FaBars } from "react-icons/fa";
-import { UserButton, useUser } from "@clerk/nextjs";
+	FaBars, FaTimes, FaHome, FaUserCircle, FaShoppingCart, FaQuestionCircle,
+	FaChevronDown, FaChevronRight, FaCog, FaBell, FaHistory, FaExchangeAlt,
+	FaEnvelope, FaFileAlt, FaLock
+} from "react-icons/fa";
 import { ModeToggle } from "../ToggleTheme";
+import Image from "next/image";
 
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(
-	({ className, title, children, ...props }, ref) => {
-		return (
-			<li>
-				<NavigationMenuLink asChild>
-					<Link
-						ref={ref}
-						href={props.href || "#"}
-						className={cn(
-							"block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-							className,
-						)}
-						{...props}>
-						<div className="text-sm font-medium leading-none">{title}</div>
-						<p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-							{children}
-						</p>
-					</Link>
-				</NavigationMenuLink>
-			</li>
-		);
+const NAV_LINKS = [
+	{
+		title: "Home",
+		href: "/",
+		icon: <FaHome />,
 	},
-);
-ListItem.displayName = "ListItem";
+	{
+		title: "Request Items",
+		href: "/request-item",
+		icon: <FaExchangeAlt />,
+	},
+	{
+		title: "Account",
+		icon: <FaUserCircle />,
+		dropdown: [
+			{
+				title: "Account Home",
+				href: "/account",
+				desc: "Overview & quick links",
+				icon: <FaUserCircle />,
+			},
+			{
+				title: "Profile & Settings",
+				href: "/account/profile",
+				desc: "Manage your profile and preferences",
+				icon: <FaCog />,
+			},
+			{
+				title: "Order History",
+				href: "/account/orders",
+				desc: "View your orders",
+				icon: <FaHistory />,
+			},
+			{
+				title: "Transactions",
+				href: "/account/transactions",
+				desc: "View your transactions",
+				icon: <FaExchangeAlt />,
+			},
+			{
+				title: "Notifications",
+				href: "/account/notifications",
+				desc: "Your notifications",
+				icon: <FaBell />,
+			},
+		],
+	},
+	{
+		title: "Support",
+		icon: <FaQuestionCircle />,
+		dropdown: [
+			{
+				title: "Contact Us",
+				href: "/support/contact",
+				desc: "Get in touch with our support team.",
+				icon: <FaEnvelope />,
+			},
+			{
+				title: "Help Center",
+				href: "/support/help-center",
+				desc: "Find guides and troubleshooting tips.",
+				icon: <FaQuestionCircle />,
+			},
+			{
+				title: "Terms of Service",
+				href: "/support/terms",
+				desc: "Read our terms of service.",
+				icon: <FaFileAlt />,
+			},
+			{
+				title: "Privacy Policy",
+				href: "/support/privacy",
+				desc: "Read our privacy policy.",
+				icon: <FaLock />,
+			},
+		],
+	},
+	{
+		title: "Cart",
+		href: "/cart",
+		icon: <FaShoppingCart />,
+	},
+];
 
 const Header = () => {
-	const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 	const { user } = useUser();
+	const [mobileOpen, setMobileOpen] = React.useState(false);
 
 	return (
-		<header className={`${styles.header}`}>
-			{/* left side content */}
-			<div className="flex items-center justify-between px-4 py-2 md:px-6">
-				<div className={styles.logoContainer}>
-					<Image src="/images/amsa-logo.png" alt="Logo" width={100} height={50} />
-				</div>
-
-				{/* Mobile menu toggle */}
-			</div>
-
-			{/* center content */}
-			<nav className={`${isMobileMenuOpen ? styles.open : styles.hidden}`}>
-				<NavigationMenu>
-					<NavigationMenuList className={`${styles.menuList} flex flex-col md:flex-row`}>
-						<NavigationMenuItem>
-							<NavigationMenuLink href="/" className={navigationMenuTriggerStyle()}>
-								Home
-							</NavigationMenuLink>
-						</NavigationMenuItem>
-						<NavigationMenuItem>
-							<NavigationMenuLink
-								href="/request-item"
-								className={navigationMenuTriggerStyle()}>
-								Request Items
-							</NavigationMenuLink>
-						</NavigationMenuItem>
-						<NavigationMenuItem>
-							<NavigationMenuTrigger>Account</NavigationMenuTrigger>
-							<NavigationMenuContent>
-								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-									<ListItem title="Account Home" href="/account">
-										Overview & quick links
-									</ListItem>
-									<ListItem title="Profile & Settings" href="/account/profile">
-										Manage your profile and preferences
-									</ListItem>
-									<ListItem title="Order History" href="/account/orders">
-										View your orders
-									</ListItem>
-									<ListItem title="Transactions" href="/account/transactions">
-										View your transactions
-									</ListItem>
-									<ListItem title="Notifications" href="/account/notifications">
-										Your notifications
-									</ListItem>
-								</ul>
-							</NavigationMenuContent>
-						</NavigationMenuItem>
-
-						<NavigationMenuItem>
-							<NavigationMenuTrigger>Support</NavigationMenuTrigger>
-							<NavigationMenuContent>
-								<ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-									<ListItem title="Contact Us" href="/support/contact">
-										Get in touch with our support team.
-									</ListItem>
-									<ListItem title="Help Center" href="/support/help-center">
-										Find guides and troubleshooting tips.
-									</ListItem>
-									<ListItem title="Terms of Service" href="/support/terms">
-										Read our terms of service.
-									</ListItem>
-									<ListItem title="Privacy Policy" href="/support/privacy">
-										Read our privacy policy.
-									</ListItem>
-								</ul>
-							</NavigationMenuContent>
-						</NavigationMenuItem>
-						<NavigationMenuItem>
-							<NavigationMenuLink
-								href="/cart"
-								className={navigationMenuTriggerStyle()}>
-								Cart
-							</NavigationMenuLink>
-						</NavigationMenuItem>
-						{!user && (
-							<NavigationMenuItem className={styles.navItem}>
-								<NavigationMenuLink
-									href="/#auctions"
-									className={navigationMenuTriggerStyle()}>
-									Sign In
-								</NavigationMenuLink>
-							</NavigationMenuItem>
+		<header className={styles.headerAnimated}>
+			<div className={styles.headerInner}>
+				<Link href="/" className={styles.logo}>
+					<Image className={styles.logoIcon} src="/images/amsa-logo.png" alt="Logo" width={100} height={100} />
+				</Link>
+				<nav className={styles.nav}>
+					<ul className={styles.navList}>
+						{NAV_LINKS.map((link) =>
+							link.dropdown ? (
+								<li
+									key={link.title}
+									className={`${styles.navItem} ${styles.hasDropdown}`}>
+									<button
+										className={styles.navLink}
+										aria-haspopup="true"
+										aria-expanded="false"
+										tabIndex={0}>
+										<span className={styles.navIcon}>{link.icon}</span>
+										{link.title}
+										<span className={styles.caret}>
+											<FaChevronDown />
+										</span>
+									</button>
+									<div className={styles.dropdownMenu}>
+										{link.dropdown.map((item) => (
+											<Link
+												key={item.title}
+												href={item.href}
+												className={styles.dropdownItem}>
+												<span className={styles.dropdownIcon}>
+													{item.icon}
+												</span>
+												<div>
+													<div className={styles.dropdownTitle}>
+														{item.title}
+													</div>
+													<div className={styles.dropdownDesc}>
+														{item.desc}
+													</div>
+												</div>
+												<FaChevronRight className={styles.dropdownArrow} />
+											</Link>
+										))}
+									</div>
+								</li>
+							) : (
+								<li key={link.title} className={styles.navItem}>
+									<Link href={link.href} className={styles.navLink}>
+										<span className={styles.navIcon}>{link.icon}</span>
+										{link.title}
+									</Link>
+								</li>
+							),
 						)}
-					</NavigationMenuList>
-				</NavigationMenu>
-			</nav>
-
-			{/* right side content */}
-			<div className="flex items-center justify-end space-x-4 gap-2.5">
-				<ModeToggle />
-				<UserButton />
-				<div className={styles.toggleButton}>
-					<Button
-						variant={"ghost"}
-						className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
-						onClick={() => setMobileMenuOpen(!isMobileMenuOpen)}>
-						<span className="sr-only">Toggle navigation</span>
-						{isMobileMenuOpen ? <CrossIcon /> : <FaBars />}
-					</Button>
+					</ul>
+				</nav>
+				<div className={styles.userSection}>
+					<ModeToggle />
+					{user ? (
+						<UserButton  />
+					) : (
+						<SignInButton mode="modal">
+							<button className={styles.signInBtn}>Sign In</button>
+						</SignInButton>
+					)}
 				</div>
+				<button
+					className={styles.mobileMenuBtn}
+					onClick={() => setMobileOpen((v) => !v)}
+					aria-label="Open menu">
+					{mobileOpen ? <FaTimes /> : <FaBars />}
+				</button>
 			</div>
+			{/* Mobile menu */}
+			{mobileOpen && (
+				<nav className={styles.mobileNav}>
+					<ul className={styles.mobileNavList}>
+						{NAV_LINKS.map((link) =>
+							link.dropdown ? (
+								<li key={link.title} className={styles.mobileNavItem}>
+									{/* For mobile, keep dropdown on click */}
+									<details>
+										<summary className={styles.mobileNavLink}>
+											<span className={styles.navIcon}>{link.icon}</span>
+											{link.title}
+											<span className={styles.caret}>
+												<FaChevronDown />
+											</span>
+										</summary>
+										<div className={styles.mobileDropdownMenu}>
+											{link.dropdown.map((item) => (
+												<Link
+													key={item.title}
+													href={item.href}
+													className={styles.mobileDropdownItem}
+													onClick={() => setMobileOpen(false)}>
+													<span className={styles.dropdownIcon}>
+														{item.icon}
+													</span>
+													<div>
+														<div className={styles.dropdownTitle}>
+															{item.title}
+														</div>
+														<div className={styles.dropdownDesc}>
+															{item.desc}
+														</div>
+													</div>
+													<FaChevronRight
+														className={styles.dropdownArrow}
+													/>
+												</Link>
+											))}
+										</div>
+									</details>
+								</li>
+							) : (
+								<li key={link.title} className={styles.mobileNavItem}>
+									<Link
+										href={link.href}
+										className={styles.mobileNavLink}
+										onClick={() => setMobileOpen(false)}>
+										<span className={styles.navIcon}>{link.icon}</span>
+										{link.title}
+									</Link>
+								</li>
+							),
+						)}
+						<li className={styles.mobileNavItem}>
+							<ModeToggle />
+							{user ? (
+								<UserButton />
+							) : (
+								<SignInButton mode="modal">
+									<button className={styles.signInBtn}>Sign In</button>
+								</SignInButton>
+							)}
+						</li>
+					</ul>
+				</nav>
+			)}
 		</header>
 	);
 };
 
 export default Header;
+
