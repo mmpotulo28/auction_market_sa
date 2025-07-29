@@ -227,16 +227,7 @@ const Header = () => {
 								</li>
 							),
 						)}
-						<li className={styles.mobileNavItem}>
-							<ModeToggle />
-							{user ? (
-								<UserButton />
-							) : (
-								<SignInButton mode="modal">
-									<button className={styles.signInBtn}>Sign In</button>
-								</SignInButton>
-							)}
-						</li>
+
 					</ul>
 				</nav>
 			)}
