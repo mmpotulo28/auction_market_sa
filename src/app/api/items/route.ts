@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import supabase, { supabaseAdmin } from "@/lib/db";
+import supabase from "@/lib/db";
 import { logger } from "@sentry/nextjs";
+import { deleteImages, parseFormData, uploadImages } from "@/lib/helpers";
 
 // GET: Fetch all items
 export async function GET() {
@@ -17,83 +18,48 @@ export async function GET() {
 }
 
 // POST: Create a new item
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
 	try {
-		const formData = await req.formData();
-		const title = (formData.get("title") as string) || "";
-		const description = (formData.get("description") as string) || "";
-		const priceRaw = formData.get("price");
-		const price = typeof priceRaw === "string" && priceRaw !== "" ? priceRaw : "0";
-		const category = (formData.get("category") as string) || "";
-		const condition = (formData.get("condition") as string) || "";
-		const auctionIdRaw = formData.get("auctionId");
-		const auctionId =
-			typeof auctionIdRaw === "string" && auctionIdRaw !== "" && !isNaN(Number(auctionIdRaw))
-				? parseInt(auctionIdRaw, 10)
-				: null;
-		const imageFiles = formData.getAll("imageFiles") as File[];
+		let uploadedImagePaths: string[] = [];
 
-		// Validate required fields
-		if (!title || !description || !category || !condition || !auctionId) {
-			console.log("[api/items] Missing required fields", formData);
-			return NextResponse.json(
-				{ success: false, error: "Missing required fields." },
-				{ status: 400 },
-			);
+		const { fields, imageFiles } = await parseFormData(req);
+
+		const isMissingFields =
+			!fields.title ||
+			!fields.description ||
+			!fields.price ||
+			!fields.category ||
+			!fields.condition;
+		if (isMissingFields) {
+			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
 
-		const imageUrls: string[] = [];
-		const uploadedImagePaths: string[] = [];
-
-		if (imageFiles && imageFiles.length > 0) {
-			const uploadResults = await Promise.all(
-				imageFiles.map(async (imageFile: File, idx: number) => {
-					const uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 1e6)}-${idx}`;
-					const fileName = `images/${uniqueSuffix}-${imageFile.name}`;
-					const { data, error: uploadError } = await supabaseAdmin.storage
-						.from("amsa-public")
-						.upload(fileName, imageFile);
-
-					if (uploadError) {
-						throw new Error(
-							`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
-						);
-					}
-
-					return {
-						url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`,
-						path: data.path,
-					};
-				}),
-			);
-
-			for (const result of uploadResults) {
-				imageUrls.push(result.url);
-				uploadedImagePaths.push(result.path);
-			}
+		const imageFilesProvided = imageFiles && imageFiles.length > 0 && imageFiles[0].size > 0;
+		if (imageFilesProvided) {
+			const { urls, paths } = await uploadImages(imageFiles);
+			fields.image = urls;
+			uploadedImagePaths = paths;
 		}
 
 		const { error: insertError } = await supabase.from("items").insert([
 			{
-				title,
-				description,
-				price: parseFloat(price).toFixed(2),
-				image: imageUrls,
-				category,
-				condition,
-				auction_id: auctionId,
+				title: fields.title,
+				description: fields.description,
+				price: parseFloat(fields.price).toFixed(2),
+				image: fields.image,
+				category: fields.category,
+				condition: fields.condition,
+				auction_id: fields.auctionId,
 			},
 		]);
 
 		if (insertError) {
 			if (uploadedImagePaths.length > 0) {
-				const { error: deleteError } = await supabase.storage
-					.from("amsa-public")
-					.remove(uploadedImagePaths);
+				const { error: deleteError } = await deleteImages(uploadedImagePaths);
 
 				if (deleteError) {
 					console.error(
-						`Failed to delete images from storage after insert error: ${deleteError.message}`,
+						`Failed to delete images from storage after insert error: ${deleteError}`,
 					);
 				} else {
 					console.log(
@@ -127,57 +93,21 @@ export async function PUT(req: NextRequest) {
 		const contentType = req.headers.get("content-type") || "";
 		let id: string | number | undefined;
 		let fields: any = {};
-		let imageFiles: File[] = [];
-		const uploadedImagePaths: string[] = [];
-		const imageUrls: string[] = [];
+		let uploadedImagePaths: string[] = [];
 
 		if (contentType.includes("multipart/form-data")) {
-			const formData = await req.formData();
-			id = formData.get("id") as string;
-			fields.title = (formData.get("title") as string) || "";
-			fields.description = (formData.get("description") as string) || "";
-			fields.price = (formData.get("price") as string) || "0";
-			fields.category = (formData.get("category") as string) || "";
-			fields.condition = (formData.get("condition") as string) || "";
-			fields.auction_id = formData.get("auctionId") || null;
-			imageFiles = formData.getAll("imageFiles") as File[];
+			const { id: formId, fields: formFields, imageFiles } = await parseFormData(req);
+			id = formId;
+			fields = formFields;
 
-			// Only upload new images if provided
 			const imageFilesProvided =
 				imageFiles && imageFiles.length > 0 && imageFiles[0].size > 0;
 
 			if (imageFilesProvided) {
-				const uploadResults = await Promise.all(
-					imageFiles.map(async (imageFile: File, idx: number) => {
-						const uniqueSuffix = `${Date.now()}-${Math.floor(
-							Math.random() * 1e6,
-						)}-${idx}`;
-						const fileName = `images/${uniqueSuffix}-${imageFile.name}`;
-						const { data, error: uploadError } = await supabaseAdmin.storage
-							.from("amsa-public")
-							.upload(fileName, imageFile);
-
-						if (uploadError) {
-							throw new Error(
-								`Failed to upload image to storage: ${uploadError.message}\n Caused by: ${uploadError.cause}`,
-							);
-						}
-
-						return {
-							url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/amsa-public/${data.path}`,
-							path: data.path,
-						};
-					}),
-				);
-
-				for (const result of uploadResults) {
-					imageUrls.push(result.url);
-					uploadedImagePaths.push(result.path);
-				}
-				fields.image = imageUrls;
+				const { urls, paths } = await uploadImages(imageFiles);
+				fields.image = urls;
+				uploadedImagePaths = paths;
 			}
-
-			// If no new images, don't update the image field
 		} else {
 			const body = await req.json();
 			id = body.id;
@@ -192,18 +122,7 @@ export async function PUT(req: NextRequest) {
 		const { data, error } = await supabase.from("items").update(fields).eq("id", id).select();
 
 		if (error) {
-			// Clean up uploaded images if update fails
-			if (uploadedImagePaths.length > 0) {
-				const { error: deleteError } = await supabase.storage
-					.from("amsa-public")
-					.remove(uploadedImagePaths);
-
-				if (deleteError) {
-					console.error(
-						`Failed to delete images from storage after update error: ${deleteError.message}`,
-					);
-				}
-			}
+			await deleteImages(uploadedImagePaths);
 			logger.error("[PUT /api/items] Supabase error:", { error });
 			return NextResponse.json({ error: error.message }, { status: 500 });
 		}

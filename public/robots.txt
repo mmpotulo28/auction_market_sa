@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://auctionmarket.tech/sitemap.xml

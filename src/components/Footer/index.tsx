@@ -46,6 +46,11 @@ const Footer = () => {
 									Terms of Service
 								</Link>
 							</li>
+							<li>
+								<Link href="/app-download" className={styles.link}>
+									App Downloads
+								</Link>
+							</li>
 						</ul>
 					</div>
 					<div>

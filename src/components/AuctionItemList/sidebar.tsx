@@ -10,6 +10,7 @@ import {
 	SidebarHeader,
 } from "../ui/sidebar";
 import { Slider } from "../ui/slider";
+import Link from "next/link";
 import styles from "./auction-item-list.module.css";
 
 interface AuctionSidebarProps {
@@ -89,6 +90,15 @@ const AuctionSidebar: React.FC<AuctionSidebarProps> = ({
 							/>
 							<label htmlFor="used">Used</label>
 						</div>
+					</SidebarGroupContent>
+				</SidebarGroup>
+				<Separator />
+				<SidebarGroup className="px-4">
+					<SidebarGroupLabel>Admin</SidebarGroupLabel>
+					<SidebarGroupContent>
+						<Link href="/secure/a/requested-items" className={styles.sidebarLink}>
+							Requested Items
+						</Link>
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>

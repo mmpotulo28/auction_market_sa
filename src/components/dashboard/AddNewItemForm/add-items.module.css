@@ -12,9 +12,94 @@
 	gap: 15px;
 }
 
+.formWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	min-height: 400px;
+	animation: fadeIn 0.7s cubic-bezier(.4,2,.6,1);
+}
+
+@keyframes fadeIn {
+	0% { opacity: 0; transform: scale(0.97) translateY(30px);}
+	100% { opacity: 1; transform: scale(1) translateY(0);}
+}
+
+.formGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 1.2rem 1.5rem;
+	background: linear-gradient(120deg, #f8fafc 60%, #e0e7ff 100%);
+	border-radius: 1.5rem;
+	box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.10);
+	padding: 2.5rem 2rem 2rem 2rem;
+	width: 100%;
+	max-width: 700px;
+	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+
+@keyframes slideInForm {
+	0% { opacity: 0; transform: translateX(60px);}
+	100% { opacity: 1; transform: translateX(0);}
+}
+
+.slideIn {
+	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+.slideOut {
+	animation: slideOutForm 0.5s cubic-bezier(.4,2,.6,1) both;
+}
+@keyframes slideOutForm {
+	0% { opacity: 1; transform: translateX(0);}
+	100% { opacity: 0; transform: translateX(-60px);}
+}
+
+.gridItem {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+
+.gridItemFull {
+	grid-column: 1/-1;
+}
+
+.input, .textarea, .select {
+	border-radius: 0.8rem;
+	border: 1.5px solid #d1d5db;
+	padding: 0.7rem 1rem;
+	font-size: 1rem;
+	background: rgba(255,255,255,0.7);
+	transition: border 0.2s, box-shadow 0.2s;
+	outline: none;
+}
+.input:focus, .textarea:focus, .select:focus {
+	border: 1.5px solid #6366f1;
+	box-shadow: 0 0 0 2px #6366f133;
+}
+.textarea {
+	resize: vertical;
+	min-height: 70px;
+}
+
+.fileList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.3rem;
+}
+.fileBadge {
+	background: linear-gradient(90deg, #6366f1 60%, #a78bfa 100%);
+	color: #fff;
+	font-size: 0.85rem;
+	padding: 0.2rem 0.8rem;
+	border-radius: 1rem;
+}
+
 .radioGroup {
 	display: flex;
-	gap: 10px;
+	gap: 1.2rem;
 	align-items: center;
 }
 
@@ -29,5 +114,46 @@
 
 	&:checked {
 		border-color: var(--primary);
+	}
+}
+
+.submitBtn {
+	margin-top: 0.5rem;
+	width: 100%;
+	padding: 0.9rem 0;
+	border: none;
+	border-radius: 1rem;
+	background: linear-gradient(90deg, #6366f1 60%, #a78bfa 100%);
+	color: #fff;
+	font-size: 1.1rem;
+	font-weight: 600;
+	cursor: pointer;
+	box-shadow: 0 2px 8px 0 rgba(99,102,241,0.10);
+	transition: background 0.2s, box-shadow 0.2s, transform 0.18s;
+}
+.submitBtn:disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+.submitBtn:hover:not(:disabled) {
+	background: linear-gradient(90deg, #818cf8 60%, #c4b5fd 100%);
+	box-shadow: 0 4px 16px 0 rgba(99,102,241,0.15);
+	transform: scale(1.04);
+}
+
+.spinner {
+	margin-right: 0.5rem;
+	animation: spin 1s linear infinite;
+}
+@keyframes spin {
+	100% { transform: rotate(360deg);}
+}
+
+@media (max-width: 700px) {
+	.formGrid {
+		grid-template-columns: 1fr;
+		padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+		max-width: 98vw;
+		border-radius: 1rem;
 	}
 }

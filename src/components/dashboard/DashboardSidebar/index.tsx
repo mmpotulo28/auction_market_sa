@@ -64,6 +64,11 @@ const DashboardSidebar: React.FC = () => {
 			url: "#",
 			icon: Settings,
 		},
+		{
+			title: "Requested Items",
+			url: "/secure/a/requested-items",
+			icon: Box, // You can use a different icon if you prefer
+		},
 	];
 
 	return (
