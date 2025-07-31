@@ -10,7 +10,79 @@ import Script from "next/script";
 
 export const metadata: Metadata = {
 	title: "Auction Market SA",
-	description: "A platform for purchasing items in realtime, auction.",
+	description:
+		"Auction Market SA is South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions. Empowering local communities and businesses.",
+	keywords: [
+		"auction",
+		"marketplace",
+		"South Africa",
+		"bidding",
+		"buy online",
+		"sell online",
+		"real-time auctions",
+		"auction platform",
+		"auction market sa",
+		"online auction",
+		"bid",
+		"collectibles",
+		"property auction",
+		"vehicle auction",
+		"secure payment",
+		"PayFast",
+		"Supabase",
+		"Clerk.dev",
+		"modern web",
+	],
+	metadataBase: new URL("https://auctionmarket.tech"),
+	applicationName: "Auction Market SA",
+	authors: [{ name: "Auction Market SA", url: "https://auctionmarket.tech" }],
+	creator: "Auction Market SA",
+	publisher: "Auction Market SA",
+	openGraph: {
+		title: "Auction Market SA",
+		description:
+			"South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions.",
+		url: "https://auctionmarket.tech",
+		siteName: "Auction Market SA",
+		images: [
+			{
+				url: "/images/amsa-logo.png",
+				width: 512,
+				height: 512,
+				alt: "Auction Market SA Logo",
+			},
+		],
+		locale: "en_ZA",
+		type: "website",
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "Auction Market SA",
+		description:
+			"South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions.",
+		images: ["/images/amsa-logo.png"],
+		site: "@auctionmarketsa",
+		creator: "@auctionmarketsa",
+	},
+	icons: {
+		icon: "/favicon.ico",
+		shortcut: "/favicon.ico",
+		apple: "/apple-touch-icon.png",
+	},
+	robots: {
+		index: true,
+		follow: true,
+	},
+};
+
+export const viewport = {
+	themeColor: "#014b8b",
+	width: "device-width",
+	initialScale: 1,
+	maximumScale: 5,
+	minimumScale: 1,
+	userScalable: true,
+	viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -19,9 +91,36 @@ export default function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en">
+		<html lang="en-ZA">
 			<head>
 				<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+				<link rel="canonical" href="https://auctionmarket.tech" />
+				<meta name="viewport" content="width=device-width, initial-scale=1" />
+				<meta name="author" content="Auction Market SA" />
+				<meta
+					name="keywords"
+					content="auction, marketplace, South Africa, bidding, buy online, sell online, real-time auctions, auction platform, auction market sa, online auction, bid, collectibles, property auction, vehicle auction, secure payment, PayFast, Supabase, Clerk.dev, modern web"
+				/>
+				<meta property="og:type" content="website" />
+				<meta property="og:locale" content="en_ZA" />
+				<meta property="og:site_name" content="Auction Market SA" />
+				<meta property="og:title" content="Auction Market SA" />
+				<meta
+					property="og:description"
+					content="South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions."
+				/>
+				<meta property="og:url" content="https://auctionmarket.tech" />
+				<meta property="og:image" content="/images/amsa-logo.png" />
+				<meta name="twitter:card" content="summary_large_image" />
+				<meta name="twitter:title" content="Auction Market SA" />
+				<meta
+					name="twitter:description"
+					content="South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions."
+				/>
+				<meta name="twitter:image" content="/images/amsa-logo.png" />
+				<meta name="twitter:site" content="@auctionmarketsa" />
+				<meta name="twitter:creator" content="@auctionmarketsa" />
+				{/* <link rel="preload" href="/fonts/your-font.woff2" as="font" type="font/woff2" crossorigin="anonymous" /> */}
 				<Script
 					id="newrelic-script"
 					strategy="beforeInteractive"
@@ -31,6 +130,33 @@ export default function RootLayout({
 ;NREUM.loader_config={accountID:"6853570",trustKey:"6853570",agentID:"1134597126",licenseKey:"NRJS-0d9d426de3b1f4e3c9f",applicationID:"1134597126"};
 ;NREUM.info={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",licenseKey:"NRJS-0d9d426de3b1f4e3c9f",applicationID:"1134597126",sa:1};
 `,
+					}}
+				/>
+				<Script
+					id="jsonld-org"
+					type="application/ld+json"
+					strategy="afterInteractive"
+					dangerouslySetInnerHTML={{
+						__html: JSON.stringify({
+							"@context": "https://schema.org",
+							"@type": "Organization",
+							name: "Auction Market SA",
+							url: "https://auctionmarket.tech",
+							logo: "https://auctionmarket.tech/images/amsa-logo.png",
+							contactPoint: [
+								{
+									"@type": "ContactPoint",
+									email: "support@auctionmarket.tech",
+									telephone: "+27 79 653 0453",
+									contactType: "customer support",
+									areaServed: "ZA",
+									availableLanguage: ["en"],
+								},
+							],
+							sameAs: ["https://twitter.com/auctionmarketsa"],
+							description:
+								"Auction Market SA is South Africa’s most innovative digital auction platform. Buy and sell items in real-time, secure, and modern online auctions. Empowering local communities and businesses.",
+						}),
 					}}
 				/>
 			</head>
