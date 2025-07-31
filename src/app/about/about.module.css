@@ -218,10 +218,12 @@
 
 @media (max-width: 700px) {
 	.content {
-		grid-template-columns: 1fr;
+		display: flex;
+		flex-direction: column;
 	}
+
 	.section {
-		padding: 0.8rem 0.3rem;
+		padding: 10px 15px;
 	}
 	.title {
 		font-size: 1.1rem;
