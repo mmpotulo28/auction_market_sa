@@ -165,15 +165,30 @@ export default function RootLayout({
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
 					<ClerkProvider
 						appearance={{
+							variables: {
+								colorPrimary: "var(--color-accent)",
+								colorText: "var(--color-foreground)",
+								colorBackground: "var(--color-card)",
+								colorTextSecondary: "var(--color-secondary-foreground)",
+								borderRadius: "var(--radius-md)",
+								colorInputBackground: "var(--color-background)",
+								colorInputText: "var(--color-foreground)",
+								colorTextOnPrimaryBackground: "var(--color-background)",
+								colorNeutral: "var(--color-foreground)",
+							},
+
 							layout: {
-								socialButtonsPlacement: "top",
-								socialButtonsVariant: "auto",
+								termsPageUrl: "/support/terms",
+								privacyPageUrl: "/support/privacy",
+								helpPageUrl: "/support/help-centre",
+								logoImageUrl: "/images/amsa-logo.png",
 								logoPlacement: "none",
 								shimmer: true,
 							},
 							captcha: {
+								language: "en",
 								theme: "auto",
-								size: "flexible",
+								size: "normal",
 							},
 						}}>
 						<WebSocketProvider>

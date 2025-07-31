@@ -73,12 +73,11 @@
 }
 .navLink {
 	color: var(--color-foreground);
-	font-size: 16px;
-	font-weight: 600;
+	font-size: 15px;
 	text-decoration: none;
 	padding: 0.5rem 0.7rem;
-	border-radius: 10px;
-	transition: background 0.18s, color 0.18s;
+	border-radius: 8px;
+	transition: all 0.18s, color 0.18s;
 	background: none;
 	border: none;
 	cursor: pointer;
@@ -93,7 +92,7 @@
 .active {
 	background: var(--color-accent);
 	color: #fff;
-	border-radius: 10px;
+	border-radius: 8px;
 }
 .navLink:hover .navIcon,
 .navLink:focus .navIcon,

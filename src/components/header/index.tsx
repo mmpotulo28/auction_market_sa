@@ -24,6 +24,7 @@ import { ModeToggle } from "../ToggleTheme";
 import Image from "next/image";
 import { Info } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { Button } from "../ui/button";
 
 const NAV_LINKS = [
 	{
@@ -257,14 +258,14 @@ const Header = () => {
 					</ul>
 				</nav>
 				<div className={styles.userSection}>
-					<ModeToggle />
 					{user ? (
-						<UserButton />
+						<UserButton showName />
 					) : (
-						<SignInButton mode="modal">
-							<button className={styles.signInBtn}>Sign In</button>
+						<SignInButton mode="redirect">
+							<Button variant={"default"}>Sign In</Button>
 						</SignInButton>
 					)}
+					<ModeToggle />
 				</div>
 				<button
 					className={styles.mobileMenuBtn}
