@@ -35,29 +35,41 @@
 }
 
 .card {
-	background: var(--color-card);
+	background: var(--color-background);
 	border-radius: 1.5rem;
 	box-shadow: 0 8px 32px 0 var(--color-accent);
 	padding: 2.5rem 2rem 2rem 2rem;
 	max-width: 80%;
 	width: 100%;
 	margin: 0 auto;
-	animation: fadeInCard 0.7s cubic-bezier(.4,2,.6,1);
+	animation: fadeInCard 0.7s cubic-bezier(0.4, 2, 0.6, 1);
 	position: relative;
 	overflow: hidden;
 }
 
 @keyframes fadeInCard {
-	0% { opacity: 0; transform: scale(0.97) translateY(30px);}
-	100% { opacity: 1; transform: scale(1) translateY(0);}
+	0% {
+		opacity: 0;
+		transform: scale(0.97) translateY(30px);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
 }
 
 .slideIn {
-	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+	animation: slideInForm 0.7s cubic-bezier(0.4, 2, 0.6, 1) both;
 }
 @keyframes slideInForm {
-	0% { opacity: 0; transform: translateX(60px);}
-	100% { opacity: 1; transform: translateX(0);}
+	0% {
+		opacity: 0;
+		transform: translateX(60px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateX(0);
+	}
 }
 
 .formGrid {
@@ -80,15 +92,21 @@
 }
 
 .formSlideIn {
-	animation: slideInForm 0.7s cubic-bezier(.4,2,.6,1) both;
+	animation: slideInForm 0.7s cubic-bezier(0.4, 2, 0.6, 1) both;
 }
 
 .auctionSlideIn {
-	animation: auctionSlideIn 0.5s cubic-bezier(.4,2,.6,1) both;
+	animation: auctionSlideIn 0.5s cubic-bezier(0.4, 2, 0.6, 1) both;
 }
 @keyframes auctionSlideIn {
-	0% { opacity: 0; transform: translateY(30px);}
-	100% { opacity: 1; transform: translateY(0);}
+	0% {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .cardTitle {
@@ -111,14 +129,18 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	background: linear-gradient(90deg, var(--color-muted) 60%, var(--color-card) 100%);
+	background: linear-gradient(90deg, var(--color-card) 60%, var(--color-card) 100%);
 	border-radius: 1rem;
 	padding: 1rem 1.2rem;
 	cursor: pointer;
 	transition: box-shadow 0.18s, background 0.18s, color 0.18s;
 }
 .auctionItem:hover {
-	background: linear-gradient(90deg, var(--color-accent) 60%, var(--color-accent-foreground) 100%);
+	background: linear-gradient(
+		90deg,
+		var(--color-accent) 60%,
+		var(--color-accent-foreground) 100%
+	);
 	color: var(--color-accent-foreground);
 	box-shadow: 0 4px 16px var(--color-accent);
 }
@@ -138,7 +160,6 @@
 	font-weight: 500;
 }
 
-
 .fieldGroup {
 	display: flex;
 	flex-direction: column;
@@ -150,20 +171,39 @@
 	color: var(--color-muted-foreground);
 	margin-bottom: 0.1rem;
 }
-.input, .textarea, .select {
+.input,
+.textarea,
+.select {
 	border-radius: 0.8rem;
 	border: 1.5px solid var(--color-muted);
 	padding: 0.7rem 1rem;
 	font-size: 1rem;
-	background: var(--color-background);
+	background: var(--color-card);
 	color: var(--color-foreground);
 	transition: border 0.2s, box-shadow 0.2s;
 	outline: none;
 }
-.input:focus, .textarea:focus, .select:focus {
+.input:focus,
+.textarea:focus,
+.select:focus {
 	border: 1.5px solid var(--color-accent);
-	box-shadow: 0 0 0 2px var(--color-accent)33;
+	box-shadow: 0 0 0 2px var(--color-accent) 33;
 }
+
+.infoText {
+	display: flex;
+	gap: 10px;
+	font-size: 0.95rem;
+	color: var(--color-muted-foreground);
+	margin-top: 0.5rem;
+	text-align: center;
+	grid-column: 1 / -1;
+}
+
+.infoIcon {
+	color: var(--color-accent);
+}
+
 .textarea {
 	resize: vertical;
 	min-height: 70px;
@@ -179,14 +219,15 @@
 	color: #fff;
 	font-size: 10px;
 	padding: 0.2rem 0.8rem;
-	border-radius: 10px; text-wrap: nowrap;
- word-break: keep-all;
- word-wrap: normal;
- overflow: auto;
+	border-radius: 10px;
+	text-wrap: nowrap;
+	word-break: keep-all;
+	word-wrap: normal;
+	overflow: auto;
 
- &::-webkit-scrollbar {
-  display: none;
- }
+	&::-webkit-scrollbar {
+		display: none;
+	}
 }
 .submitBtn {
 	margin-top: 0.5rem;
@@ -200,7 +241,6 @@
 	font-weight: 600;
 	cursor: pointer;
 	transition: background 0.2s, box-shadow 0.2s;
-
 }
 .submitBtn:disabled {
 	opacity: 0.7;
@@ -208,7 +248,7 @@
 }
 .submitBtn:hover:not(:disabled) {
 	background: linear-gradient(90deg, var(--color-accent) 60%, var(--color-primary) 100%);
-	box-shadow: 0 4px 16px 0 var(--color-accent)26;
+	box-shadow: 0 4px 16px 0 var(--color-accent) 26;
 }
 .submitMsg {
 	display: flex;
@@ -260,7 +300,9 @@
 	.form {
 		gap: 0.7rem;
 	}
-	.input, .textarea, .select {
+	.input,
+	.textarea,
+	.select {
 		font-size: 0.97rem;
 		padding: 0.6rem 0.7rem;
 	}

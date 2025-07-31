@@ -5,6 +5,19 @@ import styles from "./request-item.module.css";
 import { FaRegImage, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import { useUser } from "@clerk/nextjs";
 import CopyElement from "@/components/CopyElement";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Info } from "lucide-react";
 
 interface Auction {
 	id: string;
@@ -166,68 +179,42 @@ const RequestItemPage: React.FC = () => {
 							</h2>
 						</div>
 						<div className={styles.fieldGroup}>
-							<label className={styles.label}>Your Name</label>
-							<input
-								name="requesterName"
-								value={form.requesterName}
-								onChange={handleFormChange}
-								required
-								className={styles.input}
-								disabled={!!user}
-							/>
-						</div>
-						<div className={styles.fieldGroup}>
-							<label className={styles.label}>Your Email</label>
-							<input
-								name="requesterEmail"
-								type="email"
-								value={form.requesterEmail}
-								onChange={handleFormChange}
-								required
-								className={styles.input}
-								disabled={!!user}
-							/>
-						</div>
-						<div className={styles.fieldGroup}>
-							<label className={styles.label}>Your User ID (optional)</label>
-							<input
-								name="requesterUserId"
-								value={form.requesterUserId}
-								onChange={handleFormChange}
-								className={styles.input}
-								disabled={!!user}
-							/>
-						</div>
-						<div className={styles.fieldGroup}>
 							<label className={styles.label}>Item Name</label>
-							<input
+							<Input
 								name="itemName"
 								value={form.itemName}
 								onChange={handleFormChange}
 								required
-								className={styles.input}
 							/>
 						</div>
 						<div className={styles.fieldGroup}>
 							<label className={styles.label}>Condition</label>
-							<select
-								name="condition"
+							<Select
 								value={form.condition}
-								onChange={handleFormChange}
-								className={`${styles.input} ${styles.select}`}>
-								<option value="new">New</option>
-								<option value="used">Used</option>
-							</select>
+								onValueChange={(value) =>
+									setForm((prev) => ({ ...prev, condition: value }))
+								}>
+								<SelectTrigger className="w-[180px]">
+									<SelectValue placeholder="Select a fruit" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectLabel>Select condition</SelectLabel>
+										<SelectItem value="new">New</SelectItem>
+										<SelectItem value="used">Used</SelectItem>
+										<SelectItem value="refurbished">Refurbished</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
 						</div>
 						<div className={styles.fieldGroup}>
 							<label className={styles.label}>Item Images (optional)</label>
-							<input
+							<Input
 								name="itemImages"
 								type="file"
 								multiple
 								accept="image/*"
 								onChange={handleFileChange}
-								className={styles.input}
 							/>
 							{form.itemImages.length > 0 && (
 								<div className={styles.fileList}>
@@ -239,19 +226,66 @@ const RequestItemPage: React.FC = () => {
 								</div>
 							)}
 						</div>
+						<div className={styles.fieldGroup}>
+							<label hidden={!!user} className={styles.label}>
+								Your Name
+							</label>
+							<Input
+								name="requesterName"
+								value={form.requesterName}
+								onChange={handleFormChange}
+								required
+								disabled={!!user}
+								hidden={!!user}
+							/>
+						</div>
+						<div className={styles.fieldGroup}>
+							<label hidden={!!user} className={styles.label}>
+								Your Email
+							</label>
+							<Input
+								name="requesterEmail"
+								type="email"
+								value={form.requesterEmail}
+								onChange={handleFormChange}
+								required
+								disabled={!!user}
+								hidden={!!user}
+							/>
+						</div>
+						<div className={styles.fieldGroup}>
+							<label hidden={!!user} className={styles.label}>
+								Your User ID (optional)
+							</label>
+							<Input
+								aria-label="Your User ID"
+								name="requesterUserId"
+								value={form.requesterUserId}
+								onChange={handleFormChange}
+								disabled={!!user}
+								hidden={!!user}
+							/>
+						</div>
+
 						<div className={`${styles.fieldGroup} ${styles.fullWidth}`}>
 							<label className={styles.label}>Item Description</label>
-							<textarea
+							<Textarea
 								name="itemDescription"
 								value={form.itemDescription}
 								onChange={handleFormChange}
 								required
-								className={styles.textarea}
 							/>
 						</div>
-						<button type="submit" disabled={submitting} className={styles.submitBtn}>
+						{!user && (
+							<span className={styles.infoText}>
+								<Info className={styles.infoIcon} />
+								It is recommended to sign in before submitting a request, so that we
+								can alert you when we have your requested item.
+							</span>
+						)}
+						<Button type="submit" disabled={submitting}>
 							{submitting ? "Submitting..." : "Submit Request"}
-						</button>
+						</Button>
 						{submitMsg && (
 							<div
 								className={`${styles.submitMsg} ${

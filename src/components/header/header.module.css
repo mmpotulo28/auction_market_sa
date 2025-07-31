@@ -37,7 +37,6 @@
 	position: relative;
 	min-width: 90px;
 	max-height: 40px;
-	background-color: red;
 }
 
 .logoIcon {
@@ -139,6 +138,7 @@
 .dropdownMenu {
 	display: none;
 	opacity: 0;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 	pointer-events: none;
 	transform: translateY(18px) scale(0.97);
 	transition: opacity 0.38s cubic-bezier(0.4, 2, 0.6, 1),
@@ -148,7 +148,7 @@
 	left: 0;
 	background: linear-gradient(120deg, var(--color-background) 60%, var(--color-accent) 100%);
 	padding: 0.7rem 0.5rem;
-	min-width: 240px;
+	min-width: 440px;
 	z-index: 10;
 	backdrop-filter: blur(8px);
 	border: 1.5px solid var(--color-accent);
@@ -156,7 +156,7 @@
 }
 .hasDropdown:focus-within .dropdownMenu,
 .hasDropdown:hover .dropdownMenu {
-	display: block;
+	display: grid;
 	opacity: 1;
 	pointer-events: auto;
 	transform: translateY(0) scale(1);
@@ -183,6 +183,8 @@
 	overflow: hidden;
 	background: none;
 	border-radius: 10px;
+	width: 100%;
+	min-width: 250px;
 }
 .dropdownItem:hover,
 .dropdownItem:focus {
