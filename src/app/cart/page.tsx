@@ -83,7 +83,8 @@ export default function CartPage() {
 									label: checkingOut ? "please wait..." : "Pay For Items",
 									click: () => handleCheckout(),
 									iconEnd: <FaOpencart />,
-									variant: iVariant.Secondary,
+									variant: iVariant.Quinary,
+									className: "bg-foreground text-background hover:bg-accent",
 								},
 							]}
 						/>

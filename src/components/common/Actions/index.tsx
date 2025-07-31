@@ -47,6 +47,9 @@ const Actions: React.FC<iActionProps> = ({
 			case iVariant.Quaternary:
 				ButtonVariant = "destructive";
 				break;
+			case iVariant.Quinary:
+				ButtonVariant = "default";
+				break;
 			default:
 				ButtonVariant = "default";
 				break;
@@ -60,7 +63,7 @@ const Actions: React.FC<iActionProps> = ({
 			{actions?.map((action) =>
 				action.hide ? null : (
 					<Button
-						className={styles.button}
+						className={styles.button + (action.className ? ` ${action.className}` : "")}
 						variant={getVariant(action.variant)}
 						key={`${action.key}-${action.label}`}
 						onClick={action.click ? action.click : undefined}>
